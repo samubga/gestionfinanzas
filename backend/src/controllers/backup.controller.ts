@@ -194,3 +194,177 @@ export async function importBackup(req: AuthRequest, res: Response) {
     res.status(500).json({ error: error.message || 'Error al importar copia de seguridad' });
   }
 }
+
+export async function importCaixaBankCSV(req: AuthRequest, res: Response) {
+  const userId = req.userId!;
+  const { csvText } = req.body;
+
+  if (!csvText || typeof csvText !== 'string') {
+    return res.status(400).json({ error: 'Contenido del CSV no proporcionado o inválido' });
+  }
+
+  try {
+    const lines = csvText.split(/\r?\n/);
+    let separator = ',';
+    let headerIndex = -1;
+    let colConcepto = -1;
+    let colFecha = -1;
+    let colImporte = -1;
+    let colCategoria = -1;
+
+    // 1. Detect header row and separator
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.includes('Concepto') && line.includes('Fecha') && line.includes('Importe')) {
+        headerIndex = i;
+        if (line.includes(';')) {
+          separator = ';';
+        } else {
+          separator = ',';
+        }
+
+        const headers = line.split(separator).map(h => h.trim().replace(/^["']|["']$/g, ''));
+        colConcepto = headers.findIndex(h => h.toLowerCase() === 'concepto');
+        colFecha = headers.findIndex(h => h.toLowerCase() === 'fecha');
+        colImporte = headers.findIndex(h => h.toLowerCase() === 'importe');
+        colCategoria = headers.findIndex(h => h.toLowerCase() === 'categoria');
+        break;
+      }
+    }
+
+    if (headerIndex === -1 || colConcepto === -1 || colFecha === -1 || colImporte === -1) {
+      return res.status(400).json({
+        error: 'No se encontró la fila de cabecera con "Concepto", "Fecha" e "Importe". Asegúrate de que el CSV tiene la estructura correcta.'
+      });
+    }
+
+    // Load user's existing categories to match them by name
+    const existingCategories = await prisma.category.findMany({
+      where: { userId }
+    });
+
+    const categoriesMap = new Map(existingCategories.map(c => [c.name.toLowerCase().trim(), c]));
+
+    let createdExpensesCount = 0;
+    let createdIncomesCount = 0;
+    const monthsToUpdate = new Map<string, { year: number, month: number }>();
+
+    // 2. Parse data rows
+    for (let i = headerIndex + 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const fields = line.split(separator).map(f => f.trim().replace(/^["']|["']$/g, ''));
+      
+      if (fields.length <= Math.max(colConcepto, colFecha, colImporte)) {
+        continue;
+      }
+
+      const concepto = fields[colConcepto];
+      const fechaRaw = fields[colFecha];
+      const importeRaw = fields[colImporte];
+      const categoriaRaw = colCategoria !== -1 && fields.length > colCategoria ? fields[colCategoria] : '';
+
+      if (!concepto || !fechaRaw || !importeRaw) continue;
+
+      // Parse Date (DD/MM/YYYY)
+      const dateParts = fechaRaw.split('/');
+      if (dateParts.length !== 3) continue;
+      const day = parseInt(dateParts[0], 10);
+      const month = parseInt(dateParts[1], 10);
+      const year = parseInt(dateParts[2], 10);
+      if (isNaN(day) || isNaN(month) || isNaN(year)) continue;
+      const date = new Date(year, month - 1, day, 12, 0, 0, 0);
+
+      // Parse Amount
+      const cleanImporte = importeRaw.replace(',', '.');
+      const amount = parseFloat(cleanImporte);
+      if (isNaN(amount) || amount === 0) continue;
+
+      const key = `${year}-${month}`;
+      monthsToUpdate.set(key, { year, month });
+
+      let matchedCategoryId: string | null = null;
+      if (categoriaRaw) {
+        const catNameClean = categoriaRaw.toLowerCase().trim();
+        const foundCat = categoriesMap.get(catNameClean);
+        if (foundCat) {
+          matchedCategoryId = foundCat.id;
+        }
+      }
+
+      if (amount < 0) {
+        // Gasto (Expense)
+        let paymentMethod = 'Tarjeta';
+        const conceptUpper = concepto.toUpperCase();
+        if (conceptUpper.includes('BIZUM')) {
+          paymentMethod = 'Bizum';
+        } else if (conceptUpper.includes('EFECTIVO') || conceptUpper.includes('CAJERO') || conceptUpper.includes('RETIRADA')) {
+          paymentMethod = 'Efectivo';
+        } else if (conceptUpper.includes('TRANSFERENCIA')) {
+          paymentMethod = 'Transferencia';
+        } else if (conceptUpper.includes('RECIBO') || conceptUpper.includes('DOMICILIACION') || conceptUpper.includes('SEGURO')) {
+          paymentMethod = 'Domiciliación';
+        }
+
+        let finalCategoryId = matchedCategoryId;
+        if (!finalCategoryId) {
+          let defaultCat = existingCategories.find(c => c.type === 'expense' && (c.name.toLowerCase() === 'sin categoría' || c.name.toLowerCase() === 'otros' || c.name.toLowerCase() === 'otros gastos'));
+          if (!defaultCat) {
+            defaultCat = await prisma.category.create({
+              data: {
+                name: 'Sin categoría',
+                color: '#94A3B8',
+                type: 'expense',
+                userId
+              }
+            });
+            existingCategories.push(defaultCat);
+            categoriesMap.set('sin categoría', defaultCat);
+          }
+          finalCategoryId = defaultCat.id;
+        }
+
+        await prisma.expense.create({
+          data: {
+            amount: Math.abs(amount),
+            date,
+            description: concepto,
+            paymentMethod,
+            categoryId: finalCategoryId,
+            userId,
+            notes: 'Importado de CSV de CaixaBank'
+          }
+        });
+        createdExpensesCount++;
+
+      } else {
+        // Ingreso (Income)
+        await prisma.income.create({
+          data: {
+            amount,
+            date,
+            description: concepto,
+            categoryId: matchedCategoryId,
+            userId
+          }
+        });
+        createdIncomesCount++;
+      }
+    }
+
+    // 3. Recalculate Monthly Summaries
+    for (const item of monthsToUpdate.values()) {
+      await updateMonthlySummary(userId, item.year, item.month);
+    }
+
+    res.json({
+      message: 'CSV de CaixaBank importado correctamente',
+      expensesCount: createdExpensesCount,
+      incomesCount: createdIncomesCount
+    });
+
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Error al importar CSV de CaixaBank' });
+  }
+}

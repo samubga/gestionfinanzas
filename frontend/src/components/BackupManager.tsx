@@ -13,6 +13,7 @@ export const BackupManager: React.FC = () => {
   const [startingBalance, setStartingBalance] = useState(user?.startingBalance?.toString() || '0');
   const [savingBalance, setSavingBalance] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const csvInputRef = useRef<HTMLInputElement>(null);
 
   // Sync state if user data loads later
   React.useEffect(() => {
@@ -108,8 +109,43 @@ export const BackupManager: React.FC = () => {
     }
   };
 
+  const handleCSVImportClick = () => {
+    csvInputRef.current?.click();
+  };
+
+  const handleCSVFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setLoading(true);
+    setSuccess('');
+    setError('');
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const csvText = event.target?.result as string;
+        const res = await api.post('/backup/import-csv', { csvText });
+        setSuccess(`${res.data.message}: Se han creado ${res.data.expensesCount} gastos y ${res.data.incomesCount} ingresos.`);
+        refreshAll();
+      } catch (err: any) {
+        setError(err.response?.data?.error || 'Error al importar el archivo CSV.');
+      } finally {
+        setLoading(false);
+        if (csvInputRef.current) csvInputRef.current.value = '';
+      }
+    };
+
+    reader.onerror = () => {
+      setError('Error al leer el archivo.');
+      setLoading(false);
+    };
+
+    reader.readAsText(file);
+  };
+
   return (
-    <div className="p-6 space-y-6 pb-24 md:pb-6 max-w-xl mx-auto">
+    <div className="p-6 space-y-6 pb-24 md:pb-6 max-w-2xl mx-auto">
       
       {/* Title */}
       <div>
@@ -221,6 +257,59 @@ export const BackupManager: React.FC = () => {
 
         </div>
 
+      </div>
+
+      {/* CaixaBank CSV Import Card */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <Upload className="text-indigo-500" size={18} />
+          <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Importar Movimientos (CaixaBank CSV)</h3>
+        </div>
+
+        <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+          Puedes importar tus extractos de movimientos bancarios descargados directamente de CaixaBank en formato **CSV**. La aplicación procesará cada línea de manera automática.
+        </p>
+
+        {/* Structure Guide */}
+        <div className="bg-slate-50 dark:bg-slate-800/40 p-4.5 rounded-xl text-[11px] text-slate-500 dark:text-slate-400 space-y-3 border border-slate-100/50 dark:border-slate-800/20">
+          <p className="font-bold text-slate-700 dark:text-slate-300">📋 Requisitos y Estructura del CSV:</p>
+          <ul className="list-disc pl-4 space-y-1.5 leading-relaxed">
+            <li><strong>Fila de Cabecera:</strong> Debe contener al menos las columnas llamadas <code>Concepto</code>, <code>Fecha</code> e <code>Importe</code>. Las filas iniciales de información adicional (como el "Periodo") se saltarán automáticamente.</li>
+            <li><strong>Importes (Signo):</strong> Un valor negativo (ej. <code>-66.00</code>) se registrará como un <strong>Gasto</strong>. Un valor positivo (ej. <code>1500.00</code>) se registrará como un <strong>Ingreso</strong>.</li>
+            <li><strong>Columna de Categoría (Opcional):</strong> Puedes añadir una columna llamada <code>Categoria</code> al final para asociarlas. Si coincide con alguna de tus categorías creadas, se vinculará; si no, se registrará como <em>"Sin categoría"</em> para que la asignes después.</li>
+            <li><strong>Formato de Fecha:</strong> Formato estándar español <code>DD/MM/YYYY</code> (ej. <code>18/06/2026</code>).</li>
+            <li><strong>Separadores:</strong> Soporta separación por comas (<code>,</code>) o por punto y coma (<code>;</code>), y decimales con coma o punto.</li>
+          </ul>
+
+          <div className="pt-2 border-t border-slate-200/50 dark:border-slate-700/30">
+            <p className="font-bold text-slate-700 dark:text-slate-300 mb-1">Ejemplo de estructura esperada:</p>
+            <div className="bg-white dark:bg-slate-950 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 font-mono text-[9px] text-slate-600 dark:text-slate-400 overflow-x-auto leading-normal">
+              Concepto;Fecha;Importe;Categoria<br />
+              COMPRA MERCADONA LA TENE;18/06/2026;-128.13;Alimentación<br />
+              NÓMINA MENSUAL;01/06/2026;2500.00;Nómina<br />
+              BIZUM ENVIADO;15/06/2026;-20.00;
+            </div>
+          </div>
+        </div>
+
+        {/* Upload Button */}
+        <button
+          onClick={handleCSVImportClick}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/70 text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer transition-all h-11"
+        >
+          {loading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
+          Subir y Procesar Archivo CSV
+        </button>
+
+        {/* Hidden File Input */}
+        <input
+          type="file"
+          ref={csvInputRef}
+          onChange={handleCSVFileChange}
+          accept=".csv"
+          className="hidden"
+        />
       </div>
 
     </div>
