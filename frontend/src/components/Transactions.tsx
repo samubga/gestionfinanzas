@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
-import { Search, Filter, Trash2, Edit3, Copy, Plus, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Search, Filter, Trash2, Edit3, Copy, Plus, ArrowUpRight, ArrowDownRight, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 
 interface TransactionsProps {
   onOpenAddExpense: (type?: 'expense' | 'income') => void;
@@ -41,8 +41,90 @@ export const Transactions: React.FC<TransactionsProps> = ({
   const [showFilters, setShowFilters] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  const [sortField, setSortField] = useState<string>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  const handleSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('desc');
+    }
+  };
+
+  const renderSortIcon = (field: string) => {
+    if (sortField !== field) {
+      return <ChevronsUpDown size={12} className="text-slate-300 dark:text-slate-600 ml-1.5 shrink-0" />;
+    }
+    if (sortDirection === 'asc') {
+      return <ChevronUp size={12} className="text-indigo-600 dark:text-indigo-400 ml-1.5 shrink-0" />;
+    }
+    return <ChevronDown size={12} className="text-indigo-600 dark:text-indigo-400 ml-1.5 shrink-0" />;
+  };
+
   const currentItems = activeTab === 'expenses' ? expenses : incomes;
   const filterCategoriesList = categories.filter(c => c.type === (activeTab === 'expenses' ? 'expense' : 'income'));
+
+  const sortedExpenses = [...expenses].sort((a, b) => {
+    let valA = sortField === 'category' ? (a.category?.name || '') : (a as any)[sortField];
+    let valB = sortField === 'category' ? (b.category?.name || '') : (b as any)[sortField];
+
+    if (valA === null || valA === undefined) valA = '';
+    if (valB === null || valB === undefined) valB = '';
+
+    if (typeof valA === 'string' && typeof valB === 'string') {
+      const dateA = new Date(valA).getTime();
+      const dateB = new Date(valB).getTime();
+      if (!isNaN(dateA) && !isNaN(dateB) && (sortField === 'createdAt' || sortField === 'date')) {
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+      return sortDirection === 'asc'
+        ? valA.localeCompare(valB)
+        : valB.localeCompare(valA);
+    } else if (typeof valA === 'number' && typeof valB === 'number') {
+      return sortDirection === 'asc' ? valA - valB : valB - valA;
+    } else {
+      if (valA instanceof Date && valB instanceof Date) {
+        return sortDirection === 'asc'
+          ? valA.getTime() - valB.getTime()
+          : valB.getTime() - valA.getTime();
+      }
+      return sortDirection === 'asc'
+        ? (valA > valB ? 1 : -1)
+        : (valA < valB ? 1 : -1);
+    }
+  });
+
+  const sortedIncomes = [...incomes].sort((a, b) => {
+    let valA = sortField === 'category' ? (a.category?.name || '') : (a as any)[sortField];
+    let valB = sortField === 'category' ? (b.category?.name || '') : (b as any)[sortField];
+
+    if (valA === null || valA === undefined) valA = '';
+    if (valB === null || valB === undefined) valB = '';
+
+    if (typeof valA === 'string' && typeof valB === 'string') {
+      const dateA = new Date(valA).getTime();
+      const dateB = new Date(valB).getTime();
+      if (!isNaN(dateA) && !isNaN(dateB) && (sortField === 'createdAt' || sortField === 'date')) {
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+      return sortDirection === 'asc'
+        ? valA.localeCompare(valB)
+        : valB.localeCompare(valA);
+    } else if (typeof valA === 'number' && typeof valB === 'number') {
+      return sortDirection === 'asc' ? valA - valB : valB - valA;
+    } else {
+      if (valA instanceof Date && valB instanceof Date) {
+        return sortDirection === 'asc'
+          ? valA.getTime() - valB.getTime()
+          : valB.getTime() - valA.getTime();
+      }
+      return sortDirection === 'asc'
+        ? (valA > valB ? 1 : -1)
+        : (valA < valB ? 1 : -1);
+    }
+  });
 
   const handleTabChange = (tab: 'expenses' | 'incomes') => {
     setActiveTab(tab);
@@ -310,7 +392,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
               <div className="overflow-x-auto flex-1">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">
                       <th className="py-4 px-6 w-12 text-center">
                         <input
                           type="checkbox"
@@ -319,16 +401,48 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-900 cursor-pointer"
                         />
                       </th>
-                      <th className="py-4 px-4">Detalle / Concepto</th>
-                      <th className="py-4 px-4 hidden sm:table-cell">Categoría</th>
+                      <th onClick={() => handleSort('description')} className="py-4 px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center">
+                          Concepto
+                          {renderSortIcon('description')}
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('date')} className="py-4 px-4 hidden sm:table-cell cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center">
+                          Fecha
+                          {renderSortIcon('date')}
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('category')} className="py-4 px-4 hidden sm:table-cell cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center">
+                          Categoría
+                          {renderSortIcon('category')}
+                        </div>
+                      </th>
                       <th className="py-4 px-4 hidden md:table-cell">Etiquetas</th>
-                      <th className="py-4 px-4 hidden md:table-cell">Método</th>
-                      <th className="py-4 px-4 text-right">Importe</th>
+                      <th onClick={() => handleSort('paymentMethod')} className="py-4 px-4 hidden md:table-cell cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center">
+                          Método
+                          {renderSortIcon('paymentMethod')}
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('amount')} className="py-4 px-4 text-right cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center justify-end">
+                          Importe
+                          {renderSortIcon('amount')}
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('createdAt')} className="py-4 px-4 hidden lg:table-cell cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center">
+                          Creado el
+                          {renderSortIcon('createdAt')}
+                        </div>
+                      </th>
                       <th className="py-4 px-6 text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800/40">
-                    {expenses.map((exp) => (
+                    {sortedExpenses.map((exp) => (
                       <tr
                         key={exp.id}
                         className={`hover:bg-slate-50/40 dark:hover:bg-slate-800/10 text-xs transition-colors ${
@@ -343,21 +457,29 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-900 cursor-pointer"
                           />
                         </td>
-                        {/* Concept & Date */}
+                        {/* Concept */}
                         <td className="py-4 px-4 max-w-xs">
                           <div>
                             <p className="font-bold text-slate-800 dark:text-slate-200 truncate">{exp.description}</p>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 sm:hidden">
                               {new Date(exp.date).toLocaleDateString('es-ES')}
-                              {exp.notes && ` • ${exp.notes}`}
                             </p>
+                            {exp.notes && (
+                              <p className="text-[10px] text-slate-400 dark:text-slate-550 mt-0.5 italic truncate">
+                                {exp.notes}
+                              </p>
+                            )}
                           </div>
+                        </td>
+                        {/* Date */}
+                        <td className="py-4 px-4 hidden sm:table-cell text-slate-650 dark:text-slate-400 font-medium">
+                          {new Date(exp.date).toLocaleDateString('es-ES')}
                         </td>
                         {/* Category */}
                         <td className="py-4 px-4 hidden sm:table-cell">
                           <span className="inline-flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: exp.category.color }} />
-                            <span className="font-medium text-slate-600 dark:text-slate-400">{exp.category.name}</span>
+                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: exp.category?.color || '#94A3B8' }} />
+                            <span className="font-medium text-slate-600 dark:text-slate-400">{exp.category?.name || 'Sin categoría'}</span>
                           </span>
                         </td>
                         {/* Tags */}
@@ -375,6 +497,10 @@ export const Transactions: React.FC<TransactionsProps> = ({
                         {/* Amount */}
                         <td className="py-4 px-4 text-right">
                           <span className="font-extrabold text-red-500 text-sm">-{exp.amount.toFixed(2)} €</span>
+                        </td>
+                        {/* Created At */}
+                        <td className="py-4 px-4 hidden lg:table-cell text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap">
+                          {new Date(exp.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </td>
                         {/* Action Buttons */}
                         <td className="py-4 px-6 text-right">
@@ -419,7 +545,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
               <div className="overflow-x-auto flex-1">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">
                       <th className="py-4 px-6 w-12 text-center">
                         <input
                           type="checkbox"
@@ -428,14 +554,41 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-900 cursor-pointer"
                         />
                       </th>
-                      <th className="py-4 px-4">Detalle / Concepto</th>
-                      <th className="py-4 px-4 hidden sm:table-cell">Categoría</th>
-                      <th className="py-4 px-4 text-right">Importe</th>
+                      <th onClick={() => handleSort('description')} className="py-4 px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center">
+                          Concepto
+                          {renderSortIcon('description')}
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('date')} className="py-4 px-4 hidden sm:table-cell cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center">
+                          Fecha
+                          {renderSortIcon('date')}
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('category')} className="py-4 px-4 hidden sm:table-cell cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center">
+                          Categoría
+                          {renderSortIcon('category')}
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('amount')} className="py-4 px-4 text-right cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center justify-end">
+                          Importe
+                          {renderSortIcon('amount')}
+                        </div>
+                      </th>
+                      <th onClick={() => handleSort('createdAt')} className="py-4 px-4 hidden lg:table-cell cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                        <div className="flex items-center">
+                          Creado el
+                          {renderSortIcon('createdAt')}
+                        </div>
+                      </th>
                       <th className="py-4 px-6 text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800/40">
-                    {incomes.map((inc) => (
+                    {sortedIncomes.map((inc) => (
                       <tr
                         key={inc.id}
                         className={`hover:bg-slate-50/40 dark:hover:bg-slate-800/10 text-xs transition-colors ${
@@ -450,14 +603,18 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-900 cursor-pointer"
                           />
                         </td>
-                        {/* Concept & Date */}
+                        {/* Concept */}
                         <td className="py-4 px-4 max-w-xs">
                           <div>
                             <p className="font-bold text-slate-800 dark:text-slate-200 truncate">{inc.description}</p>
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 sm:hidden">
                               {new Date(inc.date).toLocaleDateString('es-ES')}
                             </p>
                           </div>
+                        </td>
+                        {/* Date */}
+                        <td className="py-4 px-4 hidden sm:table-cell text-slate-650 dark:text-slate-400 font-medium">
+                          {new Date(inc.date).toLocaleDateString('es-ES')}
                         </td>
                         {/* Category */}
                         <td className="py-4 px-4 hidden sm:table-cell">
@@ -473,6 +630,10 @@ export const Transactions: React.FC<TransactionsProps> = ({
                         {/* Amount */}
                         <td className="py-4 px-4 text-right">
                           <span className="font-extrabold text-emerald-500 text-sm">+{inc.amount.toFixed(2)} €</span>
+                        </td>
+                        {/* Created At */}
+                        <td className="py-4 px-4 hidden lg:table-cell text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap">
+                          {new Date(inc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </td>
                         {/* Action Buttons */}
                         <td className="py-4 px-6 text-right">
