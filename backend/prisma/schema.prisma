@@ -1,0 +1,118 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id              String           @id @default(uuid())
+  email           String           @unique
+  password        String
+  name            String?
+  startingBalance Float            @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  categories      Category[]
+  tags            Tag[]
+  expenses        Expense[]
+  incomes         Income[]
+  monthlySummaries MonthlySummary[]
+  savingGoals     SavingGoal[]
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  color     String    @default("#3B82F6") // Hex color code for customized UI
+  type      String    @default("expense") // "expense" or "income"
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses  Expense[]
+  incomes   Income[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([name, type, userId])
+}
+
+model Tag {
+  id        String       @id @default(uuid())
+  name      String
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses  ExpenseTag[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([name, userId])
+}
+
+model Expense {
+  id            String       @id @default(uuid())
+  amount        Float
+  date          DateTime
+  description   String
+  paymentMethod String?      // Tarjeta, Efectivo, Transferencia, etc.
+  notes         String?
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId    String
+  category      Category     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  tags          ExpenseTag[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model ExpenseTag {
+  expenseId String
+  expense   Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([expenseId, tagId])
+}
+
+model Income {
+  id          String    @id @default(uuid())
+  amount      Float
+  date        DateTime
+  description String
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model MonthlySummary {
+  id           String   @id @default(uuid())
+  year         Int
+  month        Int      // 1-12
+  totalIncome  Float    @default(0)
+  totalExpense Float    @default(0)
+  totalSavings Float    @default(0)
+  savingGoal   Float    @default(0)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([year, month, userId])
+}
+
+model SavingGoal {
+  id        String   @id @default(uuid())
+  year      Int
+  month     Int
+  amount    Float
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([year, month, userId])
+}
