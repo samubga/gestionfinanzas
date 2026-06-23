@@ -195,7 +195,7 @@ export async function importBackup(req: AuthRequest, res: Response) {
   }
 }
 
-export async function importCaixaBankCSV(req: AuthRequest, res: Response) {
+export async function parseCSVPreview(req: AuthRequest, res: Response) {
   const userId = req.userId!;
   const { csvText } = req.body;
 
@@ -212,7 +212,7 @@ export async function importCaixaBankCSV(req: AuthRequest, res: Response) {
     let colImporte = -1;
     let colCategoria = -1;
 
-    // 1. Detect header row and separator
+    // Detect header row and separator
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       if (line.includes('Concepto') && line.includes('Fecha') && line.includes('Importe')) {
@@ -238,18 +238,14 @@ export async function importCaixaBankCSV(req: AuthRequest, res: Response) {
       });
     }
 
-    // Load user's existing categories to match them by name
+    // Load categories
     const existingCategories = await prisma.category.findMany({
       where: { userId }
     });
-
     const categoriesMap = new Map(existingCategories.map(c => [c.name.toLowerCase().trim(), c]));
 
-    let createdExpensesCount = 0;
-    let createdIncomesCount = 0;
-    const monthsToUpdate = new Map<string, { year: number, month: number }>();
+    const parsedTransactions: any[] = [];
 
-    // 2. Parse data rows
     for (let i = headerIndex + 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
@@ -267,7 +263,7 @@ export async function importCaixaBankCSV(req: AuthRequest, res: Response) {
 
       if (!concepto || !fechaRaw || !importeRaw) continue;
 
-      // Parse Date (DD/MM/YYYY)
+      // Parse Date (DD/MM/YYYY) to YYYY-MM-DD
       const dateParts = fechaRaw.split('/');
       if (dateParts.length !== 3) continue;
       const day = parseInt(dateParts[0], 10);
@@ -275,27 +271,26 @@ export async function importCaixaBankCSV(req: AuthRequest, res: Response) {
       const year = parseInt(dateParts[2], 10);
       if (isNaN(day) || isNaN(month) || isNaN(year)) continue;
       const date = new Date(year, month - 1, day, 12, 0, 0, 0);
+      const formattedDate = date.toISOString().split('T')[0];
 
       // Parse Amount
       const cleanImporte = importeRaw.replace(',', '.');
       const amount = parseFloat(cleanImporte);
       if (isNaN(amount) || amount === 0) continue;
 
-      const key = `${year}-${month}`;
-      monthsToUpdate.set(key, { year, month });
+      const type = amount < 0 ? 'expense' : 'income';
 
-      let matchedCategoryId: string | null = null;
+      let categoryId = '';
       if (categoriaRaw) {
         const catNameClean = categoriaRaw.toLowerCase().trim();
         const foundCat = categoriesMap.get(catNameClean);
-        if (foundCat) {
-          matchedCategoryId = foundCat.id;
+        if (foundCat && foundCat.type === type) {
+          categoryId = foundCat.id;
         }
       }
 
-      if (amount < 0) {
-        // Gasto (Expense)
-        let paymentMethod = 'Tarjeta';
+      let paymentMethod = 'Tarjeta';
+      if (type === 'expense') {
         const conceptUpper = concepto.toUpperCase();
         if (conceptUpper.includes('BIZUM')) {
           paymentMethod = 'Bizum';
@@ -306,10 +301,57 @@ export async function importCaixaBankCSV(req: AuthRequest, res: Response) {
         } else if (conceptUpper.includes('RECIBO') || conceptUpper.includes('DOMICILIACION') || conceptUpper.includes('SEGURO')) {
           paymentMethod = 'Domiciliación';
         }
+      }
 
-        let finalCategoryId = matchedCategoryId;
+      parsedTransactions.push({
+        description: concepto,
+        date: formattedDate,
+        amount: Math.abs(amount),
+        type,
+        paymentMethod: type === 'expense' ? paymentMethod : null,
+        categoryId: categoryId || ''
+      });
+    }
+
+    res.json(parsedTransactions);
+
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Error al procesar el archivo CSV' });
+  }
+}
+
+export async function importTransactions(req: AuthRequest, res: Response) {
+  const userId = req.userId!;
+  const { transactions } = req.body;
+
+  if (!transactions || !Array.isArray(transactions)) {
+    return res.status(400).json({ error: 'Lista de transacciones no válida' });
+  }
+
+  try {
+    let createdExpensesCount = 0;
+    let createdIncomesCount = 0;
+    const monthsToUpdate = new Map<string, { year: number, month: number }>();
+
+    for (const tx of transactions) {
+      const { description, date, amount, categoryId, type, paymentMethod } = tx;
+
+      if (!description || !date || amount === undefined || isNaN(amount) || amount <= 0) {
+        continue;
+      }
+
+      const txDate = new Date(date);
+      const year = txDate.getFullYear();
+      const month = txDate.getMonth() + 1;
+      const key = `${year}-${month}`;
+      monthsToUpdate.set(key, { year, month });
+
+      if (type === 'expense') {
+        let finalCategoryId = categoryId;
         if (!finalCategoryId) {
-          let defaultCat = existingCategories.find(c => c.type === 'expense' && (c.name.toLowerCase() === 'sin categoría' || c.name.toLowerCase() === 'otros' || c.name.toLowerCase() === 'otros gastos'));
+          let defaultCat = await prisma.category.findFirst({
+            where: { type: 'expense', name: 'Sin categoría', userId }
+          });
           if (!defaultCat) {
             defaultCat = await prisma.category.create({
               data: {
@@ -319,33 +361,30 @@ export async function importCaixaBankCSV(req: AuthRequest, res: Response) {
                 userId
               }
             });
-            existingCategories.push(defaultCat);
-            categoriesMap.set('sin categoría', defaultCat);
           }
           finalCategoryId = defaultCat.id;
         }
 
         await prisma.expense.create({
           data: {
-            amount: Math.abs(amount),
-            date,
-            description: concepto,
-            paymentMethod,
+            amount: parseFloat(amount),
+            date: txDate,
+            description: description.trim(),
+            paymentMethod: paymentMethod || 'Tarjeta',
             categoryId: finalCategoryId,
             userId,
-            notes: 'Importado de CSV de CaixaBank'
+            notes: 'Importado de CSV'
           }
         });
         createdExpensesCount++;
 
       } else {
-        // Ingreso (Income)
         await prisma.income.create({
           data: {
-            amount,
-            date,
-            description: concepto,
-            categoryId: matchedCategoryId,
+            amount: parseFloat(amount),
+            date: txDate,
+            description: description.trim(),
+            categoryId: categoryId || null,
             userId
           }
         });
@@ -353,18 +392,17 @@ export async function importCaixaBankCSV(req: AuthRequest, res: Response) {
       }
     }
 
-    // 3. Recalculate Monthly Summaries
     for (const item of monthsToUpdate.values()) {
       await updateMonthlySummary(userId, item.year, item.month);
     }
 
     res.json({
-      message: 'CSV de CaixaBank importado correctamente',
+      message: 'Transacciones importadas correctamente',
       expensesCount: createdExpensesCount,
       incomesCount: createdIncomesCount
     });
 
   } catch (error: any) {
-    res.status(500).json({ error: error.message || 'Error al importar CSV de CaixaBank' });
+    res.status(500).json({ error: error.message || 'Error al importar transacciones' });
   }
 }

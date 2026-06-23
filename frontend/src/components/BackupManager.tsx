@@ -2,11 +2,11 @@ import React, { useState, useRef } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
-import { Download, Upload, AlertCircle, CheckCircle, Loader2, Wallet, Check } from 'lucide-react';
+import { Download, Upload, AlertCircle, CheckCircle, Loader2, Wallet, Check, Trash2, X } from 'lucide-react';
 
 export const BackupManager: React.FC = () => {
   const { user, updateStartingBalance } = useAuth();
-  const { refreshAll } = useFinance();
+  const { categories, refreshAll } = useFinance();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -14,6 +14,7 @@ export const BackupManager: React.FC = () => {
   const [savingBalance, setSavingBalance] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
+  const [previewItems, setPreviewItems] = useState<any[]>([]);
 
   // Sync state if user data loads later
   React.useEffect(() => {
@@ -108,7 +109,6 @@ export const BackupManager: React.FC = () => {
       setSavingBalance(false);
     }
   };
-
   const handleCSVImportClick = () => {
     csvInputRef.current?.click();
   };
@@ -125,11 +125,15 @@ export const BackupManager: React.FC = () => {
     reader.onload = async (event) => {
       try {
         const csvText = event.target?.result as string;
-        const res = await api.post('/backup/import-csv', { csvText });
-        setSuccess(`${res.data.message}: Se han creado ${res.data.expensesCount} gastos y ${res.data.incomesCount} ingresos.`);
-        refreshAll();
+        const res = await api.post('/backup/parse-csv-preview', { csvText });
+        if (res.data.length === 0) {
+          setError('No se encontraron transacciones válidas en el archivo CSV.');
+        } else {
+          setPreviewItems(res.data);
+          setSuccess(`Se han detectado ${res.data.length} movimientos. Revisa y edita los detalles antes de guardarlos.`);
+        }
       } catch (err: any) {
-        setError(err.response?.data?.error || 'Error al importar el archivo CSV.');
+        setError(err.response?.data?.error || 'Error al procesar el archivo CSV.');
       } finally {
         setLoading(false);
         if (csvInputRef.current) csvInputRef.current.value = '';
@@ -143,6 +147,244 @@ export const BackupManager: React.FC = () => {
 
     reader.readAsText(file);
   };
+
+  const handleEditRow = (index: number, field: string, value: any) => {
+    setPreviewItems(prev => prev.map((item, idx) => {
+      if (idx !== index) return item;
+      const updated = { ...item, [field]: value };
+      
+      // If type changes, re-evaluate default category and payment method
+      if (field === 'type') {
+        const oldCat = categories.find(c => c.id === item.categoryId);
+        const matchingNewCat = oldCat 
+          ? categories.find(c => c.type === value && c.name.toLowerCase() === oldCat.name.toLowerCase())
+          : null;
+        updated.categoryId = matchingNewCat ? matchingNewCat.id : '';
+        updated.paymentMethod = value === 'expense' ? 'Tarjeta' : null;
+      }
+      return updated;
+    }));
+  };
+
+  const handleDeleteRow = (index: number) => {
+    setPreviewItems(prev => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleConfirmImport = async () => {
+    if (previewItems.length === 0) return;
+    setLoading(true);
+    setSuccess('');
+    setError('');
+
+    try {
+      const res = await api.post('/backup/import-transactions', { transactions: previewItems });
+      setSuccess(`Importación completada con éxito. Se han creado ${res.data.expensesCount} gastos y ${res.data.incomesCount} ingresos.`);
+      setPreviewItems([]);
+      refreshAll();
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al guardar los movimientos.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  if (previewItems.length > 0) {
+    const totalIncomes = previewItems
+      .filter(item => item.type === 'income')
+      .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    const totalExpenses = previewItems
+      .filter(item => item.type === 'expense')
+      .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+    const netTotal = totalIncomes - totalExpenses;
+
+    return (
+      <div className="p-6 space-y-6 pb-24 md:pb-6 max-w-6xl mx-auto flex flex-col min-h-screen">
+        {/* Title */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Previsualizar Movimientos</h2>
+            <p className="text-xs text-slate-400 dark:text-slate-500">
+              Revisa, edita y confirma los movimientos del CSV de CaixaBank antes de guardarlos.
+            </p>
+          </div>
+          <button
+            onClick={() => setPreviewItems([])}
+            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+            title="Volver"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Info Banner / Messages */}
+        {error && (
+          <div className="p-4 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 text-red-700 dark:text-red-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
+            <AlertCircle size={16} className="shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
+            <CheckCircle size={16} className="shrink-0 mt-0.5" />
+            <span>{success}</span>
+          </div>
+        )}
+
+        {/* Summary Row */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4.5 shadow-sm">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Ingresos</p>
+            <p className="text-lg font-black text-emerald-500">+{totalIncomes.toFixed(2)} €</p>
+          </div>
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4.5 shadow-sm">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Total Gastos</p>
+            <p className="text-lg font-black text-rose-500">-{totalExpenses.toFixed(2)} €</p>
+          </div>
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4.5 shadow-sm">
+            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">Balance Neto</p>
+            <p className={`text-lg font-black ${netTotal >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+              {netTotal >= 0 ? '+' : ''}{netTotal.toFixed(2)} €
+            </p>
+          </div>
+        </div>
+
+        {/* Interactive Editing Table */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                  <th className="py-4 px-4 w-28 text-center">Tipo</th>
+                  <th className="py-4 px-4">Concepto</th>
+                  <th className="py-4 px-4 w-40">Fecha</th>
+                  <th className="py-4 px-4 w-32 text-right">Importe</th>
+                  <th className="py-4 px-4 w-52">Categoría</th>
+                  <th className="py-4 px-4 w-16 text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50 dark:divide-slate-800/40">
+                {previewItems.map((item, index) => {
+                  const filteredCats = categories.filter(c => c.type === item.type);
+                  return (
+                    <tr
+                      key={index}
+                      className="hover:bg-slate-50/40 dark:hover:bg-slate-800/10 text-xs transition-colors"
+                    >
+                      {/* TYPE TOGGLE BUTTON */}
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleEditRow(index, 'type', item.type === 'expense' ? 'income' : 'expense')}
+                          className={`w-20 py-1.5 rounded-full text-[10px] font-bold border transition-colors cursor-pointer ${
+                            item.type === 'expense'
+                              ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/30'
+                              : 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/30'
+                          }`}
+                        >
+                          {item.type === 'expense' ? 'Gasto' : 'Ingreso'}
+                        </button>
+                      </td>
+
+                      {/* CONCEPT DESCRIPTION INPUT */}
+                      <td className="py-3 px-4">
+                        <input
+                          type="text"
+                          value={item.description}
+                          onChange={(e) => handleEditRow(index, 'description', e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-indigo-500 transition-all"
+                        />
+                      </td>
+
+                      {/* DATE INPUT */}
+                      <td className="py-3 px-4">
+                        <input
+                          type="date"
+                          value={item.date}
+                          onChange={(e) => handleEditRow(index, 'date', e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-indigo-500 transition-all"
+                        />
+                      </td>
+
+                      {/* AMOUNT INPUT */}
+                      <td className="py-3 px-4">
+                        <div className="relative">
+                          <span className={`absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold ${item.type === 'expense' ? 'text-rose-500' : 'text-emerald-500'}`}>
+                            {item.type === 'expense' ? '-' : '+'}
+                          </span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={item.amount}
+                            onChange={(e) => handleEditRow(index, 'amount', e.target.value)}
+                            className="w-full pl-6 pr-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-bold text-slate-800 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-indigo-500 transition-all text-right"
+                          />
+                        </div>
+                      </td>
+
+                      {/* CATEGORY SELECT */}
+                      <td className="py-3 px-4">
+                        <select
+                          value={item.categoryId}
+                          onChange={(e) => handleEditRow(index, 'categoryId', e.target.value)}
+                          className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer"
+                        >
+                          <option value="">{item.type === 'expense' ? 'Sin categoría (Auto)' : 'Ninguna'}</option>
+                          {filteredCats.map(cat => (
+                            <option key={cat.id} value={cat.id}>
+                              {cat.name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+
+                      {/* DELETE ROW ACTION */}
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteRow(index)}
+                          className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer"
+                          title="Eliminar fila"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Table Actions Footer */}
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+              Mostrando {previewItems.length} movimientos. Haz click en "Confirmar e importar" cuando termines.
+            </span>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setPreviewItems([])}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer h-10"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmImport}
+                disabled={loading}
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/70 text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer h-10 flex items-center justify-center gap-1.5 transition-all"
+              >
+                {loading ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
+                Confirmar e importar ({previewItems.length})
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6 pb-24 md:pb-6 max-w-2xl mx-auto">
