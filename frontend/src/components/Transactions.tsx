@@ -41,6 +41,46 @@ export const Transactions: React.FC<TransactionsProps> = ({
   const [showFilters, setShowFilters] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    actionType: 'duplicate' | 'delete' | 'bulkDelete';
+    targetId?: string;
+    targetType?: 'expense' | 'income';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    actionType: 'delete',
+  });
+
+  const handleConfirmAction = async () => {
+    const { actionType, targetId, targetType } = confirmModal;
+    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+
+    try {
+      if (actionType === 'duplicate' && targetId) {
+        await duplicateExpense(targetId);
+      } else if (actionType === 'delete' && targetId) {
+        if (targetType === 'expense') {
+          await deleteExpense(targetId);
+        } else {
+          await deleteIncome(targetId);
+        }
+      } else if (actionType === 'bulkDelete') {
+        if (activeTab === 'expenses') {
+          await deleteExpensesBulk(selectedIds);
+        } else {
+          await deleteIncomesBulk(selectedIds);
+        }
+        setSelectedIds([]);
+      }
+    } catch (err: any) {
+      alert('Error al realizar la acción.');
+    }
+  };
+
   const [sortField, setSortField] = useState<string>('date');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
@@ -158,49 +198,47 @@ export const Transactions: React.FC<TransactionsProps> = ({
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     const count = selectedIds.length;
     const typeText = activeTab === 'expenses' ? 'gastos' : 'ingresos';
-    if (window.confirm(`¿Estás seguro de que quieres eliminar los ${count} ${typeText} seleccionados?`)) {
-      try {
-        if (activeTab === 'expenses') {
-          await deleteExpensesBulk(selectedIds);
-        } else {
-          await deleteIncomesBulk(selectedIds);
-        }
-        setSelectedIds([]);
-      } catch (err: any) {
-        alert(`Error al eliminar los ${typeText}`);
-      }
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Movimientos',
+      message: `¿Estás seguro de que deseas eliminar los ${count} ${typeText} seleccionados? Esta acción no se puede deshacer.`,
+      actionType: 'bulkDelete',
+    });
   };
 
-  const handleDuplicate = async (id: string) => {
-    try {
-      await duplicateExpense(id);
-    } catch (err: any) {
-      alert('Error al duplicar el gasto');
-    }
+  const handleDuplicate = (id: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Duplicar Movimiento',
+      message: '¿Estás seguro de que quieres duplicar este movimiento?',
+      actionType: 'duplicate',
+      targetId: id,
+    });
   };
 
-  const handleDeleteExpense = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
-      try {
-        await deleteExpense(id);
-      } catch (err) {
-        alert('Error al eliminar el gasto');
-      }
-    }
+  const handleDeleteExpense = (id: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Gasto',
+      message: '¿Estás seguro de que deseas eliminar este gasto de forma permanente? Esta acción no se puede deshacer.',
+      actionType: 'delete',
+      targetId: id,
+      targetType: 'expense',
+    });
   };
 
-  const handleDeleteIncome = async (id: string) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar este ingreso?')) {
-      try {
-        await deleteIncome(id);
-      } catch (err) {
-        alert('Error al eliminar el ingreso');
-      }
-    }
+  const handleDeleteIncome = (id: string) => {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Eliminar Ingreso',
+      message: '¿Estás seguro de que deseas eliminar este ingreso de forma permanente? Esta acción no se puede deshacer.',
+      actionType: 'delete',
+      targetId: id,
+      targetType: 'income',
+    });
   };
 
   // Helper to format tags into comma separated string for input
@@ -673,6 +711,59 @@ export const Transactions: React.FC<TransactionsProps> = ({
               </div>
             )
           )}
+        </div>
+      )}
+
+      {/* CUSTOM CONFIRMATION MODAL */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-sm transition-all duration-300">
+          <div 
+            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-5 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Icon */}
+            {confirmModal.actionType === 'duplicate' ? (
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400">
+                <Copy size={20} />
+              </div>
+            ) : (
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400">
+                <Trash2 size={20} />
+              </div>
+            )}
+
+            {/* Header Text */}
+            <div className="text-center space-y-1.5">
+              <h3 className="text-sm font-extrabold text-slate-800 dark:text-white uppercase tracking-wider">
+                {confirmModal.title}
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+                {confirmModal.message}
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer text-center"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAction}
+                className={`flex-1 py-2.5 text-white font-bold text-xs rounded-xl transition-all cursor-pointer text-center shadow-md ${
+                  confirmModal.actionType === 'duplicate'
+                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/10'
+                    : 'bg-rose-600 hover:bg-rose-700 shadow-rose-500/10'
+                }`}
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
