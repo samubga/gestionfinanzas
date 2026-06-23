@@ -46,7 +46,13 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
   const handleSort = (field: string) => {
     if (sortField === field) {
-      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+      if (sortDirection === 'desc') {
+        setSortDirection('asc');
+      } else {
+        // Third state: return to default (date desc)
+        setSortField('date');
+        setSortDirection('desc');
+      }
     } else {
       setSortField(field);
       setSortDirection('desc');
