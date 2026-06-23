@@ -2,14 +2,20 @@ import React, { useState, useRef } from 'react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
-import { Download, Upload, AlertCircle, CheckCircle, Loader2, Wallet, Check, Trash2, X } from 'lucide-react';
+import { Download, Upload, AlertCircle, CheckCircle, Loader2, Wallet, Check, Trash2, X, Database } from 'lucide-react';
 
 export const BackupManager: React.FC = () => {
   const { user, updateStartingBalance } = useAuth();
   const { categories, refreshAll } = useFinance();
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+  const [activeSection, setActiveSection] = useState<'general' | 'data'>('general');
+
+  // Separated alert messages to keep them contextual and prevent overlaps
+  const [balanceSuccess, setBalanceSuccess] = useState('');
+  const [balanceError, setBalanceError] = useState('');
+  const [dataSuccess, setDataSuccess] = useState('');
+  const [dataError, setDataError] = useState('');
+
   const [startingBalance, setStartingBalance] = useState(user?.startingBalance?.toString() || '0');
   const [savingBalance, setSavingBalance] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -25,8 +31,8 @@ export const BackupManager: React.FC = () => {
 
   const handleExport = async () => {
     setLoading(true);
-    setSuccess('');
-    setError('');
+    setDataSuccess('');
+    setDataError('');
 
     try {
       const res = await api.get('/backup/export');
@@ -37,9 +43,9 @@ export const BackupManager: React.FC = () => {
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      setSuccess('Copia de seguridad exportada correctamente. Tu descarga debería comenzar pronto.');
+      setDataSuccess('Copia de seguridad exportada correctamente. Tu descarga debería comenzar pronto.');
     } catch (err: any) {
-      setError('Error al exportar los datos.');
+      setDataError('Error al exportar los datos.');
     } finally {
       setLoading(false);
     }
@@ -54,8 +60,8 @@ export const BackupManager: React.FC = () => {
     if (!file) return;
 
     setLoading(true);
-    setSuccess('');
-    setError('');
+    setDataSuccess('');
+    setDataError('');
 
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -68,10 +74,10 @@ export const BackupManager: React.FC = () => {
         }
 
         const res = await api.post('/backup/import', { backup: jsonContent });
-        setSuccess(res.data.message || 'Copia de seguridad importada correctamente.');
+        setDataSuccess(res.data.message || 'Copia de seguridad importada correctamente.');
         refreshAll(); // Reload everything
       } catch (err: any) {
-        setError(err.message || err.response?.data?.error || 'Error al procesar el archivo.');
+        setDataError(err.message || err.response?.data?.error || 'Error al procesar el archivo.');
       } finally {
         setLoading(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -79,7 +85,7 @@ export const BackupManager: React.FC = () => {
     };
 
     reader.onerror = () => {
-      setError('Error al leer el archivo.');
+      setDataError('Error al leer el archivo.');
       setLoading(false);
     };
 
@@ -89,26 +95,27 @@ export const BackupManager: React.FC = () => {
   const handleSaveStartingBalance = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingBalance(true);
-    setSuccess('');
-    setError('');
+    setBalanceSuccess('');
+    setBalanceError('');
 
     const val = parseFloat(startingBalance);
     if (isNaN(val) || val < 0) {
-      setError('Por favor introduce un saldo inicial válido mayor o igual a cero.');
+      setBalanceError('Por favor introduce un saldo inicial válido mayor o igual a cero.');
       setSavingBalance(false);
       return;
     }
 
     try {
       await updateStartingBalance(val);
-      setSuccess('Saldo inicial actualizado correctamente.');
+      setBalanceSuccess('Saldo inicial actualizado correctamente.');
       refreshAll();
     } catch (err: any) {
-      setError('Error al actualizar el saldo inicial.');
+      setBalanceError('Error al actualizar el saldo inicial.');
     } finally {
       setSavingBalance(false);
     }
   };
+
   const handleCSVImportClick = () => {
     csvInputRef.current?.click();
   };
@@ -118,8 +125,8 @@ export const BackupManager: React.FC = () => {
     if (!file) return;
 
     setLoading(true);
-    setSuccess('');
-    setError('');
+    setDataSuccess('');
+    setDataError('');
 
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -127,13 +134,13 @@ export const BackupManager: React.FC = () => {
         const csvText = event.target?.result as string;
         const res = await api.post('/backup/parse-csv-preview', { csvText });
         if (res.data.length === 0) {
-          setError('No se encontraron transacciones válidas en el archivo CSV.');
+          setDataError('No se encontraron transacciones válidas en el archivo CSV.');
         } else {
           setPreviewItems(res.data);
-          setSuccess(`Se han detectado ${res.data.length} movimientos. Revisa y edita los detalles antes de guardarlos.`);
+          setDataSuccess(`Se han detectado ${res.data.length} movimientos. Revisa y edita los detalles antes de guardarlos.`);
         }
       } catch (err: any) {
-        setError(err.response?.data?.error || 'Error al procesar el archivo CSV.');
+        setDataError(err.response?.data?.error || 'Error al procesar el archivo CSV.');
       } finally {
         setLoading(false);
         if (csvInputRef.current) csvInputRef.current.value = '';
@@ -141,7 +148,7 @@ export const BackupManager: React.FC = () => {
     };
 
     reader.onerror = () => {
-      setError('Error al leer el archivo.');
+      setDataError('Error al leer el archivo.');
       setLoading(false);
     };
 
@@ -173,22 +180,22 @@ export const BackupManager: React.FC = () => {
   const handleConfirmImport = async () => {
     if (previewItems.length === 0) return;
     setLoading(true);
-    setSuccess('');
-    setError('');
+    setDataSuccess('');
+    setDataError('');
 
     try {
       const res = await api.post('/backup/import-transactions', { transactions: previewItems });
-      setSuccess(`Importación completada con éxito. Se han creado ${res.data.expensesCount} gastos y ${res.data.incomesCount} ingresos.`);
+      setDataSuccess(`Importación completada con éxito. Se han creado ${res.data.expensesCount} gastos y ${res.data.incomesCount} ingresos.`);
       setPreviewItems([]);
       refreshAll();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al guardar los movimientos.');
+      setDataError(err.response?.data?.error || 'Error al guardar los movimientos.');
     } finally {
       setLoading(false);
     }
   };
 
-
+  // 1. RENDER CSV PREVIEW MODAL/EDITOR SCREEN
   if (previewItems.length > 0) {
     const totalIncomes = previewItems
       .filter(item => item.type === 'income')
@@ -209,7 +216,11 @@ export const BackupManager: React.FC = () => {
             </p>
           </div>
           <button
-            onClick={() => setPreviewItems([])}
+            onClick={() => {
+              setPreviewItems([]);
+              setDataSuccess('');
+              setDataError('');
+            }}
             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
             title="Volver"
           >
@@ -218,17 +229,17 @@ export const BackupManager: React.FC = () => {
         </div>
 
         {/* Info Banner / Messages */}
-        {error && (
+        {dataError && (
           <div className="p-4 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 text-red-700 dark:text-red-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
             <AlertCircle size={16} className="shrink-0 mt-0.5" />
-            <span>{error}</span>
+            <span>{dataError}</span>
           </div>
         )}
 
-        {success && (
+        {dataSuccess && (
           <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
             <CheckCircle size={16} className="shrink-0 mt-0.5" />
-            <span>{success}</span>
+            <span>{dataSuccess}</span>
           </div>
         )}
 
@@ -365,7 +376,11 @@ export const BackupManager: React.FC = () => {
             <div className="flex gap-3">
               <button
                 type="button"
-                onClick={() => setPreviewItems([])}
+                onClick={async () => {
+                  setPreviewItems([]);
+                  setDataSuccess('');
+                  setDataError('');
+                }}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer h-10"
               >
                 Cancelar
@@ -386,175 +401,219 @@ export const BackupManager: React.FC = () => {
     );
   }
 
+  // 2. RENDER SETTINGS DEFAULT SCREEN (WITH SEGMENTED TAB SELECTOR)
   return (
     <div className="p-6 space-y-6 pb-24 md:pb-6 max-w-2xl mx-auto">
       
       {/* Title */}
       <div>
-        <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Configuración y Backup</h2>
-        <p className="text-xs text-slate-400 dark:text-slate-500">Configura tu saldo inicial y gestiona las copias de seguridad de tus datos</p>
+        <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Configuración y Ajustes</h2>
+        <p className="text-xs text-slate-400 dark:text-slate-500">Administra tus saldos y gestiona tus copias de seguridad e importación</p>
       </div>
 
-      {/* Main Card */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
-        
-        {/* Starting Balance Section */}
-        <div className="pb-6 border-b border-slate-100 dark:border-slate-800 space-y-4">
-          <div className="flex items-center gap-2">
-            <Wallet className="text-indigo-500" size={18} />
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Ajuste de Saldo Inicial</h3>
-          </div>
-          
-          <form onSubmit={handleSaveStartingBalance} className="flex gap-3 items-end">
-            <div className="flex-1 space-y-1.5">
-              <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Saldo con el que comienzas (€)</label>
-              <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">€</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={startingBalance}
-                  onChange={(e) => setStartingBalance(e.target.value)}
-                  className="w-full pl-8 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-xs font-bold transition-all"
-                />
-              </div>
-            </div>
-            <button
-              type="submit"
-              disabled={savingBalance}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/70 text-white rounded-xl font-bold text-xs transition-all shadow-md shadow-indigo-500/10 cursor-pointer h-[42px] flex items-center justify-center gap-1"
-            >
-              {savingBalance ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
-              Guardar
-            </button>
-          </form>
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-normal">
-            Este importe representa el dinero disponible antes de registrar tu primer movimiento. Se sumará al balance total.
-          </p>
-        </div>
-
-        {/* Banner Alert */}
-        {error && (
-          <div className="p-4 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 text-red-700 dark:text-red-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
-            <AlertCircle size={16} className="shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {success && (
-          <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
-            <CheckCircle size={16} className="shrink-0 mt-0.5" />
-            <span>{success}</span>
-          </div>
-        )}
-
-        {/* Info */}
-        <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl text-xs text-slate-500 dark:text-slate-400 leading-relaxed border border-slate-100/50 dark:border-slate-800/20">
-          <p className="font-bold text-slate-700 dark:text-slate-300 mb-1">💡 Consejos importantes:</p>
-          <ul className="list-disc pl-4 space-y-1">
-            <li>La exportación crea un archivo estructurado con todas tus categorías, etiquetas, gastos, ingresos y objetivos.</li>
-            <li>Al importar una copia de seguridad, los datos se **añadirán** a tu base de datos actual sin sobreescribir ni borrar registros existentes.</li>
-            <li>Para evitar duplicados, asegúrate de no importar el mismo archivo más de una vez.</li>
-          </ul>
-        </div>
-
-        {/* Buttons Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          
-          {/* Export Button */}
-          <button
-            onClick={handleExport}
-            disabled={loading}
-            className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/10 dark:bg-slate-900 dark:hover:bg-indigo-950/10 rounded-2xl transition-all cursor-pointer group disabled:opacity-50"
-          >
-            <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-xl mb-3 group-hover:scale-110 transition-transform">
-              {loading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />}
-            </div>
-            <span className="font-bold text-xs text-slate-800 dark:text-white">Exportar Historial</span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Descarga tus datos a tu ordenador</span>
-          </button>
-
-          {/* Import Button */}
-          <button
-            onClick={handleImportClick}
-            disabled={loading}
-            className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500 bg-slate-50/50 hover:bg-emerald-50/10 dark:bg-slate-900 dark:hover:bg-emerald-950/10 rounded-2xl transition-all cursor-pointer group disabled:opacity-50"
-          >
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded-xl mb-3 group-hover:scale-110 transition-transform">
-              {loading ? <Loader2 className="animate-spin" size={20} /> : <Upload size={20} />}
-            </div>
-            <span className="font-bold text-xs text-slate-800 dark:text-white">Importar Historial</span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Sube un archivo JSON de respaldo</span>
-          </button>
-
-          {/* Hidden File Input */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".json"
-            className="hidden"
-          />
-
-        </div>
-
-      </div>
-
-      {/* CaixaBank CSV Import Card */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
-        <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
-          <Upload className="text-indigo-500" size={18} />
-          <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Importar Movimientos (CaixaBank CSV)</h3>
-        </div>
-
-        <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
-          Puedes importar tus extractos de movimientos bancarios descargados directamente de CaixaBank en formato **CSV**. La aplicación procesará cada línea de manera automática.
-        </p>
-
-        {/* Structure Guide */}
-        <div className="bg-slate-50 dark:bg-slate-800/40 p-4.5 rounded-xl text-[11px] text-slate-500 dark:text-slate-400 space-y-3 border border-slate-100/50 dark:border-slate-800/20">
-          <p className="font-bold text-slate-700 dark:text-slate-300">📋 Requisitos y Estructura del CSV:</p>
-          <ul className="list-disc pl-4 space-y-1.5 leading-relaxed">
-            <li><strong>Fila de Cabecera:</strong> Debe contener al menos las columnas llamadas <code>Concepto</code>, <code>Fecha</code> e <code>Importe</code>. Las filas iniciales de información adicional (como el "Periodo") se saltarán automáticamente.</li>
-            <li><strong>Importes (Signo):</strong> Un valor negativo (ej. <code>-66.00</code>) se registrará como un <strong>Gasto</strong>. Un valor positivo (ej. <code>1500.00</code>) se registrará como un <strong>Ingreso</strong>.</li>
-            <li><strong>Columna de Categoría (Opcional):</strong> Puedes añadir una columna llamada <code>Categoria</code> al final para asociarlas. Si coincide con alguna de tus categorías creadas, se vinculará; si no, se registrará como <em>"Sin categoría"</em> para que la asignes después.</li>
-            <li><strong>Formato de Fecha:</strong> Formato estándar español <code>DD/MM/YYYY</code> (ej. <code>18/06/2026</code>).</li>
-            <li><strong>Separadores:</strong> Soporta separación por comas (<code>,</code>) o por punto y coma (<code>;</code>), y decimales con coma o punto.</li>
-          </ul>
-
-          <div className="pt-2 border-t border-slate-200/50 dark:border-slate-700/30">
-            <p className="font-bold text-slate-700 dark:text-slate-300 mb-1">Ejemplo de estructura esperada:</p>
-            <div className="bg-white dark:bg-slate-950 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 font-mono text-[9px] text-slate-600 dark:text-slate-400 overflow-x-auto leading-normal">
-              Concepto;Fecha;Importe;Categoria<br />
-              COMPRA MERCADONA LA TENE;18/06/2026;-128.13;Alimentación<br />
-              NÓMINA MENSUAL;01/06/2026;2500.00;Nómina<br />
-              BIZUM ENVIADO;15/06/2026;-20.00;
-            </div>
-          </div>
-        </div>
-
-        {/* Upload Button */}
+      {/* Segmented Section Switcher */}
+      <div className="flex bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl w-full sm:w-80">
         <button
-          onClick={handleCSVImportClick}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/70 text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer transition-all h-11"
+          onClick={() => {
+            setActiveSection('general');
+            setBalanceSuccess('');
+            setBalanceError('');
+          }}
+          className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all cursor-pointer ${
+            activeSection === 'general'
+              ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+          }`}
         >
-          {loading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
-          Subir y Procesar Archivo CSV
+          Ajustes Generales
         </button>
-
-        {/* Hidden File Input */}
-        <input
-          type="file"
-          ref={csvInputRef}
-          onChange={handleCSVFileChange}
-          accept=".csv"
-          className="hidden"
-        />
+        <button
+          onClick={() => {
+            setActiveSection('data');
+            setDataSuccess('');
+            setDataError('');
+          }}
+          className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all cursor-pointer ${
+            activeSection === 'data'
+              ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+          }`}
+        >
+          Importar / Exportar
+        </button>
       </div>
+
+      {/* RENDER ACTIVE TAB */}
+      {activeSection === 'general' ? (
+        <div className="space-y-6">
+          {/* General starting balance adjustment card */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Wallet className="text-indigo-500" size={18} />
+                <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Ajuste de Saldo Inicial</h3>
+              </div>
+              
+              <form onSubmit={handleSaveStartingBalance} className="flex gap-3 items-end">
+                <div className="flex-1 space-y-1.5">
+                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Saldo con el que comienzas (€)</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">€</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={startingBalance}
+                      onChange={(e) => setStartingBalance(e.target.value)}
+                      className="w-full pl-8 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-xs font-bold transition-all"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={savingBalance}
+                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/70 text-white rounded-xl font-bold text-xs transition-all shadow-md shadow-indigo-500/10 cursor-pointer h-[42px] flex items-center justify-center gap-1"
+                >
+                  {savingBalance ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
+                  Guardar
+                </button>
+              </form>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-normal">
+                Este importe representa el dinero disponible antes de registrar tu primer movimiento. Se sumará al balance total.
+              </p>
+            </div>
+
+            {/* Inner localized error/success messages */}
+            {balanceError && (
+              <div className="p-4 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 text-red-700 dark:text-red-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
+                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                <span>{balanceError}</span>
+              </div>
+            )}
+
+            {balanceSuccess && (
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
+                <CheckCircle size={16} className="shrink-0 mt-0.5" />
+                <span>{balanceSuccess}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-xl text-xs text-slate-500 dark:text-slate-400 leading-relaxed border border-slate-100/50 dark:border-slate-800/20">
+            <p className="font-bold text-slate-700 dark:text-slate-300 mb-1">💡 Consejos importantes:</p>
+            <ul className="list-disc pl-4 space-y-1">
+              <li>El saldo inicial sirve como punto de partida. Si tienes movimientos pasados y el balance total no coincide con tu banco, puedes corregirlo aquí.</li>
+              <li>Ajustar este valor actualizará el saldo total de la aplicación inmediatamente sin alterar tus registros de ingresos o gastos individuales.</li>
+            </ul>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {/* Inner localized data action alert messages */}
+          {dataError && (
+            <div className="p-4 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 text-red-700 dark:text-red-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span>{dataError}</span>
+            </div>
+          )}
+
+          {dataSuccess && (
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
+              <CheckCircle size={16} className="shrink-0 mt-0.5" />
+              <span>{dataSuccess}</span>
+            </div>
+          )}
+
+          {/* JSON BACKUPS CARD */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <Database className="text-indigo-500" size={18} />
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Copias de Seguridad (JSON)</h3>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+              Exporta todo tu historial de datos de finanzas (incluyendo categorías, transacciones, objetivos de ahorro y etiquetas) a un archivo local, o restáuralo en cualquier momento.
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Export Button */}
+              <button
+                onClick={handleExport}
+                disabled={loading}
+                className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-500 bg-slate-50/50 hover:bg-indigo-50/10 dark:bg-slate-900 dark:hover:bg-indigo-950/10 rounded-2xl transition-all cursor-pointer group disabled:opacity-50"
+              >
+                <div className="p-3 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-xl mb-3 group-hover:scale-110 transition-transform">
+                  {loading ? <Loader2 className="animate-spin" size={20} /> : <Download size={20} />}
+                </div>
+                <span className="font-bold text-xs text-slate-800 dark:text-white">Exportar Historial</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Descarga tus datos a tu ordenador</span>
+              </button>
+
+              {/* Import Button */}
+              <button
+                onClick={handleImportClick}
+                disabled={loading}
+                className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-emerald-500 dark:hover:border-emerald-500 bg-slate-50/50 hover:bg-emerald-50/10 dark:bg-slate-900 dark:hover:bg-emerald-950/10 rounded-2xl transition-all cursor-pointer group disabled:opacity-50"
+              >
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 rounded-xl mb-3 group-hover:scale-110 transition-transform">
+                  {loading ? <Loader2 className="animate-spin" size={20} /> : <Upload size={20} />}
+                </div>
+                <span className="font-bold text-xs text-slate-800 dark:text-white">Importar Historial</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Sube un archivo JSON de respaldo</span>
+              </button>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept=".json"
+                className="hidden"
+              />
+            </div>
+          </div>
+
+          {/* CAIXABANK CSV IMPORT CARD */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+            <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <Upload className="text-indigo-500" size={18} />
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Importar Movimientos (CaixaBank CSV)</h3>
+            </div>
+
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
+              Carga tus extractos bancarios descargados de CaixaBank en formato **CSV** para procesar los ingresos y gastos automáticamente. Podrás revisarlos y editarlos en el siguiente paso.
+            </p>
+
+            <div className="bg-slate-50 dark:bg-slate-800/40 p-4.5 rounded-xl text-[11px] text-slate-500 dark:text-slate-400 space-y-3 border border-slate-100/50 dark:border-slate-800/20">
+              <p className="font-bold text-slate-700 dark:text-slate-300">📋 Requisitos del archivo CSV:</p>
+              <ul className="list-disc pl-4 space-y-1.5 leading-relaxed">
+                <li><strong>Fila de Cabecera:</strong> Debe contener al menos las columnas llamadas <code>Concepto</code>, <code>Fecha</code> e <code>Importe</code>.</li>
+                <li><strong>Importes (Signo):</strong> Un valor negativo (ej. <code>-66.00</code>) es un <strong>Gasto</strong>. Un valor positivo (ej. <code>1500.00</code>) es un <strong>Ingreso</strong>.</li>
+                <li><strong>Columna de Categoría (Opcional):</strong> Si agregas una columna llamada <code>Categoria</code> al final, la aplicación intentará asociarla de forma automática.</li>
+              </ul>
+            </div>
+
+            <button
+              onClick={handleCSVImportClick}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/70 text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer transition-all h-11"
+            >
+              {loading ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
+              Subir y Procesar Archivo CSV
+            </button>
+
+            <input
+              type="file"
+              ref={csvInputRef}
+              onChange={handleCSVFileChange}
+              accept=".csv"
+              className="hidden"
+            />
+          </div>
+        </div>
+      )}
 
     </div>
   );
 };
+
 export default BackupManager;

@@ -7,5 +7,8 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true, // Needed for docker container port mapping
+    watch: {
+      usePolling: true
+    }
   }
 });
