@@ -8,6 +8,7 @@ export const Dashboard: React.FC = () => {
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const [evolutionRange, setEvolutionRange] = useState<'3m' | '6m' | '1y' | 'all'>('6m');
+  const [zoomEnabled, setZoomEnabled] = useState(false);
 
   const evolution = stats?.evolution;
 
@@ -294,26 +295,42 @@ export const Dashboard: React.FC = () => {
               <p className="text-[10px] text-slate-400 dark:text-slate-500">{rangeLabel}</p>
             </div>
             
-            {/* Range Selector */}
-            <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800/80">
-              {([
-                { id: '3m', label: '3 M' },
-                { id: '6m', label: '6 M' },
-                { id: '1y', label: '1 A' },
-                { id: 'all', label: 'Hist.' }
-              ] as const).map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => setEvolutionRange(opt.id)}
-                  className={`px-2.5 py-1 text-[9px] font-bold rounded-lg transition-all ${
-                    evolutionRange === opt.id
-                      ? 'bg-white dark:bg-slate-900 text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-800/40'
-                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            {/* Range Selector & Zoom Toggle */}
+            <div className="flex items-center gap-2">
+              {/* Zoom Button */}
+              <button
+                onClick={() => setZoomEnabled(!zoomEnabled)}
+                className={`px-2.5 py-1.5 text-[9px] font-bold rounded-xl border transition-all ${
+                  zoomEnabled
+                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 border-indigo-200 dark:border-indigo-800/40 shadow-sm'
+                    : 'bg-slate-50 dark:bg-slate-950 text-slate-450 border-slate-100 dark:border-slate-800/60 hover:text-slate-600'
+                }`}
+                title="Ajustar escala vertical para magnificar fluctuaciones (zoom)"
+              >
+                🔍 {zoomEnabled ? "Ajuste Activo" : "Auto Escala"}
+              </button>
+
+              {/* Range Buttons */}
+              <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                {([
+                  { id: '3m', label: '3 M' },
+                  { id: '6m', label: '6 M' },
+                  { id: '1y', label: '1 A' },
+                  { id: 'all', label: 'Hist.' }
+                ] as const).map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setEvolutionRange(opt.id)}
+                    className={`px-2.5 py-1 text-[9px] font-bold rounded-lg transition-all ${
+                      evolutionRange === opt.id
+                        ? 'bg-white dark:bg-slate-900 text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-800/40'
+                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
           <div className="h-96">
@@ -335,9 +352,9 @@ export const Dashboard: React.FC = () => {
                   stroke="#94a3b8" 
                   fontSize={10} 
                   tickLine={false} 
-                  ticks={dashboardYAxisTicks} 
+                  ticks={zoomEnabled ? undefined : dashboardYAxisTicks} 
                   tickFormatter={(val) => `${val} €`}
-                  domain={[0, 'auto']}
+                  domain={zoomEnabled ? ['auto', 'auto'] : [0, 'auto']}
                 />
                 <Tooltip
                   contentStyle={{
