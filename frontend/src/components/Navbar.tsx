@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
-import { LayoutDashboard, Receipt, BarChart3, Settings2, Database, LogOut, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, Receipt, BarChart3, Settings2, Database, LogOut, Sun, Moon, TrendingUp, LineChart, Wallet } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
@@ -23,8 +23,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'accounts', label: 'Cuentas', icon: Wallet },
     { id: 'transactions', label: 'Transacciones', icon: Receipt },
+    { id: 'investments', label: 'Inversiones', icon: LineChart },
     { id: 'stats', label: 'Análisis', icon: BarChart3 },
+    { id: 'forecasts', label: 'Previsiones', icon: TrendingUp },
     { id: 'categories', label: 'Categorías', icon: Settings2 },
     { id: 'backup', label: 'Ajustes', icon: Database },
   ];
@@ -38,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     setPeriod(parseInt(e.target.value), month);
   };
 
-  const years = [2024, 2025, 2026, 2027, 2028];
+  const years = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030];
   const months = [
     { val: 1, name: 'Ene' },
     { val: 2, name: 'Feb' },
@@ -186,7 +189,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* MOBILE BOTTOM NAVIGATION */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800/80 px-4 py-2 flex items-center justify-between">
-        {navItems.slice(0, 2).map((item) => {
+        {navItems.slice(0, 3).map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
@@ -212,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <span className="text-xl font-bold">+</span>
         </button>
 
-        {navItems.slice(2).map((item) => {
+        {navItems.slice(3).map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (

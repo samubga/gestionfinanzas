@@ -8,19 +8,64 @@ generator client {
 }
 
 model User {
-  id              String           @id @default(uuid())
-  email           String           @unique
-  password        String
-  name            String?
-  startingBalance Float            @default(0)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-  categories      Category[]
-  tags            Tag[]
+  id                   String           @id @default(uuid())
+  email                String           @unique
+  password             String
+  name                 String?
+  startingBalance      Float            @default(0)
+  startingBalanceCaixa Float            @default(0)
+  startingBalanceTrade Float            @default(0)
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  categories           Category[]
+  tags                 Tag[]
+  expenses             Expense[]
+  incomes              Income[]
+  monthlySummaries     MonthlySummary[]
+  savingGoals          SavingGoal[]
+  forecasts            ExpenseForecast[]
+  investments          Investment[]
+  bankAccounts         BankAccount[]
+  accounts             Account[]
+  transfers            Transfer[]
+}
+
+model Bank {
+  id        String    @id @default(uuid())
+  name      String
+  code      String?
+  logoUrl   String?
+  color     String    @default("#6366F1")
+  isCustom  Boolean   @default(false)
+  userId    String?
+  accounts  Account[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([name, userId])
+}
+
+model Account {
+  id              String       @id @default(uuid())
+  name            String
+  type            String       @default("CHECKING") // CHECKING, SAVINGS, CASH, INVESTMENT, CREDIT_CARD, CRYPTO, OTHER
+  startingBalance Float        @default(0)
+  currency        String       @default("EUR")
+  color           String       @default("#6366F1")
+  icon            String       @default("💳")
+  bankId          String?
+  bank            Bank?        @relation(fields: [bankId], references: [id], onDelete: SetNull)
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   expenses        Expense[]
   incomes         Income[]
-  monthlySummaries MonthlySummary[]
-  savingGoals     SavingGoal[]
+  investments     Investment[]
+  transfersFrom   Transfer[]   @relation("FromAccount")
+  transfersTo     Transfer[]   @relation("ToAccount")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([name, userId])
 }
 
 model Category {
@@ -32,6 +77,7 @@ model Category {
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   expenses  Expense[]
   incomes   Income[]
+  forecasts ExpenseForecast[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
@@ -39,13 +85,14 @@ model Category {
 }
 
 model Tag {
-  id        String       @id @default(uuid())
+  id        String            @id @default(uuid())
   name      String
   userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   expenses  ExpenseTag[]
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  forecasts ExpenseForecast[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
 
   @@unique([name, userId])
 }
@@ -57,6 +104,10 @@ model Expense {
   description   String
   paymentMethod String?      // Tarjeta, Efectivo, Transferencia, etc.
   notes         String?
+  bank          String?
+  imported      Boolean      @default(false)
+  accountId     String?
+  account       Account?     @relation(fields: [accountId], references: [id], onDelete: SetNull)
   userId        String
   user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   categoryId    String
@@ -80,6 +131,11 @@ model Income {
   amount      Float
   date        DateTime
   description String
+  notes       String?
+  bank        String?
+  imported    Boolean   @default(false)
+  accountId   String?
+  account     Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   categoryId  String?
@@ -115,4 +171,70 @@ model SavingGoal {
   updatedAt DateTime @updatedAt
 
   @@unique([year, month, userId])
+}
+
+model ExpenseForecast {
+  id          String    @id @default(uuid())
+  amount      Float
+  description String
+  date        DateTime?
+  month       Int
+  year        Int
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tagId       String?
+  tag         Tag?      @relation(fields: [tagId], references: [id], onDelete: SetNull)
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Investment {
+  id              String    @id @default(uuid())
+  type            String    // e.g., "Acción", "ETF", "Fondo", "Criptomoneda", "Derivado"
+  name            String
+  amount          Float     // Capital invertido
+  buyFee          Float     @default(0) // Comisiones/Costos de compra
+  bank            String    @default("Trade Republic") // CaixaBank, Trade Republic, Manual, etc.
+  startDate       DateTime
+  status          String    @default("active") // "active" (invertido) o "withdrawn" (retirado)
+  withdrawnAmount Float?    // Capital recuperado al retirar
+  sellFee         Float?    @default(0) // Comisiones/Costos de venta
+  endDate         DateTime? // Fecha de retirada
+  notes           String?
+  accountId       String?
+  account         Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model BankAccount {
+  id              String   @id @default(uuid())
+  name            String
+  startingBalance Float    @default(0)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([name, userId])
+}
+
+model Transfer {
+  id             String   @id @default(uuid())
+  amount         Float
+  date           DateTime
+  description    String
+  notes          String?
+  fromAccountId  String
+  fromAccount    Account  @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
+  toAccountId    String
+  toAccount      Account  @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

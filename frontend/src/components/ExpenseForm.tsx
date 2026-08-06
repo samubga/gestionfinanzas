@@ -6,7 +6,7 @@ interface ExpenseFormProps {
   isOpen: boolean;
   onClose: () => void;
   editTransaction?: any; // If editing an existing transaction
-  type?: 'expense' | 'income';
+  type?: 'expense' | 'income' | 'transfer';
 }
 
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({
@@ -23,16 +23,22 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     addExpense,
     updateExpense,
     addIncome,
-    updateIncome
+    updateIncome,
+    addTransfer,
+    updateTransfer,
+    accounts
   } = useFinance();
 
-  const [txType, setTxType] = useState<'expense' | 'income'>(initialType);
+  const [txType, setTxType] = useState<'expense' | 'income' | 'transfer'>(initialType);
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Tarjeta');
   const [notes, setNotes] = useState('');
+  const [bank, setBank] = useState('');
+  const [fromAccountId, setFromAccountId] = useState('');
+  const [toAccountId, setToAccountId] = useState('');
   
   // Tags selected for this transaction
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -60,8 +66,9 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   // Load transaction details if in edit mode
   useEffect(() => {
     if (editTransaction) {
-      const isInc = editTransaction.paymentMethod === undefined;
-      setTxType(isInc ? 'income' : 'expense');
+      const isTransfer = editTransaction.fromAccountId !== undefined && editTransaction.toAccountId !== undefined;
+      const isInc = !isTransfer && editTransaction.paymentMethod === undefined;
+      setTxType(isTransfer ? 'transfer' : (isInc ? 'income' : 'expense'));
       setAmount(editTransaction.amount.toString());
       
       const formattedDate = new Date(editTransaction.date).toISOString().split('T')[0];
@@ -70,7 +77,22 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
       setCategoryId(editTransaction.categoryId || '');
       setNotes(editTransaction.notes || '');
       
-      if (!isInc) {
+      let initialBankVal = accounts[0]?.id || '';
+      if (editTransaction.accountId) {
+        initialBankVal = editTransaction.accountId;
+      } else if (editTransaction.bank) {
+        const match = accounts.find(a => a.name === editTransaction.bank);
+        if (match) {
+          initialBankVal = match.id;
+        }
+      }
+      setBank(initialBankVal);
+      
+      if (isTransfer) {
+        setFromAccountId(editTransaction.fromAccountId);
+        setToAccountId(editTransaction.toAccountId);
+        setSelectedTags([]);
+      } else if (!isInc) {
         setPaymentMethod(editTransaction.paymentMethod || 'Tarjeta');
         setSelectedTags(editTransaction.tags?.map((t: any) => t.name) || []);
       } else {
@@ -84,9 +106,21 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
       setDescription('');
       setPaymentMethod('Tarjeta');
       setNotes('');
+      setBank(accounts[0]?.id || '');
       setSelectedTags([]);
+      
+      if (accounts.length >= 2) {
+        setFromAccountId(accounts[0].id);
+        setToAccountId(accounts[1].id);
+      } else if (accounts.length === 1) {
+        setFromAccountId(accounts[0].id);
+        setToAccountId('');
+      } else {
+        setFromAccountId('');
+        setToAccountId('');
+      }
     }
-  }, [editTransaction, isOpen, initialType, categories]);
+  }, [editTransaction, isOpen, initialType, categories, accounts]);
 
   // Close description suggestions on click outside
   useEffect(() => {
@@ -172,12 +206,51 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
       return;
     }
 
+    if (txType === 'transfer') {
+      if (!fromAccountId || !toAccountId) {
+        alert('Por favor selecciona la cuenta de origen y de destino.');
+        return;
+      }
+      if (fromAccountId === toAccountId) {
+        alert('La cuenta de origen y de destino deben ser diferentes.');
+        return;
+      }
+
+      const payload = {
+        amount: parseFloat(amount),
+        date: new Date(date).toISOString(),
+        description: description.trim(),
+        fromAccountId,
+        toAccountId,
+        notes: notes.trim() || null
+      };
+
+      try {
+        if (editTransaction) {
+          await updateTransfer(editTransaction.id, payload);
+        } else {
+          await addTransfer(payload);
+        }
+        onClose();
+      } catch (err: any) {
+        alert(err.response?.data?.error || 'Error al guardar el movimiento');
+      }
+      return;
+    }
+
+    const selectedAcc = accounts.find(a => a.id === bank);
+    if (!selectedAcc) {
+      alert('Por favor selecciona una cuenta válida para la transacción.');
+      return;
+    }
     const payload: any = {
       amount: parseFloat(amount),
       date: new Date(date).toISOString(),
       description: description.trim(),
       categoryId: categoryId || null,
-      notes: notes.trim() || null
+      notes: notes.trim() || null,
+      bank: selectedAcc.name,
+      accountId: selectedAcc.id
     };
 
     try {
@@ -207,7 +280,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
-      <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
@@ -245,6 +318,17 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 }`}
               >
                 Ingreso
+              </button>
+              <button
+                type="button"
+                onClick={() => setTxType('transfer')}
+                className={`flex-1 py-2 text-center text-sm font-semibold rounded-lg transition-all ${
+                  txType === 'transfer'
+                    ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                }`}
+              >
+                Movimiento
               </button>
             </div>
           )}
@@ -326,45 +410,47 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           </div>
 
           {/* Category Button Grid */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
-              Categoría {txType === 'income' && '(Opcional)'}
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[140px] overflow-y-auto p-1 border border-slate-100 dark:border-slate-800 rounded-xl">
-              {filteredCategories.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setCategoryId(cat.id)}
-                  className={`flex items-center p-2 rounded-xl border text-xs font-medium transition-all ${
-                    categoryId === cat.id
-                      ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
-                      : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
-                  }`}
-                >
-                  <span
-                    className="w-3 h-3 rounded-full mr-2 shrink-0"
-                    style={{ backgroundColor: cat.color }}
-                  />
-                  <span className="truncate">{cat.name}</span>
-                </button>
-              ))}
-              {txType === 'income' && (
-                <button
-                  type="button"
-                  onClick={() => setCategoryId('')}
-                  className={`flex items-center p-2 rounded-xl border text-xs font-medium transition-all ${
-                    !categoryId
-                      ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
-                      : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
-                  }`}
-                >
-                  <span className="w-3 h-3 rounded-full mr-2 shrink-0 border border-dashed border-slate-400 bg-transparent" />
-                  <span>Ninguna</span>
-                </button>
-              )}
+          {txType !== 'transfer' && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">
+                Categoría {txType === 'income' && '(Opcional)'}
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-[140px] overflow-y-auto p-1 border border-slate-100 dark:border-slate-800 rounded-xl">
+                {filteredCategories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setCategoryId(cat.id)}
+                    className={`flex items-center p-2 rounded-xl border text-xs font-medium transition-all ${
+                      categoryId === cat.id
+                        ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
+                        : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span
+                      className="w-3 h-3 rounded-full mr-2 shrink-0"
+                      style={{ backgroundColor: cat.color }}
+                    />
+                    <span className="truncate">{cat.name}</span>
+                  </button>
+                ))}
+                {txType === 'income' && (
+                  <button
+                    type="button"
+                    onClick={() => setCategoryId('')}
+                    className={`flex items-center p-2 rounded-xl border text-xs font-medium transition-all ${
+                      !categoryId
+                        ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
+                        : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span className="w-3 h-3 rounded-full mr-2 shrink-0 border border-dashed border-slate-400 bg-transparent" />
+                    <span>Ninguna</span>
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Payment Method (Expense Only) */}
           {txType === 'expense' && (
@@ -461,6 +547,75 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Transfer Accounts (Transfer Only) */}
+          {txType === 'transfer' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Cuenta Origen</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <span className="text-sm">📤</span>
+                  </div>
+                  <select
+                    value={fromAccountId}
+                    onChange={(e) => setFromAccountId(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all"
+                  >
+                    <option value="" disabled>Seleccionar origen</option>
+                    {accounts.map((acc) => (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.icon} {acc.name}{acc.bank?.name ? ` (${acc.bank.name})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Cuenta Destino</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <span className="text-sm">📥</span>
+                  </div>
+                  <select
+                    value={toAccountId}
+                    onChange={(e) => setToAccountId(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all"
+                  >
+                    <option value="" disabled>Seleccionar destino</option>
+                    {accounts.map((acc) => (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.icon} {acc.name}{acc.bank?.name ? ` (${acc.bank.name})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bank / Origin Selection (Expense and Income Only) */}
+          {txType !== 'transfer' && (
+            <div className="mb-4">
+              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Banco / Origen</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <span className="text-sm">🏦</span>
+                </div>
+                <select
+                  value={bank}
+                  onChange={(e) => setBank(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all"
+                >
+                  {accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.icon} {acc.name} {acc.bank ? `(${acc.bank.name})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 

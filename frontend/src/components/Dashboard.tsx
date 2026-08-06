@@ -1,12 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useFinance } from '../context/FinanceContext';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
 import { ArrowUpRight, ArrowDownRight, PiggyBank, Wallet, TrendingUp, Edit2, Check, X, Tag } from 'lucide-react';
 
 export const Dashboard: React.FC = () => {
   const { stats, statsLoading, saveSavingGoal } = useFinance();
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
+  const [evolutionRange, setEvolutionRange] = useState<'3m' | '6m' | '1y' | 'all'>('6m');
+
+  const evolution = stats?.evolution;
+
+  const filteredEvolution = useMemo(() => {
+    if (!evolution) return [];
+    if (evolutionRange === '3m') return evolution.slice(-3);
+    if (evolutionRange === '6m') return evolution.slice(-6);
+    if (evolutionRange === '1y') return evolution.slice(-12);
+    return evolution;
+  }, [evolution, evolutionRange]);
+
+  const rangeLabel = 
+    evolutionRange === '3m' ? 'Últimos 3 meses de ingresos y gastos' :
+    evolutionRange === '6m' ? 'Últimos 6 meses de ingresos y gastos' :
+    evolutionRange === '1y' ? 'Último año de ingresos y gastos' :
+    'Historial completo de ingresos y gastos';
+
+  const dashboardYAxisTicks = useMemo(() => {
+    if (!filteredEvolution || filteredEvolution.length === 0) return [0, 500, 1000, 1500, 2000, 2500, 3000];
+    const maxVal = Math.max(
+      ...filteredEvolution.map(d => Math.max(d.income || 0, d.expense || 0))
+    );
+    const limit = Math.max(3000, Math.ceil(maxVal / 500) * 500);
+    const ticks = [];
+    for (let i = 0; i <= limit; i += 500) {
+      ticks.push(i);
+    }
+    return ticks;
+  }, [filteredEvolution]);
 
   if (statsLoading || !stats) {
     return (
@@ -24,7 +54,7 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  const { currentMonth, availableBalance, categoryBreakdown, tagBreakdown, topExpenses, evolution } = stats;
+  const { currentMonth, availableBalance, balances, categoryBreakdown, tagBreakdown, topExpenses } = stats;
 
   const handleSaveGoal = async () => {
     const val = parseFloat(goalInput);
@@ -58,20 +88,68 @@ export const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* Top KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
-        {/* Available Balance */}
-        <div className="bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white rounded-2xl p-5 shadow-xl shadow-indigo-500/10 flex flex-col justify-between">
+        {/* Available Balance (Spans 2 columns on desktop for wide balance texts) */}
+        <div className="lg:col-span-2 bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white rounded-2xl p-5 shadow-xl shadow-indigo-500/10 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-indigo-200">Balance Disponible</span>
             <div className="p-2 bg-indigo-500/30 rounded-xl">
               <Wallet size={18} />
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-3xl font-black">{availableBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</h3>
-            <p className="text-[10px] text-indigo-200 mt-1">Saldo acumulado total</p>
+          <div className="mt-4 space-y-3">
+            <div>
+              <h3 className="text-3xl font-black">{availableBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</h3>
+              <p className="text-[10px] text-indigo-200 mt-0.5">Saldo acumulado total</p>
+            </div>
+            {stats.accountDetails ? (
+              <div className="pt-3 border-t border-indigo-500/30 space-y-2 text-[11px] font-bold text-indigo-100">
+                <div className="space-y-1.5 divide-y divide-indigo-500/20">
+                  {stats.accountDetails.map((acc) => (
+                    <div key={acc.id} className="flex justify-between items-center pt-1.5 first:pt-0">
+                      <span className="flex items-center gap-2">
+                        <span className="text-sm">{acc.icon}</span>
+                        <span>{acc.name}</span>
+                        {acc.bankName && <span className="text-[10px] opacity-75 font-normal">({acc.bankName})</span>}
+                      </span>
+                      <span className="font-extrabold text-white">{acc.currentBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between items-center pt-3 border-t border-indigo-500/35 text-indigo-200">
+                  <span className="flex items-center gap-1.5">📈 Capital Invertido</span>
+                  <span className="text-white font-bold">{(stats.totalInvestedActive ?? 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                </div>
+                <div className="flex justify-between items-center pt-1.5 border-t border-indigo-500/35 text-indigo-200">
+                  <span className="flex items-center gap-1.5">💎 Patrimonio Neto</span>
+                  <span className="text-white font-black text-sm">{(availableBalance + (stats.totalInvestedActive ?? 0)).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                </div>
+              </div>
+            ) : balances && (
+              <div className="pt-3 border-t border-indigo-500/30 space-y-2 text-[11px] font-bold text-indigo-100">
+                <div className="space-y-1.5 divide-y divide-indigo-500/20">
+                  {Object.entries(balances).map(([bankName, balance]) => (
+                    <div key={bankName} className="flex justify-between items-center pt-1.5 first:pt-0">
+                      <span className="flex items-center gap-2">
+                        <span>{bankName === 'CaixaBank' ? '🏦' : bankName === 'Trade Republic' ? '🍊' : '💳'}</span>
+                        <span>{bankName}</span>
+                      </span>
+                      <span className="font-extrabold text-white">{balance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-between items-center pt-3 border-t border-indigo-500/35 text-indigo-200">
+                  <span className="flex items-center gap-1.5">📈 Capital Invertido</span>
+                  <span className="text-white font-bold">{(stats.totalInvestedActive ?? 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                </div>
+                <div className="flex justify-between items-center pt-1.5 border-t border-indigo-500/35 text-indigo-200">
+                  <span className="flex items-center gap-1.5">💎 Patrimonio Neto</span>
+                  <span className="text-white font-black text-sm">{(availableBalance + (stats.totalInvestedActive ?? 0)).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -123,8 +201,13 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
+      </div>
+
+      {/* Savings & Saving Goal Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        
         {/* Savings Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Ahorro del Mes</span>
             <div className="p-2 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 rounded-xl">
@@ -143,59 +226,61 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
 
-      </div>
-
-      {/* Saving Goal Progress Bar */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm">
-        <div className="flex items-center justify-between mb-3.5">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="text-indigo-500" size={18} />
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white">Objetivo de Ahorro del Mes</h4>
-          </div>
-          
-          {editingGoal ? (
-            <div className="flex items-center gap-1.5">
-              <input
-                type="number"
-                value={goalInput}
-                onChange={(e) => setGoalInput(e.target.value)}
-                className="w-20 px-2 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white"
-                autoFocus
-              />
-              <button onClick={handleSaveGoal} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg">
-                <Check size={14} />
-              </button>
-              <button onClick={() => setEditingGoal(false)} className="p-1 text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg">
-                <X size={14} />
-              </button>
+        {/* Saving Goal Progress Bar */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3.5">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="text-indigo-500" size={18} />
+                <h4 className="text-sm font-bold text-slate-800 dark:text-white">Objetivo de Ahorro del Mes</h4>
+              </div>
+              
+              {editingGoal ? (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="number"
+                    value={goalInput}
+                    onChange={(e) => setGoalInput(e.target.value)}
+                    className="w-20 px-2 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white"
+                    autoFocus
+                  />
+                  <button onClick={handleSaveGoal} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg">
+                    <Check size={14} />
+                  </button>
+                  <button onClick={() => setEditingGoal(false)} className="p-1 text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg">
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={startEditGoal}
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                >
+                  <Edit2 size={12} />
+                  {currentMonth.savingGoal > 0 ? `${currentMonth.savingGoal} €` : 'Establecer meta'}
+                </button>
+              )}
             </div>
-          ) : (
-            <button
-              onClick={startEditGoal}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-            >
-              <Edit2 size={12} />
-              {currentMonth.savingGoal > 0 ? `${currentMonth.savingGoal} €` : 'Establecer meta'}
-            </button>
-          )}
+
+            {currentMonth.savingGoal > 0 ? (
+              <div>
+                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden mb-2">
+                  <div
+                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-500"
+                    style={{ width: `${goalPercent}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
+                  <span>Ahorrado: {currentMonth.savings.toFixed(2)} €</span>
+                  <span>Meta: {currentMonth.savingGoal.toFixed(2)} € ({goalPercent.toFixed(0)}%)</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 dark:text-slate-500 italic">No has definido un objetivo de ahorro para este mes.</p>
+            )}
+          </div>
         </div>
 
-        {currentMonth.savingGoal > 0 ? (
-          <div>
-            <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden mb-2">
-              <div
-                className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-500"
-                style={{ width: `${goalPercent}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
-              <span>Ahorrado: {currentMonth.savings.toFixed(2)} €</span>
-              <span>Meta: {currentMonth.savingGoal.toFixed(2)} € ({goalPercent.toFixed(0)}%)</span>
-            </div>
-          </div>
-        ) : (
-          <p className="text-xs text-slate-400 dark:text-slate-500 italic">No has definido un objetivo de ahorro para este mes.</p>
-        )}
       </div>
 
       {/* Main Charts */}
@@ -203,13 +288,37 @@ export const Dashboard: React.FC = () => {
         
         {/* Evolution Chart (Left 2 columns) */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm">
-          <div className="mb-4">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución Histórica</h4>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">Últimos 6 meses de ingresos y gastos</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución Histórica</h4>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">{rangeLabel}</p>
+            </div>
+            
+            {/* Range Selector */}
+            <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800/80">
+              {([
+                { id: '3m', label: '3 M' },
+                { id: '6m', label: '6 M' },
+                { id: '1y', label: '1 A' },
+                { id: 'all', label: 'Hist.' }
+              ] as const).map(opt => (
+                <button
+                  key={opt.id}
+                  onClick={() => setEvolutionRange(opt.id)}
+                  className={`px-2.5 py-1 text-[9px] font-bold rounded-lg transition-all ${
+                    evolutionRange === opt.id
+                      ? 'bg-white dark:bg-slate-900 text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-800/40'
+                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="h-64">
+          <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={evolution} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={filteredEvolution} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10B981" stopOpacity={0.2}/>
@@ -220,8 +329,16 @@ export const Dashboard: React.FC = () => {
                     <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/40" />
                 <XAxis dataKey="label" stroke="#94a3b8" fontSize={10} tickLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} />
+                <YAxis 
+                  stroke="#94a3b8" 
+                  fontSize={10} 
+                  tickLine={false} 
+                  ticks={dashboardYAxisTicks} 
+                  tickFormatter={(val) => `${val} €`}
+                  domain={[0, 'auto']}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: 'rgba(30, 41, 59, 0.9)',

@@ -5,9 +5,10 @@ import { updateMonthlySummary } from '../utils/summary';
 
 export async function getExpenses(req: AuthRequest, res: Response) {
   const userId = req.userId!;
-  const { startDate, endDate, categoryId, tags, search } = req.query;
+  const { startDate, endDate, categoryId, tags, search, bank, minAmount, maxAmount } = req.query;
 
   const where: any = { userId };
+  const andConditions: any[] = [];
 
   // Date range filter
   if (startDate || endDate) {
@@ -22,9 +23,34 @@ export async function getExpenses(req: AuthRequest, res: Response) {
     }
   }
 
+  // Amount filter
+  if (minAmount || maxAmount) {
+    where.amount = {};
+    if (minAmount) {
+      where.amount.gte = parseFloat(minAmount as string);
+    }
+    if (maxAmount) {
+      where.amount.lte = parseFloat(maxAmount as string);
+    }
+  }
+
   // Category filter
   if (categoryId) {
     where.categoryId = categoryId as string;
+  }
+
+  const accountId = req.query.accountId;
+
+  // Bank / Account filter
+  if (accountId) {
+    where.accountId = accountId as string;
+  } else if (bank) {
+    andConditions.push({
+      OR: [
+        { accountId: bank as string },
+        { bank: bank as string }
+      ]
+    });
   }
 
   // Tags filter
@@ -41,10 +67,16 @@ export async function getExpenses(req: AuthRequest, res: Response) {
 
   // Search filter (description or notes)
   if (search) {
-    where.OR = [
-      { description: { contains: search as string, mode: 'insensitive' } },
-      { notes: { contains: search as string, mode: 'insensitive' } },
-    ];
+    andConditions.push({
+      OR: [
+        { description: { contains: search as string, mode: 'insensitive' } },
+        { notes: { contains: search as string, mode: 'insensitive' } },
+      ]
+    });
+  }
+
+  if (andConditions.length > 0) {
+    where.AND = andConditions;
   }
 
   try {
@@ -74,7 +106,7 @@ export async function getExpenses(req: AuthRequest, res: Response) {
 
 export async function createExpense(req: AuthRequest, res: Response) {
   const userId = req.userId!;
-  const { amount, date, description, categoryId, tags, paymentMethod, notes } = req.body;
+  const { amount, date, description, categoryId, tags, paymentMethod, notes, bank } = req.body;
 
   if (!amount || !date || !description || !categoryId) {
     return res.status(400).json({ error: 'Importe, fecha, descripción y categoría son requeridos' });
@@ -99,6 +131,23 @@ export async function createExpense(req: AuthRequest, res: Response) {
       }
     }
 
+    const reqAccountId = req.body.accountId;
+    let targetAccountId = reqAccountId || null;
+    let targetBankName = bank || null;
+
+    if (reqAccountId) {
+      const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
+      if (acc) {
+        targetBankName = acc.name;
+      }
+    } else if (bank) {
+      const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
+      if (acc) {
+        targetAccountId = acc.id;
+        targetBankName = acc.name;
+      }
+    }
+
     // 2. Create the expense
     const expenseDate = new Date(date);
     const expense = await prisma.expense.create({
@@ -108,6 +157,8 @@ export async function createExpense(req: AuthRequest, res: Response) {
         description,
         paymentMethod,
         notes,
+        bank: targetBankName,
+        accountId: targetAccountId,
         userId,
         categoryId,
         tags: {
@@ -143,7 +194,7 @@ export async function createExpense(req: AuthRequest, res: Response) {
 export async function updateExpense(req: AuthRequest, res: Response) {
   const userId = req.userId!;
   const { id } = req.params;
-  const { amount, date, description, categoryId, tags, paymentMethod, notes } = req.body;
+  const { amount, date, description, categoryId, tags, paymentMethod, notes, bank } = req.body;
 
   try {
     const existingExpense = await prisma.expense.findFirst({
@@ -187,6 +238,23 @@ export async function updateExpense(req: AuthRequest, res: Response) {
       };
     }
 
+    const reqAccountId = req.body.accountId;
+    let targetAccountId = reqAccountId !== undefined ? reqAccountId : existingExpense.accountId;
+    let targetBankName = bank !== undefined ? bank : existingExpense.bank;
+
+    if (reqAccountId) {
+      const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
+      if (acc) {
+        targetBankName = acc.name;
+      }
+    } else if (bank) {
+      const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
+      if (acc) {
+        targetAccountId = acc.id;
+        targetBankName = acc.name;
+      }
+    }
+
     // 2. Update expense
     const expenseDate = date ? new Date(date) : existingExpense.date;
     const updated = await prisma.expense.update({
@@ -198,6 +266,8 @@ export async function updateExpense(req: AuthRequest, res: Response) {
         categoryId: categoryId !== undefined ? categoryId : existingExpense.categoryId,
         paymentMethod: paymentMethod !== undefined ? paymentMethod : existingExpense.paymentMethod,
         notes: notes !== undefined ? notes : existingExpense.notes,
+        bank: targetBankName,
+        accountId: targetAccountId,
         ...tagUpdates,
       },
       include: {
@@ -284,6 +354,7 @@ export async function duplicateExpense(req: AuthRequest, res: Response) {
         description: `${expense.description} (Copia)`,
         paymentMethod: expense.paymentMethod,
         notes: expense.notes,
+        bank: expense.bank,
         userId,
         categoryId: expense.categoryId,
         tags: {
@@ -346,5 +417,125 @@ export async function deleteExpensesBulk(req: AuthRequest, res: Response) {
     res.json({ message: 'Gastos eliminados correctamente' });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Error al eliminar gastos en lote' });
+  }
+}
+
+export async function updateExpensesBulk(req: AuthRequest, res: Response) {
+  const userId = req.userId!;
+  const { ids, bank, categoryId, paymentMethod, description, notes, date, tags, tagsMode } = req.body;
+
+  console.log('updateExpensesBulk payload:', { ids, bank, categoryId, paymentMethod, description, notes, date, tags, tagsMode });
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'IDs de gastos requeridos' });
+  }
+
+  try {
+    const updatedMonths = new Map<string, { year: number; month: number }>();
+
+    // 1. Resolve tags if provided
+    let resolvedTagIds: string[] = [];
+    if (tags && Array.isArray(tags)) {
+      for (const tagName of tags) {
+        const cleanName = tagName.trim().toLowerCase();
+        if (!cleanName) continue;
+        let tag = await prisma.tag.findFirst({
+          where: { name: cleanName, userId },
+        });
+        if (!tag) {
+          tag = await prisma.tag.create({
+            data: { name: cleanName, userId },
+          });
+        }
+        resolvedTagIds.push(tag.id);
+      }
+    }
+
+    // 2. Loop through all expenses to update them
+    for (const id of ids) {
+      const existingExpense = await prisma.expense.findFirst({
+        where: { id, userId },
+      });
+      if (!existingExpense) continue;
+
+      const oldDate = new Date(existingExpense.date);
+      updatedMonths.set(`${oldDate.getFullYear()}-${oldDate.getMonth() + 1}`, {
+        year: oldDate.getFullYear(),
+        month: oldDate.getMonth() + 1
+      });
+
+      const updateData: any = {};
+      if (bank !== undefined) {
+        if (bank === 'Manual') {
+          updateData.bank = null;
+          updateData.accountId = null;
+        } else {
+          const acc = await prisma.account.findFirst({
+            where: { id: bank, userId }
+          });
+          if (acc) {
+            updateData.bank = acc.name;
+            updateData.accountId = acc.id;
+          } else {
+            updateData.bank = bank;
+            const accByName = await prisma.account.findFirst({
+              where: { name: bank, userId }
+            });
+            updateData.accountId = accByName ? accByName.id : null;
+          }
+        }
+      }
+      if (categoryId !== undefined) updateData.categoryId = categoryId || null;
+      if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod;
+      if (description !== undefined) updateData.description = description;
+      if (notes !== undefined) updateData.notes = notes;
+      if (date !== undefined) {
+        const newDate = new Date(date);
+        updateData.date = newDate;
+        updatedMonths.set(`${newDate.getFullYear()}-${newDate.getMonth() + 1}`, {
+          year: newDate.getFullYear(),
+          month: newDate.getMonth() + 1
+        });
+      }
+
+      if (tags && Array.isArray(tags)) {
+        if (tagsMode === 'replace') {
+          await prisma.expenseTag.deleteMany({
+            where: { expenseId: id },
+          });
+          updateData.tags = {
+            create: resolvedTagIds.map(tagId => ({
+              tag: { connect: { id: tagId } }
+            }))
+          };
+        } else if (tagsMode === 'add') {
+          const existingTags = await prisma.expenseTag.findMany({
+            where: { expenseId: id },
+          });
+          const existingTagIds = existingTags.map(et => et.tagId);
+          const tagIdsToAdd = resolvedTagIds.filter(tid => !existingTagIds.includes(tid));
+
+          updateData.tags = {
+            create: tagIdsToAdd.map(tagId => ({
+              tag: { connect: { id: tagId } }
+            }))
+          };
+        }
+      }
+
+      await prisma.expense.update({
+        where: { id },
+        data: updateData
+      });
+    }
+
+    // 3. Recalculate monthly summaries
+    for (const item of updatedMonths.values()) {
+      await updateMonthlySummary(userId, item.year, item.month);
+    }
+
+    res.json({ message: `${ids.length} gastos actualizados correctamente` });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Error al actualizar gastos en bloque' });
   }
 }

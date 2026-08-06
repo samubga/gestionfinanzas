@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
-import { Expense, Income, Category, Tag, DashboardData } from '../types';
+import { Expense, Income, Category, Tag, DashboardData, Investment, BankAccount, Account, Bank, Transfer, YearlyStatsData, HistoricalStatsData } from '../types';
 import { useAuth } from './AuthContext';
 
 interface FinanceContextType {
@@ -9,8 +9,12 @@ interface FinanceContextType {
   categories: Category[];
   tags: Tag[];
   stats: DashboardData | null;
+  yearlyStats: YearlyStatsData | null;
+  historicalStats: HistoricalStatsData | null;
   loading: boolean;
   statsLoading: boolean;
+  yearlyStatsLoading: boolean;
+  historicalStatsLoading: boolean;
   year: number;
   month: number;
   setPeriod: (year: number, month: number) => void;
@@ -25,6 +29,12 @@ interface FinanceContextType {
   setFilterTags: (tags: string) => void;
   filterSearch: string;
   setFilterSearch: (search: string) => void;
+  filterBank: string;
+  setFilterBank: (bank: string) => void;
+  filterMinAmount: string;
+  setFilterMinAmount: (amount: string) => void;
+  filterMaxAmount: string;
+  setFilterMaxAmount: (amount: string) => void;
   resetFilters: () => void;
   // Operations
   refreshAll: () => void;
@@ -43,6 +53,37 @@ interface FinanceContextType {
   saveSavingGoal: (amount: number) => Promise<void>;
   deleteExpensesBulk: (ids: string[]) => Promise<void>;
   deleteIncomesBulk: (ids: string[]) => Promise<void>;
+  // Transfers
+  transfers: Transfer[];
+  addTransfer: (data: any) => Promise<void>;
+  updateTransfer: (id: string, data: any) => Promise<void>;
+  deleteTransfer: (id: string) => Promise<void>;
+  // Investments
+  investments: Investment[];
+  investmentsLoading: boolean;
+  fetchInvestments: (filters?: any) => Promise<void>;
+  addInvestment: (data: any) => Promise<void>;
+  updateInvestment: (id: string, data: any) => Promise<void>;
+  deleteInvestment: (id: string) => Promise<void>;
+  // Bank accounts
+  bankAccounts: BankAccount[];
+  bankAccountsLoading: boolean;
+  fetchBankAccounts: () => Promise<void>;
+  addBankAccount: (data: { name: string; startingBalance: number }) => Promise<void>;
+  updateBankAccount: (id: string, data: { name: string; startingBalance: number }) => Promise<void>;
+  deleteBankAccount: (id: string) => Promise<void>;
+  // Accounts & Banks
+  accounts: Account[];
+  banks: Bank[];
+  accountsLoading: boolean;
+  fetchAccounts: () => Promise<void>;
+  fetchBanks: () => Promise<void>;
+  addAccount: (data: Partial<Account>) => Promise<void>;
+  updateAccount: (id: string, data: Partial<Account>) => Promise<void>;
+  deleteAccount: (id: string) => Promise<void>;
+  addCustomBank: (data: { name: string; color?: string; logoUrl?: string }) => Promise<Bank>;
+  fetchYearlyStats: (year: number) => Promise<void>;
+  fetchHistoricalStats: () => Promise<void>;
 }
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
@@ -54,19 +95,54 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [stats, setStats] = useState<DashboardData | null>(null);
+  const [yearlyStats, setYearlyStats] = useState<YearlyStatsData | null>(null);
+  const [historicalStats, setHistoricalStats] = useState<HistoricalStatsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [statsLoading, setStatsLoading] = useState(false);
+  const [yearlyStatsLoading, setYearlyStatsLoading] = useState(false);
+  const [historicalStatsLoading, setHistoricalStatsLoading] = useState(false);
+  const [investments, setInvestments] = useState<Investment[]>([]);
+  const [investmentsLoading, setInvestmentsLoading] = useState(false);
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [bankAccountsLoading, setBankAccountsLoading] = useState(false);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [banks, setBanks] = useState<Bank[]>([]);
+  const [accountsLoading, setAccountsLoading] = useState(false);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth() + 1);
 
+  // Helper to format dates in local timezone as YYYY-MM-DD
+  const formatLocalDate = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
   // Filter States
-  const [filterStartDate, setFilterStartDate] = useState('');
-  const [filterEndDate, setFilterEndDate] = useState('');
+  const [filterStartDate, setFilterStartDate] = useState(() => {
+    return formatLocalDate(new Date(now.getFullYear(), now.getMonth(), 1));
+  });
+  const [filterEndDate, setFilterEndDate] = useState(() => {
+    return formatLocalDate(new Date(now.getFullYear(), now.getMonth() + 1, 0));
+  });
   const [filterCategoryId, setFilterCategoryId] = useState('');
   const [filterTags, setFilterTags] = useState('');
   const [filterSearch, setFilterSearch] = useState('');
+  const [filterBank, setFilterBank] = useState('');
+  const [filterMinAmount, setFilterMinAmount] = useState('');
+  const [filterMaxAmount, setFilterMaxAmount] = useState('');
+
+  // Update date filters when period changes
+  useEffect(() => {
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0);
+    setFilterStartDate(formatLocalDate(start));
+    setFilterEndDate(formatLocalDate(end));
+  }, [year, month]);
 
   const setPeriod = (newYear: number, newMonth: number) => {
     setYear(newYear);
@@ -79,6 +155,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setFilterCategoryId('');
     setFilterTags('');
     setFilterSearch('');
+    setFilterBank('');
+    setFilterMinAmount('');
+    setFilterMaxAmount('');
   };
 
   const fetchCategories = async () => {
@@ -111,19 +190,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (filterCategoryId) params.categoryId = filterCategoryId;
       if (filterTags) params.tags = filterTags;
       if (filterSearch) params.search = filterSearch;
-
-      // Si no hay filtros aplicados, ver solo el periodo seleccionado
-      if (!filterStartDate && !filterEndDate && !filterCategoryId && !filterTags && !filterSearch) {
-        const start = new Date(year, month - 1, 1, 0, 0, 0, 0);
-        // Desfase horario local a string ISO YYYY-MM-DD
-        const offset = start.getTimezoneOffset();
-        const localStart = new Date(start.getTime() - (offset * 60 * 1000));
-        params.startDate = localStart.toISOString().split('T')[0];
-
-        const end = new Date(year, month, 0, 23, 59, 59, 999);
-        const localEnd = new Date(end.getTime() - (offset * 60 * 1000));
-        params.endDate = localEnd.toISOString().split('T')[0];
-      }
+      if (filterBank) params.bank = filterBank;
+      if (filterMinAmount) params.minAmount = filterMinAmount;
+      if (filterMaxAmount) params.maxAmount = filterMaxAmount;
 
       const res = await api.get('/expenses', { params });
       setExpenses(res.data);
@@ -142,22 +211,31 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (filterEndDate) params.endDate = filterEndDate;
       if (filterCategoryId) params.categoryId = filterCategoryId;
       if (filterSearch) params.search = filterSearch;
-
-      if (!filterStartDate && !filterEndDate && !filterCategoryId && !filterSearch) {
-        const start = new Date(year, month - 1, 1, 0, 0, 0, 0);
-        const offset = start.getTimezoneOffset();
-        const localStart = new Date(start.getTime() - (offset * 60 * 1000));
-        params.startDate = localStart.toISOString().split('T')[0];
-
-        const end = new Date(year, month, 0, 23, 59, 59, 999);
-        const localEnd = new Date(end.getTime() - (offset * 60 * 1000));
-        params.endDate = localEnd.toISOString().split('T')[0];
-      }
+      if (filterBank) params.bank = filterBank;
+      if (filterMinAmount) params.minAmount = filterMinAmount;
+      if (filterMaxAmount) params.maxAmount = filterMaxAmount;
 
       const res = await api.get('/incomes', { params });
       setIncomes(res.data);
     } catch (err) {
       console.error('Error al obtener ingresos:', err);
+    }
+  };
+
+  const fetchTransfers = async () => {
+    if (!user) return;
+    try {
+      const params: any = {};
+      if (filterStartDate) params.startDate = filterStartDate;
+      if (filterEndDate) params.endDate = filterEndDate;
+      if (filterSearch) params.search = filterSearch;
+      if (filterMinAmount) params.minAmount = filterMinAmount;
+      if (filterMaxAmount) params.maxAmount = filterMaxAmount;
+
+      const res = await api.get('/transfers', { params });
+      setTransfers(res.data);
+    } catch (err) {
+      console.error('Error al obtener transferencias:', err);
     }
   };
 
@@ -176,18 +254,159 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  const fetchYearlyStats = async (selectedYear: number) => {
+    if (!user) return;
+    setYearlyStatsLoading(true);
+    try {
+      const res = await api.get('/stats/yearly', {
+        params: { year: selectedYear }
+      });
+      setYearlyStats(res.data);
+    } catch (err) {
+      console.error('Error al obtener estadísticas anuales:', err);
+    } finally {
+      setYearlyStatsLoading(false);
+    }
+  };
+
+  const fetchHistoricalStats = async () => {
+    if (!user) return;
+    setHistoricalStatsLoading(true);
+    try {
+      const res = await api.get('/stats/historical');
+      setHistoricalStats(res.data);
+    } catch (err) {
+      console.error('Error al obtener estadísticas históricas:', err);
+    } finally {
+      setHistoricalStatsLoading(false);
+    }
+  };
+
+  const fetchInvestments = async (filters: any = {}) => {
+    if (!user) return;
+    setInvestmentsLoading(true);
+    try {
+      const res = await api.get('/investments', { params: filters });
+      setInvestments(res.data);
+    } catch (err) {
+      console.error('Error al obtener inversiones:', err);
+    } finally {
+      setInvestmentsLoading(false);
+    }
+  };
+
+  const fetchBankAccounts = async () => {
+    if (!user) return;
+    setBankAccountsLoading(true);
+    try {
+      const res = await api.get('/bank-accounts');
+      setBankAccounts(res.data);
+    } catch (err) {
+      console.error('Error al obtener cuentas bancarias:', err);
+    } finally {
+      setBankAccountsLoading(false);
+    }
+  };
+
+  const addBankAccount = async (data: { name: string; startingBalance: number }) => {
+    await api.post('/bank-accounts', data);
+    await fetchBankAccounts();
+    fetchStats();
+  };
+
+  const updateBankAccount = async (id: string, data: { name: string; startingBalance: number }) => {
+    await api.put(`/bank-accounts/${id}`, data);
+    await fetchBankAccounts();
+    fetchStats();
+    fetchExpenses();
+    fetchIncomes();
+  };
+
+  const deleteBankAccount = async (id: string) => {
+    await api.delete(`/bank-accounts/${id}`);
+    await fetchBankAccounts();
+    fetchStats();
+    fetchExpenses();
+    fetchIncomes();
+  };
+
+  const fetchAccounts = async () => {
+    if (!user) return;
+    setAccountsLoading(true);
+    try {
+      const res = await api.get('/accounts');
+      setAccounts(res.data);
+    } catch (err) {
+      console.error('Error al obtener cuentas:', err);
+    } finally {
+      setAccountsLoading(false);
+    }
+  };
+
+  const fetchBanks = async () => {
+    if (!user) return;
+    try {
+      const res = await api.get('/banks');
+      setBanks(res.data);
+    } catch (err) {
+      console.error('Error al obtener bancos:', err);
+    }
+  };
+
+  const addAccount = async (data: Partial<Account>) => {
+    await api.post('/accounts', data);
+    await fetchAccounts();
+    fetchStats();
+  };
+
+  const updateAccount = async (id: string, data: Partial<Account>) => {
+    await api.put(`/accounts/${id}`, data);
+    await fetchAccounts();
+    fetchStats();
+    fetchExpenses();
+    fetchIncomes();
+  };
+
+  const deleteAccount = async (id: string) => {
+    await api.delete(`/accounts/${id}`);
+    await fetchAccounts();
+    fetchStats();
+    fetchExpenses();
+    fetchIncomes();
+  };
+
+  const addCustomBank = async (data: { name: string; color?: string; logoUrl?: string }) => {
+    const res = await api.post('/banks', data);
+    await fetchBanks();
+    return res.data;
+  };
+
   // Carga inicial y por cambio de periodo
   useEffect(() => {
     if (user) {
       fetchCategories();
       fetchTags();
       fetchStats();
+      fetchYearlyStats(year);
+      fetchHistoricalStats();
+      fetchInvestments();
+      fetchBankAccounts();
+      fetchAccounts();
+      fetchBanks();
+      fetchTransfers();
     } else {
       setExpenses([]);
       setIncomes([]);
       setCategories([]);
       setTags([]);
       setStats(null);
+      setYearlyStats(null);
+      setHistoricalStats(null);
+      setInvestments([]);
+      setBankAccounts([]);
+      setAccounts([]);
+      setBanks([]);
+      setTransfers([]);
     }
   }, [user, year, month]);
 
@@ -196,8 +415,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (user) {
       fetchExpenses();
       fetchIncomes();
+      fetchTransfers();
     }
-  }, [user, year, month, filterStartDate, filterEndDate, filterCategoryId, filterTags, filterSearch]);
+  }, [user, year, month, filterStartDate, filterEndDate, filterCategoryId, filterTags, filterSearch, filterBank, filterMinAmount, filterMaxAmount]);
 
   const refreshAll = () => {
     fetchCategories();
@@ -205,6 +425,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     fetchExpenses();
     fetchIncomes();
     fetchStats();
+    fetchYearlyStats(year);
+    fetchHistoricalStats();
+    fetchInvestments();
+    fetchBankAccounts();
+    fetchAccounts();
+    fetchBanks();
+    fetchTransfers();
   };
 
   // GASTOS
@@ -254,6 +481,22 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     refreshAll();
   };
 
+  // TRANSFERENCIAS
+  const addTransfer = async (data: any) => {
+    await api.post('/transfers', data);
+    refreshAll();
+  };
+
+  const updateTransfer = async (id: string, data: any) => {
+    await api.put(`/transfers/${id}`, data);
+    refreshAll();
+  };
+
+  const deleteTransfer = async (id: string) => {
+    await api.delete(`/transfers/${id}`);
+    refreshAll();
+  };
+
   // CATEGORÍAS
   const addCategory = async (data: { name: string; color: string; type: 'expense' | 'income' }) => {
     const res = await api.post('/categories', data);
@@ -295,6 +538,22 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     fetchStats();
   };
 
+  // OPERACIONES DE INVERSIONES
+  const addInvestment = async (data: any) => {
+    await api.post('/investments', data);
+    refreshAll();
+  };
+
+  const updateInvestment = async (id: string, data: any) => {
+    await api.put(`/investments/${id}`, data);
+    refreshAll();
+  };
+
+  const deleteInvestment = async (id: string) => {
+    await api.delete(`/investments/${id}`);
+    refreshAll();
+  };
+
   return (
     <FinanceContext.Provider
       value={{
@@ -303,8 +562,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         categories,
         tags,
         stats,
+        yearlyStats,
+        historicalStats,
         loading,
         statsLoading,
+        yearlyStatsLoading,
+        historicalStatsLoading,
         year,
         month,
         setPeriod,
@@ -318,6 +581,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setFilterTags,
         filterSearch,
         setFilterSearch,
+        filterBank,
+        setFilterBank,
+        filterMinAmount,
+        setFilterMinAmount,
+        filterMaxAmount,
+        setFilterMaxAmount,
         resetFilters,
         refreshAll,
         addExpense,
@@ -335,6 +604,33 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         saveSavingGoal,
         deleteExpensesBulk,
         deleteIncomesBulk,
+        transfers,
+        addTransfer,
+        updateTransfer,
+        deleteTransfer,
+        investments,
+        investmentsLoading,
+        fetchInvestments,
+        addInvestment,
+        updateInvestment,
+        deleteInvestment,
+        bankAccounts,
+        bankAccountsLoading,
+        fetchBankAccounts,
+        addBankAccount,
+        updateBankAccount,
+        deleteBankAccount,
+        accounts,
+        banks,
+        accountsLoading,
+        fetchAccounts,
+        fetchBanks,
+        addAccount,
+        updateAccount,
+        deleteAccount,
+        addCustomBank,
+        fetchYearlyStats,
+        fetchHistoricalStats,
       }}
     >
       {children}

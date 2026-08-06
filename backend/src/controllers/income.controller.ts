@@ -5,9 +5,10 @@ import { updateMonthlySummary } from '../utils/summary';
 
 export async function getIncomes(req: AuthRequest, res: Response) {
   const userId = req.userId!;
-  const { startDate, endDate, categoryId, search } = req.query;
+  const { startDate, endDate, categoryId, search, bank, minAmount, maxAmount } = req.query;
 
   const where: any = { userId };
+  const andConditions: any[] = [];
 
   if (startDate || endDate) {
     where.date = {};
@@ -21,14 +22,45 @@ export async function getIncomes(req: AuthRequest, res: Response) {
     }
   }
 
+  // Amount filter
+  if (minAmount || maxAmount) {
+    where.amount = {};
+    if (minAmount) {
+      where.amount.gte = parseFloat(minAmount as string);
+    }
+    if (maxAmount) {
+      where.amount.lte = parseFloat(maxAmount as string);
+    }
+  }
+
   if (categoryId) {
     where.categoryId = categoryId === 'null' ? null : (categoryId as string);
   }
 
-  if (search) {
-    where.description = { contains: search as string, mode: 'insensitive' };
+  const accountId = req.query.accountId;
+  if (accountId) {
+    where.accountId = accountId as string;
+  } else if (bank) {
+    andConditions.push({
+      OR: [
+        { accountId: bank as string },
+        { bank: bank as string }
+      ]
+    });
   }
 
+  if (search) {
+    andConditions.push({
+      OR: [
+        { description: { contains: search as string, mode: 'insensitive' } },
+        { notes: { contains: search as string, mode: 'insensitive' } }
+      ]
+    });
+  }
+
+  if (andConditions.length > 0) {
+    where.AND = andConditions;
+  }
   try {
     const incomes = await prisma.income.findMany({
       where,
@@ -45,13 +77,30 @@ export async function getIncomes(req: AuthRequest, res: Response) {
 
 export async function createIncome(req: AuthRequest, res: Response) {
   const userId = req.userId!;
-  const { amount, date, description, categoryId } = req.body;
+  const { amount, date, description, categoryId, notes, bank } = req.body;
 
   if (!amount || !date || !description) {
     return res.status(400).json({ error: 'Importe, fecha y descripción son requeridos' });
   }
 
   try {
+    const reqAccountId = req.body.accountId;
+    let targetAccountId = reqAccountId || null;
+    let targetBankName = bank || null;
+
+    if (reqAccountId) {
+      const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
+      if (acc) {
+        targetBankName = acc.name;
+      }
+    } else if (bank) {
+      const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
+      if (acc) {
+        targetAccountId = acc.id;
+        targetBankName = acc.name;
+      }
+    }
+
     const incomeDate = new Date(date);
     const income = await prisma.income.create({
       data: {
@@ -59,6 +108,9 @@ export async function createIncome(req: AuthRequest, res: Response) {
         date: incomeDate,
         description,
         categoryId: categoryId || null,
+        notes: notes || null,
+        bank: targetBankName,
+        accountId: targetAccountId,
         userId,
       },
       include: {
@@ -79,7 +131,7 @@ export async function createIncome(req: AuthRequest, res: Response) {
 export async function updateIncome(req: AuthRequest, res: Response) {
   const userId = req.userId!;
   const { id } = req.params;
-  const { amount, date, description, categoryId } = req.body;
+  const { amount, date, description, categoryId, notes, bank } = req.body;
 
   try {
     const existingIncome = await prisma.income.findFirst({
@@ -93,6 +145,23 @@ export async function updateIncome(req: AuthRequest, res: Response) {
     const oldDate = new Date(existingIncome.date);
     const incomeDate = date ? new Date(date) : existingIncome.date;
 
+    const reqAccountId = req.body.accountId;
+    let targetAccountId = reqAccountId !== undefined ? reqAccountId : existingIncome.accountId;
+    let targetBankName = bank !== undefined ? (bank || null) : existingIncome.bank;
+
+    if (reqAccountId) {
+      const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
+      if (acc) {
+        targetBankName = acc.name;
+      }
+    } else if (bank) {
+      const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
+      if (acc) {
+        targetAccountId = acc.id;
+        targetBankName = acc.name;
+      }
+    }
+
     const updated = await prisma.income.update({
       where: { id },
       data: {
@@ -100,6 +169,9 @@ export async function updateIncome(req: AuthRequest, res: Response) {
         date: incomeDate,
         description: description !== undefined ? description : existingIncome.description,
         categoryId: categoryId !== undefined ? (categoryId || null) : existingIncome.categoryId,
+        notes: notes !== undefined ? (notes || null) : existingIncome.notes,
+        bank: targetBankName,
+        accountId: targetAccountId,
       },
       include: {
         category: true,
@@ -181,5 +253,79 @@ export async function deleteIncomesBulk(req: AuthRequest, res: Response) {
     res.json({ message: 'Ingresos eliminados correctamente' });
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Error al eliminar ingresos en lote' });
+  }
+}
+
+export async function updateIncomesBulk(req: AuthRequest, res: Response) {
+  const userId = req.userId!;
+  const { ids, bank, categoryId, description, notes, date } = req.body;
+
+  console.log('updateIncomesBulk payload:', { ids, bank, categoryId, description, notes, date });
+
+  if (!ids || !Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'IDs de ingresos requeridos' });
+  }
+
+  try {
+    const updatedMonths = new Map<string, { year: number; month: number }>();
+
+    for (const id of ids) {
+      const existingIncome = await prisma.income.findFirst({
+        where: { id, userId },
+      });
+      if (!existingIncome) continue;
+
+      const oldDate = new Date(existingIncome.date);
+      updatedMonths.set(`${oldDate.getFullYear()}-${oldDate.getMonth() + 1}`, {
+        year: oldDate.getFullYear(),
+        month: oldDate.getMonth() + 1
+      });
+
+      const updateData: any = {};
+      if (bank !== undefined) {
+        if (bank === 'Manual') {
+          updateData.bank = null;
+          updateData.accountId = null;
+        } else {
+          const acc = await prisma.account.findFirst({
+            where: { id: bank, userId }
+          });
+          if (acc) {
+            updateData.bank = acc.name;
+            updateData.accountId = acc.id;
+          } else {
+            updateData.bank = bank;
+            const accByName = await prisma.account.findFirst({
+              where: { name: bank, userId }
+            });
+            updateData.accountId = accByName ? accByName.id : null;
+          }
+        }
+      }
+      if (categoryId !== undefined) updateData.categoryId = categoryId || null;
+      if (description !== undefined) updateData.description = description;
+      if (notes !== undefined) updateData.notes = notes;
+      if (date !== undefined) {
+        const newDate = new Date(date);
+        updateData.date = newDate;
+        updatedMonths.set(`${newDate.getFullYear()}-${newDate.getMonth() + 1}`, {
+          year: newDate.getFullYear(),
+          month: newDate.getMonth() + 1
+        });
+      }
+
+      await prisma.income.update({
+        where: { id },
+        data: updateData
+      });
+    }
+
+    for (const item of updatedMonths.values()) {
+      await updateMonthlySummary(userId, item.year, item.month);
+    }
+
+    res.json({ message: `${ids.length} ingresos actualizados correctamente` });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message || 'Error al actualizar ingresos en bloque' });
   }
 }

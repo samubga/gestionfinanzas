@@ -9,7 +9,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
-  updateStartingBalance: (amount: number) => Promise<void>;
+  updateStartingBalance: (balances: { manual?: number; caixa?: number; trade?: number }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,8 +57,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
   };
 
-  const updateStartingBalance = async (amount: number) => {
-    const res = await api.put('/auth/starting-balance', { startingBalance: amount });
+  const updateStartingBalance = async (balances: { manual?: number; caixa?: number; trade?: number }) => {
+    const res = await api.put('/auth/starting-balance', {
+      startingBalance: balances.manual,
+      startingBalanceCaixa: balances.caixa,
+      startingBalanceTrade: balances.trade
+    });
     setUser(res.data);
   };
 

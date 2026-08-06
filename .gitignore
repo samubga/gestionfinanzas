@@ -36,3 +36,8 @@ yarn-debug.log*
 yarn-error.log*
 logs/
 *.log
+
+# Gemini and Agent configs
+.gemini/
+.geminirules
+.agents/

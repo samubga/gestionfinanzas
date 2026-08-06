@@ -9,6 +9,9 @@ import StatsPage from './components/StatsPage';
 import CategoryTagManager from './components/CategoryTagManager';
 import BackupManager from './components/BackupManager';
 import ExpenseForm from './components/ExpenseForm';
+import ForecastManager from './components/ForecastManager';
+import InvestmentsManager from './components/InvestmentsManager';
+import AccountManager from './components/AccountManager';
 import { Plus } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -16,7 +19,7 @@ const AppContent: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editTx, setEditTx] = useState<any>(null);
-  const [formInitialType, setFormInitialType] = useState<'expense' | 'income'>('expense');
+  const [formInitialType, setFormInitialType] = useState<'expense' | 'income' | 'transfer'>('expense');
 
   // Theme state
   const [dark, setDark] = useState(() => {
@@ -38,7 +41,7 @@ const AppContent: React.FC = () => {
 
   const toggleTheme = () => setDark(!dark);
 
-  const handleOpenAddForm = (type: 'expense' | 'income' = 'expense') => {
+  const handleOpenAddForm = (type: 'expense' | 'income' | 'transfer' = 'expense') => {
     setEditTx(null);
     setFormInitialType(type);
     setIsFormOpen(true);
@@ -69,6 +72,8 @@ const AppContent: React.FC = () => {
     switch (activeTab) {
       case 'dashboard':
         return <Dashboard />;
+      case 'accounts':
+        return <AccountManager />;
       case 'transactions':
         return (
           <Transactions
@@ -78,10 +83,14 @@ const AppContent: React.FC = () => {
         );
       case 'stats':
         return <StatsPage />;
+      case 'investments':
+        return <InvestmentsManager />;
       case 'categories':
         return <CategoryTagManager />;
       case 'backup':
         return <BackupManager />;
+      case 'forecasts':
+        return <ForecastManager />;
       default:
         return <Dashboard />;
     }

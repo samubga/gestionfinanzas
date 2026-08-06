@@ -51,6 +51,15 @@ export async function register(req: Request, res: Response) {
       })),
     });
 
+    // Seed default bank accounts
+    await prisma.bankAccount.createMany({
+      data: [
+        { name: 'Manual', startingBalance: 0, userId: user.id },
+        { name: 'CaixaBank', startingBalance: 0, userId: user.id },
+        { name: 'Trade Republic', startingBalance: 0, userId: user.id },
+      ],
+    });
+
     const token = jwt.sign(
       { userId: user.id },
       process.env.JWT_SECRET || 'super-secret-key-change-in-production',
@@ -116,7 +125,7 @@ export async function getMe(req: any, res: Response) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, name: true, startingBalance: true },
+      select: { id: true, email: true, name: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true },
     });
 
     if (!user) {
@@ -132,20 +141,57 @@ export async function getMe(req: any, res: Response) {
 
 export async function updateStartingBalance(req: any, res: Response) {
   const userId = req.userId;
-  const { startingBalance } = req.body;
+  const { startingBalance, startingBalanceCaixa, startingBalanceTrade } = req.body;
 
-  if (startingBalance === undefined || isNaN(parseFloat(startingBalance))) {
-    return res.status(400).json({ error: 'El saldo inicial debe ser un número válido' });
+  const updateData: any = {};
+  if (startingBalance !== undefined) {
+    if (isNaN(parseFloat(startingBalance))) {
+      return res.status(400).json({ error: 'El saldo inicial Manual debe ser un número válido' });
+    }
+    updateData.startingBalance = parseFloat(startingBalance);
+  }
+  if (startingBalanceCaixa !== undefined) {
+    if (isNaN(parseFloat(startingBalanceCaixa))) {
+      return res.status(400).json({ error: 'El saldo inicial CaixaBank debe ser un número válido' });
+    }
+    updateData.startingBalanceCaixa = parseFloat(startingBalanceCaixa);
+  }
+  if (startingBalanceTrade !== undefined) {
+    if (isNaN(parseFloat(startingBalanceTrade))) {
+      return res.status(400).json({ error: 'El saldo inicial Trade Republic debe ser un número válido' });
+    }
+    updateData.startingBalanceTrade = parseFloat(startingBalanceTrade);
   }
 
   try {
     const updated = await prisma.user.update({
       where: { id: userId },
-      data: {
-        startingBalance: parseFloat(startingBalance),
-      },
-      select: { id: true, email: true, name: true, startingBalance: true },
+      data: updateData,
+      select: { id: true, email: true, name: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true },
     });
+
+    // Also update dynamic bank account records for backwards compatibility
+    if (startingBalance !== undefined) {
+      await prisma.bankAccount.upsert({
+        where: { name_userId: { name: 'Manual', userId } },
+        update: { startingBalance: parseFloat(startingBalance) },
+        create: { name: 'Manual', startingBalance: parseFloat(startingBalance), userId }
+      });
+    }
+    if (startingBalanceCaixa !== undefined) {
+      await prisma.bankAccount.upsert({
+        where: { name_userId: { name: 'CaixaBank', userId } },
+        update: { startingBalance: parseFloat(startingBalanceCaixa) },
+        create: { name: 'CaixaBank', startingBalance: parseFloat(startingBalanceCaixa), userId }
+      });
+    }
+    if (startingBalanceTrade !== undefined) {
+      await prisma.bankAccount.upsert({
+        where: { name_userId: { name: 'Trade Republic', userId } },
+        update: { startingBalance: parseFloat(startingBalanceTrade) },
+        create: { name: 'Trade Republic', startingBalance: parseFloat(startingBalanceTrade), userId }
+      });
+    }
 
     res.json(updated);
   } catch (error: any) {
