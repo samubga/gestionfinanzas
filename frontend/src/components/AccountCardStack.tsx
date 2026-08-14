@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { Wallet, CreditCard, Building2, TrendingUp, CheckCircle2, Layers } from 'lucide-react';
+import { Account } from '../types';
 
 interface AccountCardStackProps {
   onSelectAccount?: (accountId: string | null) => void;
@@ -11,7 +12,7 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
   onSelectAccount,
   onOpenAddAccount
 }) => {
-  const { accounts } = useFinance();
+  const { accounts, stats } = useFinance();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
 
   const handleCardClick = (id: string) => {
@@ -32,10 +33,29 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
     }
   };
 
-  const totalBalance = accounts.reduce((acc, a) => acc + (a.currentBalance ?? a.startingBalance ?? 0), 0);
+  const getAccountCurrentBalance = (acc: Account): number => {
+    if (acc.currentBalance !== undefined && acc.currentBalance !== null) {
+      return acc.currentBalance;
+    }
+    if (stats?.accountDetails) {
+      const match = stats.accountDetails.find(d => d.id === acc.id);
+      if (match) return match.currentBalance;
+    }
+    if (stats?.balances && stats.balances[acc.id] !== undefined) {
+      return stats.balances[acc.id];
+    }
+    if (stats?.balances && stats.balances[acc.name] !== undefined) {
+      return stats.balances[acc.name];
+    }
+    return acc.startingBalance || 0;
+  };
+
+  const totalBalance = stats?.availableBalance !== undefined && stats.availableBalance !== 0
+    ? stats.availableBalance
+    : accounts.reduce((sum, a) => sum + getAccountCurrentBalance(a), 0);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between">
+    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
       {/* Background ambient glow */}
       <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -64,7 +84,7 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
       </div>
 
       {/* Account Cards List / Stack */}
-      <div className="space-y-3 relative z-10 my-2">
+      <div className="space-y-3 relative z-10 my-2 flex-1">
         {accounts.length === 0 ? (
           <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
             <p className="text-xs text-slate-400 mb-2">No tienes cuentas registradas todavía.</p>
@@ -81,7 +101,7 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
           accounts.slice(0, 4).map((acc) => {
             const Icon = getAccountIcon(acc.type);
             const isSelected = selectedAccountId === acc.id;
-            const balance = acc.currentBalance ?? acc.startingBalance ?? 0;
+            const balance = getAccountCurrentBalance(acc);
 
             return (
               <div
@@ -131,7 +151,7 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
 
       {/* Footer Total */}
       <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs relative z-10">
-        <span className="font-bold text-slate-400 dark:text-slate-500">Saldo Total</span>
+        <span className="font-bold text-slate-400 dark:text-slate-500">Saldo Total Disponible</span>
         <span className="font-black text-slate-800 dark:text-white font-mono text-sm">
           {totalBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
         </span>

@@ -1,20 +1,23 @@
 import React, { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import AccountCardStack from './AccountCardStack';
+import SmartInsightsCard from './SmartInsightsCard';
 import {
   ArrowUpRight,
   ArrowDownRight,
   Sparkles,
   PieChart as PieChartIcon,
   Receipt,
-  Zap,
   Activity,
-  ShieldCheck,
-  ChevronRight
+  ArrowRight
 } from 'lucide-react';
-import { ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, Tooltip } from 'recharts';
 
-export const BentoDashboard: React.FC = () => {
+interface BentoDashboardProps {
+  setActiveTab?: (tab: string) => void;
+}
+
+export const BentoDashboard: React.FC<BentoDashboardProps> = ({ setActiveTab }) => {
   const { stats, expenses, categories, accounts } = useFinance();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
 
@@ -32,6 +35,11 @@ export const BentoDashboard: React.FC = () => {
   const netSavings = totalIncome - totalExpense;
   const savingsRate = totalIncome > 0 ? Math.round((netSavings / totalIncome) * 100) : 0;
   const healthScore = Math.min(100, Math.max(20, 50 + savingsRate));
+
+  // Available Net Worth balance
+  const availableBalance = stats?.availableBalance !== undefined && stats.availableBalance !== 0
+    ? stats.availableBalance
+    : accounts.reduce((acc, a) => acc + (a.currentBalance ?? a.startingBalance ?? 0), 0);
 
   // Top spending categories
   const categoryTotals: Record<string, number> = {};
@@ -52,16 +60,22 @@ export const BentoDashboard: React.FC = () => {
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 4);
 
-  // Sparkline dummy data for net worth evolution
-  const sparkData = [
-    { day: '1', val: totalIncome * 0.7 },
-    { day: '5', val: totalIncome * 0.8 },
-    { day: '10', val: totalIncome * 0.75 },
-    { day: '15', val: totalIncome * 0.9 },
-    { day: '20', val: totalIncome * 0.85 },
-    { day: '25', val: totalIncome * 0.95 },
-    { day: '30', val: totalIncome }
-  ];
+  // Sparkline data for net worth evolution
+  const sparkData = stats?.evolution && stats.evolution.length > 0
+    ? stats.evolution.map(e => ({ label: e.label, val: e.income - e.expense }))
+    : [
+        { label: '1', val: totalIncome * 0.5 },
+        { label: '2', val: totalIncome * 0.7 },
+        { label: '3', val: totalIncome * 0.8 },
+        { label: '4', val: totalIncome * 0.9 },
+        { label: '5', val: totalIncome }
+      ];
+
+  const handleNav = (tab: string) => {
+    if (setActiveTab) {
+      setActiveTab(tab);
+    }
+  };
 
   return (
     <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto px-4">
@@ -77,7 +91,7 @@ export const BentoDashboard: React.FC = () => {
           <div className="relative z-10 flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-[10px] font-extrabold uppercase tracking-widest text-white border border-white/20 flex items-center gap-1.5">
-                <Sparkles size={12} className="text-brand-200" /> Balance Net Worth
+                <Sparkles size={12} className="text-brand-200" /> Capital Total Disponible
               </span>
             </div>
 
@@ -91,7 +105,7 @@ export const BentoDashboard: React.FC = () => {
             <span className="text-xs text-white/70 font-bold uppercase tracking-wider block mb-1">Disponible Acumulado</span>
             <div className="flex items-baseline gap-3">
               <h2 className="text-3xl md:text-5xl font-black font-mono tracking-tight text-white">
-                {netSavings.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                {availableBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
               </h2>
               <span className={`inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full ${
                 netSavings >= 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30' : 'bg-red-500/20 text-red-300 border border-red-400/30'
@@ -103,18 +117,39 @@ export const BentoDashboard: React.FC = () => {
           </div>
 
           {/* Sparkline mini chart */}
-          <div className="h-16 mt-4 relative z-10">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={sparkData}>
-                <defs>
-                  <linearGradient id="heroGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ffffff" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#ffffff" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <Area type="monotone" dataKey="val" stroke="#ffffff" strokeWidth={2.5} fillOpacity={1} fill="url(#heroGradient)" />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="mt-4 relative z-10">
+            <div className="flex items-center justify-between text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">
+              <span>Histórico del Ahorro Neto Mensual</span>
+            </div>
+            <div className="h-16">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={sparkData}>
+                  <defs>
+                    <linearGradient id="heroGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ffffff" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#ffffff" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="bg-slate-900/90 text-white text-[11px] px-2.5 py-1 rounded-lg border border-white/20 backdrop-blur-md shadow-lg">
+                            <span className="text-white/70 font-medium block">{data.label}</span>
+                            <span className="font-bold font-mono text-emerald-300">
+                              {data.val >= 0 ? '+' : ''}{data.val.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                            </span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Area type="monotone" dataKey="val" stroke="#ffffff" strokeWidth={2.5} fillOpacity={1} fill="url(#heroGradient)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
           {/* Hero Footer Stats */}
@@ -134,6 +169,7 @@ export const BentoDashboard: React.FC = () => {
         <div className="lg:col-span-1">
           <AccountCardStack
             onSelectAccount={(accId) => setSelectedAccountId(accId)}
+            onOpenAddAccount={() => handleNav('accounts')}
           />
         </div>
 
@@ -180,7 +216,9 @@ export const BentoDashboard: React.FC = () => {
 
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 font-bold flex items-center justify-between">
             <span>{categories.length} Categorías totales</span>
-            <span className="text-brand-500">Detalles →</span>
+            <button onClick={() => handleNav('categories')} className="text-brand-500 hover:underline flex items-center gap-0.5 cursor-pointer">
+              Detalles <ArrowRight size={12} />
+            </button>
           </div>
         </div>
 
@@ -198,6 +236,13 @@ export const BentoDashboard: React.FC = () => {
                 </span>
               </div>
             </div>
+
+            <button
+              onClick={() => handleNav('transactions')}
+              className="text-xs font-bold text-brand-500 hover:underline cursor-pointer flex items-center gap-1 bg-brand-50 dark:bg-brand-950/40 px-3 py-1.5 rounded-full border border-brand-100 dark:border-brand-800/40"
+            >
+              Ver Transacciones <ArrowRight size={12} />
+            </button>
           </div>
 
           {/* Transactions Pills List */}
@@ -212,6 +257,7 @@ export const BentoDashboard: React.FC = () => {
                 return (
                   <div
                     key={exp.id}
+                    onClick={() => handleNav('transactions')}
                     className="flex items-center justify-between p-3.5 bg-slate-50/70 dark:bg-slate-950/40 border border-slate-100/80 dark:border-slate-800/60 rounded-2xl hover:border-brand-500/30 transition cursor-pointer group"
                   >
                     <div className="flex items-center gap-3">
@@ -250,34 +296,7 @@ export const BentoDashboard: React.FC = () => {
         </div>
 
         {/* 5. SMART INSIGHT & PREDICTIVE CARD (Span 1 col on lg) */}
-        <div className="lg:col-span-1 bg-gradient-to-br from-slate-900 to-slate-950 text-white border border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10">
-            <Zap size={80} className="text-brand-400" />
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="p-1.5 bg-brand-500/20 text-brand-300 rounded-lg border border-brand-400/30">
-                <Zap size={14} />
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-brand-300">Smart Insights</span>
-            </div>
-
-            <h4 className="font-extrabold text-sm text-white mb-2">Previsión Saludable</h4>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Tus ahorros del mes representan el <strong className="text-emerald-400">{savingsRate}%</strong> de tus ingresos. Mantienes un ritmo financiero equilibrado.
-            </p>
-          </div>
-
-          <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs">
-            <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
-              <ShieldCheck size={12} className="text-emerald-400" /> Verificado
-            </span>
-            <button className="text-[10px] font-bold text-brand-400 hover:text-brand-300 flex items-center gap-1">
-              Análisis completo <ChevronRight size={12} />
-            </button>
-          </div>
-        </div>
+        <SmartInsightsCard stats={stats} onNavigate={handleNav} />
 
       </div>
     </div>

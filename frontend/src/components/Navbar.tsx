@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
 import { useTheme } from '../context/ThemeContext';
-import { LayoutDashboard, Receipt, BarChart3, Settings2, Database, LogOut, Sun, Moon, TrendingUp, LineChart, Wallet, Sparkles } from 'lucide-react';
+import { LayoutDashboard, Receipt, BarChart3, Settings2, Database, LogOut, Sun, Moon, TrendingUp, LineChart, Wallet } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: string;
@@ -21,7 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { user, logout } = useAuth();
   const { year, month, setPeriod } = useFinance();
-  const { colorTheme, setColorTheme, toggleLayoutMode } = useTheme();
+  const { colorTheme, setColorTheme } = useTheme();
 
   const themes = [
     { id: 'indigo', name: 'Día / Noche Clásico', hex: '#4f46e5' },
@@ -29,7 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'rose', name: 'Modo Rubí', hex: '#9b3c50' },
     { id: 'amber', name: 'Modo Ámbar', hex: '#766246' },
     { id: 'ocean', name: 'Modo Diamante', hex: '#4c6e86' },
-    { id: 'violet', name: 'Modo Amatista', hex: '#70588f' },
+    { id: 'violet', name: 'Modo Amatista', hex: '#8b78dc' },
     { id: 'obsidian', name: 'Modo Obsidiana (OLED)', hex: '#121212' },
   ] as const;
 
@@ -157,21 +157,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               title="Cerrar Sesión"
             >
               <LogOut size={16} />
-            </button>
-          </div>
-
-          {/* Layout Mode Switcher */}
-          <div className="pt-2">
-            <button
-              onClick={toggleLayoutMode}
-              className="w-full flex items-center justify-between px-3 py-2 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 text-brand-500 rounded-xl transition cursor-pointer text-xs font-extrabold shadow-sm"
-              title="Cambiar al nuevo diseño Bento Canvas (v2)"
-            >
-              <span className="flex items-center gap-1.5">
-                <Sparkles size={14} className="text-brand-500" />
-                <span>Diseño Bento v2</span>
-              </span>
-              <span className="text-[9px] px-2 py-0.5 bg-brand-600 text-white rounded-md uppercase font-bold">Activar</span>
             </button>
           </div>
 

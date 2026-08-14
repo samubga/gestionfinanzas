@@ -1,14 +1,45 @@
 import React, { useState, useMemo } from 'react';
 import { useFinance } from '../context/FinanceContext';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, PiggyBank, Wallet, TrendingUp, Edit2, Check, X, Tag } from 'lucide-react';
+import AccountCardStack from './AccountCardStack';
+import SmartInsightsCard from './SmartInsightsCard';
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  CartesianGrid
+} from 'recharts';
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  PiggyBank,
+  Edit2,
+  Check,
+  X,
+  Sparkles,
+  PieChart as PieChartIcon,
+  Receipt,
+  Activity,
+  ArrowRight,
+  Target
+} from 'lucide-react';
 
-export const Dashboard: React.FC = () => {
-  const { stats, statsLoading, saveSavingGoal } = useFinance();
+interface DashboardProps {
+  setActiveTab?: (tab: string) => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
+  const { stats, statsLoading, saveSavingGoal, expenses, categories, accounts } = useFinance();
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const [evolutionRange, setEvolutionRange] = useState<'3m' | '6m' | '1y' | 'all'>('6m');
   const [zoomEnabled, setZoomEnabled] = useState(false);
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
 
   const evolution = stats?.evolution;
 
@@ -20,7 +51,7 @@ export const Dashboard: React.FC = () => {
     return evolution;
   }, [evolution, evolutionRange]);
 
-  const rangeLabel = 
+  const rangeLabel =
     evolutionRange === '3m' ? 'Últimos 3 meses de ingresos y gastos' :
     evolutionRange === '6m' ? 'Últimos 6 meses de ingresos y gastos' :
     evolutionRange === '1y' ? 'Último año de ingresos y gastos' :
@@ -41,21 +72,75 @@ export const Dashboard: React.FC = () => {
 
   if (statsLoading || !stats) {
     return (
-      <div className="space-y-6 animate-pulse p-6">
+      <div className="space-y-6 animate-pulse p-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[1, 2, 3, 4].map(n => (
-            <div key={n} className="h-28 bg-slate-100 dark:bg-slate-800/60 rounded-2xl" />
+            <div key={n} className="h-32 bg-slate-100 dark:bg-slate-800/60 rounded-3xl" />
           ))}
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 h-80 bg-slate-100 dark:bg-slate-800/60 rounded-2xl" />
-          <div className="h-80 bg-slate-100 dark:bg-slate-800/60 rounded-2xl" />
+          <div className="lg:col-span-2 h-80 bg-slate-100 dark:bg-slate-800/60 rounded-3xl" />
+          <div className="h-80 bg-slate-100 dark:bg-slate-800/60 rounded-3xl" />
         </div>
       </div>
     );
   }
 
-  const { currentMonth, availableBalance, balances, categoryBreakdown, tagBreakdown, topExpenses } = stats;
+  const { currentMonth, availableBalance, categoryBreakdown } = stats;
+
+  const totalIncome = currentMonth?.income || 0;
+  const totalExpense = currentMonth?.expense || 0;
+  const netSavings = currentMonth?.savings || (totalIncome - totalExpense);
+  const savingsRate = totalIncome > 0 ? Math.round((netSavings / totalIncome) * 100) : 0;
+  const healthScore = Math.min(100, Math.max(20, 50 + savingsRate));
+
+  const totalAvailable = availableBalance !== undefined && availableBalance !== 0
+    ? availableBalance
+    : accounts.reduce((sum, a) => sum + (a.currentBalance ?? a.startingBalance ?? 0), 0);
+
+  const goalAmount = currentMonth.savingGoal || 0;
+  const goalProgress = goalAmount > 0 ? Math.min(100, Math.round((netSavings / goalAmount) * 100)) : 0;
+
+  // Recharts colors
+  const COLORS = ['#6366F1', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EC4899', '#06B6D4', '#EF4444', '#14B8A6', '#6B7280'];
+
+  // Filter expenses if an account card is clicked
+  const activeExpenses = selectedAccountId
+    ? expenses.filter(e => {
+        const accObj = accounts.find(a => a.id === selectedAccountId);
+        return e.bank && accObj ? e.bank.toLowerCase().includes(accObj.name.toLowerCase()) : true;
+      })
+    : expenses;
+
+  // Top spending categories for bento card
+  const categoryTotals: Record<string, number> = {};
+  activeExpenses.forEach(exp => {
+    categoryTotals[exp.categoryId] = (categoryTotals[exp.categoryId] || 0) + exp.amount;
+  });
+
+  const sortedCategories = Object.entries(categoryTotals)
+    .map(([catId, amt]) => {
+      const catObj = categories.find(c => c.id === catId);
+      return {
+        id: catId,
+        name: catObj?.name || 'Varios',
+        color: catObj?.color || '#6366F1',
+        amount: amt
+      };
+    })
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 4);
+
+  // Sparkline data for hero card
+  const sparkData = stats.evolution && stats.evolution.length > 0
+    ? stats.evolution.map(e => ({ label: e.label, val: e.income - e.expense }))
+    : [
+        { label: '1', val: totalIncome * 0.5 },
+        { label: '2', val: totalIncome * 0.7 },
+        { label: '3', val: totalIncome * 0.8 },
+        { label: '4', val: totalIncome * 0.9 },
+        { label: '5', val: totalIncome }
+      ];
 
   const handleSaveGoal = async () => {
     const val = parseFloat(goalInput);
@@ -66,251 +151,258 @@ export const Dashboard: React.FC = () => {
   };
 
   const startEditGoal = () => {
-    setGoalInput(currentMonth.savingGoal.toString());
+    setGoalInput(goalAmount.toString());
     setEditingGoal(true);
   };
 
-  // Recharts colors for Category Breakdown Pie
-  const COLORS = ['#6366F1', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EC4899', '#06B6D4', '#EF4444', '#14B8A6', '#6B7280'];
-
-  // Calculate goal percentage
-  const goalPercent = currentMonth.savingGoal > 0
-    ? Math.min((currentMonth.savings / currentMonth.savingGoal) * 100, 100)
-    : 0;
+  const handleNav = (tab: string) => {
+    if (setActiveTab) {
+      setActiveTab(tab);
+    }
+  };
 
   return (
-    <div className="p-6 space-y-6 pb-24 md:pb-6 max-w-7xl mx-auto">
-      
-      {/* Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Resumen Financiero</h2>
-          <p className="text-xs text-slate-400 dark:text-slate-500">Visualización de tus ingresos, gastos e histórico mensual</p>
-        </div>
-      </div>
+    <div className="p-6 md:p-8 space-y-8 pb-24 md:pb-8 max-w-7xl mx-auto">
 
-      {/* Top KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      {/* ROW 1: HERO BENTO GRID (CAPITAL DISPONIBLE, CUENTAS, TOP GASTOS) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
         
-        {/* Available Balance (Spans 2 columns on desktop for wide balance texts) */}
-        <div className="lg:col-span-2 bg-gradient-to-tr from-brand-600 to-brand-700 text-white rounded-2xl p-5 shadow-xl shadow-brand-500/10 flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-200">Balance Disponible</span>
-            <div className="p-2 bg-brand-500/30 rounded-xl">
-              <Wallet size={18} />
-            </div>
-          </div>
-          <div className="mt-4 space-y-3">
-            <div>
-              <h3 className="text-3xl font-black">{availableBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</h3>
-              <p className="text-[10px] text-brand-200 mt-0.5">Saldo acumulado total</p>
-            </div>
-            {stats.accountDetails ? (
-              <div className="pt-3 border-t border-brand-500/30 space-y-2 text-[11px] font-bold text-brand-100">
-                <div className="space-y-1.5 divide-y divide-brand-500/20">
-                  {stats.accountDetails.map((acc) => (
-                    <div key={acc.id} className="flex justify-between items-center pt-1.5 first:pt-0">
-                      <span className="flex items-center gap-2">
-                        <span className="text-sm">{acc.icon}</span>
-                        <span>{acc.name}</span>
-                        {acc.bankName && <span className="text-[10px] opacity-75 font-normal">({acc.bankName})</span>}
-                      </span>
-                      <span className="font-extrabold text-white">{acc.currentBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between items-center pt-3 border-t border-brand-500/35 text-brand-200">
-                  <span className="flex items-center gap-1.5">📈 Capital Invertido</span>
-                  <span className="text-white font-bold">{(stats.totalInvestedActive ?? 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
-                </div>
-                <div className="flex justify-between items-center pt-1.5 border-t border-brand-500/35 text-brand-200">
-                  <span className="flex items-center gap-1.5">💎 Patrimonio Neto</span>
-                  <span className="text-white font-black text-sm">{(availableBalance + (stats.totalInvestedActive ?? 0)).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
-                </div>
-              </div>
-            ) : balances && (
-              <div className="pt-3 border-t border-brand-500/30 space-y-2 text-[11px] font-bold text-brand-100">
-                <div className="space-y-1.5 divide-y divide-brand-500/20">
-                  {Object.entries(balances).map(([bankName, balance]) => (
-                    <div key={bankName} className="flex justify-between items-center pt-1.5 first:pt-0">
-                      <span className="flex items-center gap-2">
-                        <span>{bankName === 'CaixaBank' ? '🏦' : bankName === 'Trade Republic' ? '🍊' : '💳'}</span>
-                        <span>{bankName}</span>
-                      </span>
-                      <span className="font-extrabold text-white">{balance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-between items-center pt-3 border-t border-brand-500/35 text-brand-200">
-                  <span className="flex items-center gap-1.5">📈 Capital Invertido</span>
-                  <span className="text-white font-bold">{(stats.totalInvestedActive ?? 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
-                </div>
-                <div className="flex justify-between items-center pt-1.5 border-t border-brand-500/35 text-brand-200">
-                  <span className="flex items-center gap-1.5">💎 Patrimonio Neto</span>
-                  <span className="text-white font-black text-sm">{(availableBalance + (stats.totalInvestedActive ?? 0)).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+        {/* HERO CARD: Capital Total Disponible */}
+        <div className="lg:col-span-2 bg-gradient-to-br from-brand-600 via-brand-700 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand-500/15 relative overflow-hidden flex flex-col justify-between group">
+          <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
 
-        {/* Incomes Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Ingresos del Mes</span>
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500 rounded-xl">
-              <ArrowUpRight size={18} />
+          <div className="relative z-10 flex items-center justify-between mb-6">
+            <span className="px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-[10px] font-extrabold uppercase tracking-widest text-white border border-white/20 flex items-center gap-1.5">
+              <Sparkles size={12} className="text-brand-200" /> Capital Total Disponible
+            </span>
+
+            <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+              <Activity size={13} className="text-emerald-300 animate-pulse" />
+              <span className="text-[10px] font-bold text-white/90">Salud: {healthScore}/100</span>
             </div>
           </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-black text-slate-800 dark:text-white">
-              {currentMonth.income.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
-            </h3>
-            <div className="flex items-center mt-1">
-              <span className={`text-[10px] font-bold flex items-center ${
-                currentMonth.incomeChangePercent >= 0 ? 'text-emerald-500' : 'text-red-500'
+
+          <div className="relative z-10 my-2">
+            <span className="text-xs text-white/70 font-bold uppercase tracking-wider block mb-1">Disponible Acumulado</span>
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <h2 className="text-3xl md:text-5xl font-black font-mono tracking-tight text-white">
+                {totalAvailable.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+              </h2>
+              <span className={`inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full ${
+                netSavings >= 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30' : 'bg-red-500/20 text-red-300 border border-red-400/30'
               }`}>
-                {currentMonth.incomeChangePercent >= 0 ? '+' : ''}
-                {currentMonth.incomeChangePercent.toFixed(1)}%
+                {netSavings >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                {savingsRate}% ahorro
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-1">vs mes anterior</span>
             </div>
           </div>
-        </div>
 
-        {/* Expenses Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Gastos del Mes</span>
-            <div className="p-2 bg-red-50 dark:bg-red-950/20 text-red-500 rounded-xl">
-              <ArrowDownRight size={18} />
+          {/* Sparkline chart */}
+          <div className="mt-4 relative z-10">
+            <div className="flex items-center justify-between text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">
+              <span>Histórico del Ahorro Neto Mensual</span>
             </div>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-2xl font-black text-slate-800 dark:text-white">
-              {currentMonth.expense.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
-            </h3>
-            <div className="flex items-center mt-1">
-              <span className={`text-[10px] font-bold flex items-center ${
-                currentMonth.expenseChangePercent <= 0 ? 'text-emerald-500' : 'text-red-500'
-              }`}>
-                {currentMonth.expenseChangePercent >= 0 ? '+' : ''}
-                {currentMonth.expenseChangePercent.toFixed(1)}%
-              </span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-1">vs mes anterior</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Savings & Saving Goal Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        
-        {/* Savings Card */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Ahorro del Mes</span>
-            <div className="p-2 bg-brand-50 dark:bg-brand-950/20 text-brand-500 rounded-xl">
-              <PiggyBank size={18} />
-            </div>
-          </div>
-          <div className="mt-4">
-            <h3 className={`text-2xl font-black ${
-              currentMonth.savings >= 0 ? 'text-brand-600 dark:text-brand-400' : 'text-rose-500'
-            }`}>
-              {currentMonth.savings.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
-            </h3>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
-              Tasa de ahorro: {currentMonth.income > 0 ? ((currentMonth.savings / currentMonth.income) * 100).toFixed(0) : '0'}%
-            </p>
-          </div>
-        </div>
-
-        {/* Saving Goal Progress Bar */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-3.5">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="text-brand-500" size={18} />
-                <h4 className="text-sm font-bold text-slate-800 dark:text-white">Objetivo de Ahorro del Mes</h4>
-              </div>
-              
-              {editingGoal ? (
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="number"
-                    value={goalInput}
-                    onChange={(e) => setGoalInput(e.target.value)}
-                    className="w-20 px-2 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-white"
-                    autoFocus
+            <div className="h-16">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={sparkData}>
+                  <defs>
+                    <linearGradient id="heroGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ffffff" stopOpacity={0.4} />
+                      <stop offset="95%" stopColor="#ffffff" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="bg-slate-900/90 text-white text-[11px] px-2.5 py-1 rounded-lg border border-white/20 backdrop-blur-md shadow-lg">
+                            <span className="text-white/70 font-medium block">{data.label}</span>
+                            <span className="font-bold font-mono text-emerald-300">
+                              {data.val >= 0 ? '+' : ''}{data.val.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                            </span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
                   />
-                  <button onClick={handleSaveGoal} className="p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg">
-                    <Check size={14} />
-                  </button>
-                  <button onClick={() => setEditingGoal(false)} className="p-1 text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg">
-                    <X size={14} />
-                  </button>
+                  <Area type="monotone" dataKey="val" stroke="#ffffff" strokeWidth={2.5} fillOpacity={1} fill="url(#heroGradient)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Hero Footer Stats */}
+          <div className="pt-4 mt-2 border-t border-white/10 grid grid-cols-2 gap-4 relative z-10 text-xs">
+            <div>
+              <span className="text-white/60 font-bold text-[10px] uppercase block">Ingresos Mes</span>
+              <span className="text-emerald-300 font-black font-mono text-base">+{totalIncome.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+            </div>
+            <div>
+              <span className="text-white/60 font-bold text-[10px] uppercase block">Gastos Mes</span>
+              <span className="text-red-300 font-black font-mono text-base">-{totalExpense.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ACCOUNTS STACK CARD */}
+        <div className="lg:col-span-1">
+          <AccountCardStack
+            onSelectAccount={(accId) => setSelectedAccountId(accId)}
+            onOpenAddAccount={() => handleNav('accounts')}
+          />
+        </div>
+
+        {/* TOP GASTOS POR CATEGORÍA CARD */}
+        <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-brand-50 dark:bg-brand-950/40 text-brand-500 rounded-xl border border-brand-100 dark:border-brand-800/40">
+                  <PieChartIcon size={16} />
                 </div>
+                <h3 className="font-extrabold text-sm text-slate-800 dark:text-white">Top Gastos</h3>
+              </div>
+              <span className="text-[10px] font-bold text-slate-400">Por Categoría</span>
+            </div>
+
+            <div className="space-y-3 my-2">
+              {sortedCategories.length === 0 ? (
+                <p className="text-xs text-slate-400 italic text-center py-4">Sin gastos registrados este período.</p>
               ) : (
-                <button
-                  onClick={startEditGoal}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
-                >
-                  <Edit2 size={12} />
-                  {currentMonth.savingGoal > 0 ? `${currentMonth.savingGoal} €` : 'Establecer meta'}
-                </button>
+                sortedCategories.map(cat => {
+                  const percent = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
+                  return (
+                    <div key={cat.id} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs font-semibold">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
+                          <span className="text-slate-700 dark:text-slate-200">{cat.name}</span>
+                        </div>
+                        <span className="font-mono font-bold text-slate-800 dark:text-white">{cat.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                      </div>
+                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${percent}%`, backgroundColor: cat.color }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })
               )}
             </div>
+          </div>
 
-            {currentMonth.savingGoal > 0 ? (
-              <div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden mb-2">
-                  <div
-                    className="bg-gradient-to-r from-brand-500 to-brand-600 h-full rounded-full transition-all duration-500"
-                    style={{ width: `${goalPercent}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 font-semibold">
-                  <span>Ahorrado: {currentMonth.savings.toFixed(2)} €</span>
-                  <span>Meta: {currentMonth.savingGoal.toFixed(2)} € ({goalPercent.toFixed(0)}%)</span>
-                </div>
-              </div>
-            ) : (
-              <p className="text-xs text-slate-400 dark:text-slate-500 italic">No has definido un objetivo de ahorro para este mes.</p>
-            )}
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 font-bold flex items-center justify-between">
+            <span>{categories.length} Categorías totales</span>
+            <button onClick={() => handleNav('categories')} className="text-brand-500 hover:underline flex items-center gap-0.5 cursor-pointer">
+              Detalles <ArrowRight size={12} />
+            </button>
           </div>
         </div>
 
       </div>
 
-      {/* Main Charts */}
+      {/* ROW 2: SAVINGS & GOAL PROGRESS ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* Evolution Chart (Left 2 columns) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+
+        {/* Ahorro del Mes Card */}
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Ahorro del Mes</span>
+            <h3 className="text-3xl font-black font-mono text-slate-800 dark:text-white">
+              {netSavings.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+            </h3>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              Tasa de ahorro: <strong className="text-brand-500">{savingsRate}%</strong>
+            </span>
+          </div>
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-amber-500 border border-amber-200/50 dark:border-amber-800/40 flex items-center justify-center shrink-0">
+            <PiggyBank size={28} />
+          </div>
+        </div>
+
+        {/* Objetivo de Ahorro del Mes Card */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target size={18} className="text-brand-500" />
+              <h4 className="text-sm font-bold text-slate-800 dark:text-white">Objetivo de Ahorro del Mes</h4>
+            </div>
+
+            {/* Editable goal pill */}
+            {editingGoal ? (
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="number"
+                  value={goalInput}
+                  onChange={e => setGoalInput(e.target.value)}
+                  className="w-24 px-2 py-1 text-xs border rounded-lg dark:bg-slate-800 dark:border-slate-700 text-slate-800 dark:text-white font-mono font-bold"
+                  placeholder="Ej: 800"
+                  autoFocus
+                />
+                <button onClick={handleSaveGoal} className="p-1 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600">
+                  <Check size={14} />
+                </button>
+                <button onClick={() => setEditingGoal(false)} className="p-1 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg">
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={startEditGoal}
+                className="flex items-center gap-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-brand-500 cursor-pointer bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full border border-slate-100 dark:border-slate-700 transition"
+              >
+                <span>{goalAmount.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+                <Edit2 size={12} />
+              </button>
+            )}
+          </div>
+
+          {/* Goal progress bar */}
+          <div className="space-y-1.5">
+            <div className="w-full bg-slate-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-brand-600 to-emerald-500 rounded-full transition-all duration-700"
+                style={{ width: `${goalProgress}%` }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-[11px] font-bold text-slate-400">
+              <span>Ahorrado: {netSavings.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+              <span>Meta: {goalAmount.toLocaleString('es-ES', { minimumFractionDigits: 2 })} € ({goalProgress}%)</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ROW 3: CHARTS ROW (EVOLUCIÓN HISTÓRICA + GASTOS POR CATEGORÍA DONUT) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* Evolución Histórica Chart (Left 2 cols) */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div>
               <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución Histórica</h4>
               <p className="text-[10px] text-slate-400 dark:text-slate-500">{rangeLabel}</p>
             </div>
-            
-            {/* Range Selector & Zoom Toggle */}
+
+            {/* Controls */}
             <div className="flex items-center gap-2">
-              {/* Zoom Button */}
               <button
                 onClick={() => setZoomEnabled(!zoomEnabled)}
-                className={`px-2.5 py-1.5 text-[9px] font-bold rounded-xl border transition-all ${
+                className={`px-2.5 py-1.5 text-[9px] font-bold rounded-xl border transition-all cursor-pointer ${
                   zoomEnabled
                     ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-500 border-brand-200 dark:border-brand-800/40 shadow-sm'
-                    : 'bg-slate-50 dark:bg-slate-950 text-slate-450 border-slate-100 dark:border-slate-800/60 hover:text-slate-600'
+                    : 'bg-slate-50 dark:bg-slate-950 text-slate-400 border-slate-100 dark:border-slate-800/60 hover:text-slate-600'
                 }`}
                 title="Ajustar escala vertical para magnificar fluctuaciones (zoom)"
               >
                 🔍 {zoomEnabled ? "Ajuste Activo" : "Auto Escala"}
               </button>
 
-              {/* Range Buttons */}
               <div className="flex bg-slate-50 dark:bg-slate-950 p-1 rounded-xl border border-slate-100 dark:border-slate-800/80">
                 {([
                   { id: '3m', label: '3 M' },
@@ -321,7 +413,7 @@ export const Dashboard: React.FC = () => {
                   <button
                     key={opt.id}
                     onClick={() => setEvolutionRange(opt.id)}
-                    className={`px-2.5 py-1 text-[9px] font-bold rounded-lg transition-all ${
+                    className={`px-2.5 py-1 text-[9px] font-bold rounded-lg transition-all cursor-pointer ${
                       evolutionRange === opt.id
                         ? 'bg-white dark:bg-slate-900 text-brand-500 shadow-sm border border-slate-100 dark:border-slate-800/40'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -333,7 +425,8 @@ export const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="h-96">
+
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={filteredEvolution} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                 <defs>
@@ -348,11 +441,11 @@ export const Dashboard: React.FC = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/40" />
                 <XAxis dataKey="label" stroke="#94a3b8" fontSize={10} tickLine={false} />
-                <YAxis 
-                  stroke="#94a3b8" 
-                  fontSize={10} 
-                  tickLine={false} 
-                  ticks={zoomEnabled ? undefined : dashboardYAxisTicks} 
+                <YAxis
+                  stroke="#94a3b8"
+                  fontSize={10}
+                  tickLine={false}
+                  ticks={zoomEnabled ? undefined : dashboardYAxisTicks}
                   tickFormatter={(val) => `${val} €`}
                   domain={zoomEnabled ? ['auto', 'auto'] : [0, 'auto']}
                 />
@@ -365,146 +458,152 @@ export const Dashboard: React.FC = () => {
                     fontSize: '12px'
                   }}
                 />
-                <Area type="monotone" dataKey="income" stroke="#10B981" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={2} name="Ingresos" />
-                <Area type="monotone" dataKey="expense" stroke="#EF4444" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={2} name="Gastos" />
+                <Area type="monotone" dataKey="income" stroke="#10B981" fillOpacity={1} fill="url(#colorIncome)" strokeWidth={2.5} name="Ingresos" />
+                <Area type="monotone" dataKey="expense" stroke="#EF4444" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={2.5} name="Gastos" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Category Breakdown (Right 1 column) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
-          <div className="mb-4">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white">Gastos por Categoría</h4>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">Distribución porcentual este mes</p>
-          </div>
-          
-          {categoryBreakdown.length > 0 ? (
-            <>
-              <div className="h-44 relative flex items-center justify-center shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={categoryBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={70}
-                      paddingAngle={4}
-                      dataKey="amount"
-                    >
-                      {categoryBreakdown.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                {/* Center text */}
-                <div className="absolute text-center">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase">Total Gasto</p>
-                  <p className="text-sm font-black text-slate-800 dark:text-white">{currentMonth.expense.toFixed(0)} €</p>
-                </div>
-              </div>
-
-              {/* Legend List */}
-              <div className="flex-1 overflow-y-auto mt-2 space-y-2 pr-1 max-h-[140px]">
-                {categoryBreakdown.slice(0, 4).map((entry, index) => {
-                  const percent = currentMonth.expense > 0 ? ((entry.amount / currentMonth.expense) * 100).toFixed(0) : '0';
-                  return (
-                    <div key={entry.id} className="flex items-center justify-between text-[11px]">
-                      <div className="flex items-center gap-2 truncate">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: entry.color || COLORS[index % COLORS.length] }} />
-                        <span className="font-semibold text-slate-700 dark:text-slate-300 truncate">{entry.name}</span>
-                      </div>
-                      <span className="font-bold text-slate-500 dark:text-slate-400 text-right">{entry.amount.toFixed(0)} € ({percent}%)</span>
-                    </div>
-                  );
-                })}
-                {categoryBreakdown.length > 4 && (
-                  <p className="text-[9px] text-center text-slate-400 mt-2 font-semibold">Y {categoryBreakdown.length - 4} categorías más</p>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
-              <span className="text-3xl mb-2">🍽️</span>
-              <p className="text-xs text-slate-400 dark:text-slate-500 italic">No hay registros este mes para desglosar.</p>
-            </div>
-          )}
-        </div>
+        {/* Smart Insights Card (Right 1 col, next to Evolución Histórica) */}
+        <SmartInsightsCard stats={stats} onNavigate={handleNav} />
 
       </div>
 
-      {/* Lower Row: Tag Breakdown and Top 10 Expenses */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Tag Breakdown */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
-          <div className="mb-4">
-            <h4 className="text-sm font-bold text-slate-800 dark:text-white">Análisis por Etiquetas</h4>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">Etiquetas con mayor acumulación de gasto</p>
+      {/* ROW 4: ÚLTIMOS MOVIMIENTOS & GASTOS POR CATEGORÍA */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+        {/* Últimos Movimientos Feed (Span 3 cols) */}
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 bg-brand-50 dark:bg-brand-950/40 text-brand-500 rounded-2xl border border-brand-100 dark:border-brand-800/40">
+                <Receipt size={18} />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-sm text-slate-800 dark:text-white leading-tight">Últimos Movimientos</h3>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                  {selectedAccountId ? 'Filtrado por cuenta seleccionada' : 'Todas las transacciones recientes'}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => handleNav('transactions')}
+              className="text-xs font-bold text-brand-500 hover:underline cursor-pointer flex items-center gap-1 bg-brand-50 dark:bg-brand-950/40 px-3.5 py-1.5 rounded-full border border-brand-100 dark:border-brand-800/40"
+            >
+              Ver Transacciones <ArrowRight size={12} />
+            </button>
           </div>
 
-          {tagBreakdown.length > 0 ? (
-            <div className="space-y-3 flex-1 overflow-y-auto max-h-[300px] pr-1.5">
-              {tagBreakdown.slice(0, 5).map((item) => {
-                const maxAmount = tagBreakdown[0].amount || 1;
-                const percentage = (item.amount / maxAmount) * 100;
+          {/* Transactions Pills List */}
+          <div className="space-y-2.5">
+            {activeExpenses.length === 0 ? (
+              <div className="p-8 text-center border border-dashed border-slate-100 dark:border-slate-800 rounded-2xl">
+                <p className="text-xs text-slate-400 font-semibold">No hay movimientos registrados para este filtro.</p>
+              </div>
+            ) : (
+              activeExpenses.slice(0, 5).map(exp => {
+                const catObj = categories.find(c => c.id === exp.categoryId);
                 return (
-                  <div key={item.id} className="space-y-1">
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300">
-                        <Tag size={12} className="text-slate-400" />
-                        #{item.name}
-                      </span>
-                      <span className="text-slate-500 dark:text-slate-400">{item.amount.toFixed(2)} €</span>
+                  <div
+                    key={exp.id}
+                    onClick={() => handleNav('transactions')}
+                    className="flex items-center justify-between p-3.5 bg-slate-50/70 dark:bg-slate-950/40 border border-slate-100/80 dark:border-slate-800/60 rounded-2xl hover:border-brand-500/30 transition cursor-pointer group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shadow-sm shrink-0"
+                        style={{ backgroundColor: catObj?.color ? `${catObj.color}20` : '#6366F120', color: catObj?.color || '#6366F1' }}
+                      >
+                        <Receipt size={18} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-extrabold text-slate-800 dark:text-white group-hover:text-brand-500 transition-colors">
+                          {exp.description || catObj?.name || 'Gasto'}
+                        </p>
+                        <div className="flex items-center gap-2 text-[10px] text-slate-400 font-semibold mt-0.5">
+                          <span>{exp.date ? new Date(exp.date).toLocaleDateString('es-ES') : 'Reciente'}</span>
+                          {exp.bank && (
+                            <>
+                              <span>•</span>
+                              <span>{exp.bank}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div className="w-full bg-slate-100 dark:bg-slate-800/80 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-brand-500 h-full rounded-full" style={{ width: `${percentage}%` }} />
+
+                    <div className="text-right">
+                      <p className="text-xs font-black font-mono text-red-500 dark:text-red-400">
+                        -{exp.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                      </p>
                     </div>
                   </div>
                 );
-              })}
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-              <span className="text-3xl mb-2">🏷️</span>
-              <p className="text-xs text-slate-400 dark:text-slate-500 italic">No has usado etiquetas en los gastos de este mes.</p>
-            </div>
-          )}
+              })
+            )}
+          </div>
         </div>
 
-        {/* Top 10 Highest Expenses */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col">
-          <div className="mb-4 flex justify-between items-center">
-            <div>
-              <h4 className="text-sm font-bold text-slate-800 dark:text-white">Mayores Gastos del Mes</h4>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">Top 10 compras con importes más altos</p>
+        {/* Gastos por Categoría Donut Chart (Right 1 col, next to Últimos Movimientos) */}
+        <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="mb-4">
+              <h4 className="text-sm font-bold text-slate-800 dark:text-white">Gastos por Categoría</h4>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500">Distribución porcentual este mes</p>
             </div>
-            <span className="text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/30 px-2.5 py-1 rounded-full">Top 10</span>
-          </div>
 
-          {topExpenses.length > 0 ? (
-            <div className="space-y-2.5 flex-1 overflow-y-auto max-h-[300px] pr-1.5">
-              {topExpenses.map((exp) => (
-                <div key={exp.id} className="flex items-center justify-between p-2 hover:bg-slate-50 dark:hover:bg-slate-800/20 rounded-xl transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: exp.category.color }} />
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{exp.description}</p>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{new Date(exp.date).toLocaleDateString('es-ES')}</p>
-                    </div>
+            {categoryBreakdown.length > 0 ? (
+              <>
+                <div className="h-44 relative flex items-center justify-center shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={categoryBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={55}
+                        outerRadius={75}
+                        paddingAngle={4}
+                        dataKey="amount"
+                      >
+                        {categoryBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  {/* Center total */}
+                  <div className="absolute text-center">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">TOTAL GASTO</p>
+                    <p className="text-base font-black font-mono text-slate-800 dark:text-white">{totalExpense.toFixed(0)} €</p>
                   </div>
-                  <span className="text-xs font-bold text-slate-800 dark:text-white shrink-0">-{exp.amount.toFixed(2)} €</span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-              <span className="text-3xl mb-2">📈</span>
-              <p className="text-xs text-slate-400 dark:text-slate-500 italic">No hay gastos registrados este mes.</p>
-            </div>
-          )}
+
+                {/* Legend list */}
+                <div className="flex-1 overflow-y-auto mt-2 space-y-2 pr-1 max-h-[140px]">
+                  {categoryBreakdown.slice(0, 4).map((entry, index) => {
+                    const percent = totalExpense > 0 ? ((entry.amount / totalExpense) * 100).toFixed(0) : '0';
+                    return (
+                      <div key={entry.id} className="flex items-center justify-between text-[11px]">
+                        <div className="flex items-center gap-2 truncate">
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color || COLORS[index % COLORS.length] }} />
+                          <span className="font-semibold text-slate-700 dark:text-slate-300 truncate">{entry.name}</span>
+                        </div>
+                        <span className="font-bold text-slate-500 dark:text-slate-400 text-right">{entry.amount.toFixed(2)} € ({percent}%)</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-4 py-8">
+                <span className="text-3xl mb-2">🍽️</span>
+                <p className="text-xs text-slate-400 italic">No hay registros este mes para desglosar.</p>
+              </div>
+            )}
+          </div>
         </div>
 
       </div>
@@ -512,4 +611,5 @@ export const Dashboard: React.FC = () => {
     </div>
   );
 };
+
 export default Dashboard;
