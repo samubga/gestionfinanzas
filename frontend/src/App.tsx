@@ -4,7 +4,9 @@ import { FinanceProvider } from './context/FinanceContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import Auth from './components/Auth';
 import Navbar from './components/Navbar';
+import FloatingNavbar from './components/FloatingNavbar';
 import Dashboard from './components/Dashboard';
+import BentoDashboard from './components/BentoDashboard';
 import Transactions from './components/Transactions';
 import StatsPage from './components/StatsPage';
 import CategoryTagManager from './components/CategoryTagManager';
@@ -22,8 +24,8 @@ const AppContent: React.FC = () => {
   const [editTx, setEditTx] = useState<any>(null);
   const [formInitialType, setFormInitialType] = useState<'expense' | 'income' | 'transfer'>('expense');
 
-  // Theme state from Context
-  const { dark, toggleTheme } = useTheme();
+  // Theme & Layout state from Context
+  const { dark, toggleTheme, layoutMode } = useTheme();
 
   const handleOpenAddForm = (type: 'expense' | 'income' | 'transfer' = 'expense') => {
     setEditTx(null);
@@ -51,11 +53,11 @@ const AppContent: React.FC = () => {
     return <Auth />;
   }
 
-  // Main application content
+  // Main application content view switcher
   const renderView = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard />;
+        return layoutMode === 'bento' ? <BentoDashboard /> : <Dashboard />;
       case 'accounts':
         return <AccountManager />;
       case 'transactions':
@@ -76,35 +78,48 @@ const AppContent: React.FC = () => {
       case 'forecasts':
         return <ForecastManager />;
       default:
-        return <Dashboard />;
+        return layoutMode === 'bento' ? <BentoDashboard /> : <Dashboard />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex flex-col md:flex-row transition-colors duration-200">
-      
+    <div
+      className={`min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex transition-colors duration-200 ${
+        layoutMode === 'bento' ? 'flex-col' : 'flex-col md:flex-row'
+      }`}
+    >
       {/* Navigation Layout */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        dark={dark}
-        toggleTheme={toggleTheme}
-        onOpenAddExpense={() => handleOpenAddForm('expense')}
-      />
+      {layoutMode === 'bento' ? (
+        <FloatingNavbar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenAddExpense={() => handleOpenAddForm('expense')}
+        />
+      ) : (
+        <Navbar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          dark={dark}
+          toggleTheme={toggleTheme}
+          onOpenAddExpense={() => handleOpenAddForm('expense')}
+        />
+      )}
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-x-hidden">
         {renderView()}
       </main>
 
-      {/* DESKTOP FLOATING ACTION BUTTON */}
-      <button
-        onClick={() => handleOpenAddForm('expense')}
-        className="hidden md:flex fixed bottom-6 right-6 z-40 w-14 h-14 bg-brand-600 hover:bg-brand-700 text-white rounded-full items-center justify-center shadow-xl shadow-brand-500/30 active:scale-95 transition-all hover:scale-105 cursor-pointer font-bold"
-        title="Añadir Transacción"
-      >
-        <Plus size={24} />
-      </button>
+      {/* DESKTOP FLOATING ACTION BUTTON (Shown in Classic mode or when scrolling) */}
+      {layoutMode === 'classic' && (
+        <button
+          onClick={() => handleOpenAddForm('expense')}
+          className="hidden md:flex fixed bottom-6 right-6 z-40 w-14 h-14 bg-brand-600 hover:bg-brand-700 text-white rounded-full items-center justify-center shadow-xl shadow-brand-500/30 active:scale-95 transition-all hover:scale-105 cursor-pointer font-bold"
+          title="Añadir Transacción"
+        >
+          <Plus size={24} />
+        </button>
+      )}
 
       {/* GLOBAL MODAL TRANSACTION FORM */}
       <ExpenseForm
@@ -116,7 +131,6 @@ const AppContent: React.FC = () => {
         editTransaction={editTx}
         type={formInitialType}
       />
-
     </div>
   );
 };

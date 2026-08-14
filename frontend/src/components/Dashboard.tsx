@@ -332,7 +332,6 @@ export const Dashboard: React.FC = () => {
                 ))}
               </div>
             </div>
-            </div>
           </div>
           <div className="h-96">
             <ResponsiveContainer width="100%" height="100%">
