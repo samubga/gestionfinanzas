@@ -35,6 +35,10 @@ interface FinanceContextType {
   setFilterMinAmount: (amount: string) => void;
   filterMaxAmount: string;
   setFilterMaxAmount: (amount: string) => void;
+  sortField: string;
+  setSortField: (field: string) => void;
+  sortDirection: 'asc' | 'desc';
+  setSortDirection: (dir: 'asc' | 'desc') => void;
   resetFilters: () => void;
   // Operations
   refreshAll: () => void;
@@ -135,6 +139,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [filterBank, setFilterBank] = useState('');
   const [filterMinAmount, setFilterMinAmount] = useState('');
   const [filterMaxAmount, setFilterMaxAmount] = useState('');
+  const [sortField, setSortField] = useState<string>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   // Update date filters when period changes
   useEffect(() => {
@@ -158,6 +164,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setFilterBank('');
     setFilterMinAmount('');
     setFilterMaxAmount('');
+    setSortField('date');
+    setSortDirection('desc');
   };
 
   const fetchCategories = async () => {
@@ -587,6 +595,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setFilterMinAmount,
         filterMaxAmount,
         setFilterMaxAmount,
+        sortField,
+        setSortField,
+        sortDirection,
+        setSortDirection,
         resetFilters,
         refreshAll,
         addExpense,

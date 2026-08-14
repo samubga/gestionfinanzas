@@ -34,7 +34,7 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
-  const { stats, statsLoading, saveSavingGoal, expenses, categories, accounts, investments } = useFinance();
+  const { stats, statsLoading, saveSavingGoal, expenses, categories, accounts, investments, setFilterCategoryId, setSortField, setSortDirection } = useFinance();
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
   const [evolutionRange, setEvolutionRange] = useState<'3m' | '6m' | '1y' | 'all'>('6m');
@@ -161,7 +161,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
     setEditingGoal(true);
   };
 
-  const handleNav = (tab: string) => {
+  const handleNav = (tab: string, options?: { categoryId?: string; sortByAmount?: boolean }) => {
+    if (options?.categoryId !== undefined) {
+      setFilterCategoryId(options.categoryId);
+    }
+    if (options?.sortByAmount) {
+      setFilterCategoryId('');
+      setSortField('amount');
+      setSortDirection('desc');
+    }
     if (setActiveTab) {
       setActiveTab(tab);
     }
@@ -307,7 +315,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 font-bold flex items-center justify-between">
             <span>{categories.length} Categorías totales</span>
-            <button onClick={() => handleNav('categories')} className="text-brand-500 hover:underline flex items-center gap-0.5 cursor-pointer">
+            <button onClick={() => handleNav('transactions', { sortByAmount: true })} className="text-brand-500 hover:underline flex items-center gap-0.5 cursor-pointer">
               Detalles <ArrowRight size={12} />
             </button>
           </div>

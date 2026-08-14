@@ -49,6 +49,10 @@ export const Transactions: React.FC<TransactionsProps> = ({
     setFilterMinAmount,
     filterMaxAmount,
     setFilterMaxAmount,
+    sortField,
+    setSortField,
+    sortDirection,
+    setSortDirection,
     resetFilters,
     // CUD
     deleteExpense,
@@ -185,9 +189,6 @@ export const Transactions: React.FC<TransactionsProps> = ({
       return () => clearTimeout(timer);
     }
   }, [dataError]);
-
-  const [sortField, setSortField] = useState<string>('date');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   const handleSort = (field: string) => {
     if (sortField === field) {

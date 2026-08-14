@@ -18,7 +18,7 @@ interface BentoDashboardProps {
 }
 
 export const BentoDashboard: React.FC<BentoDashboardProps> = ({ setActiveTab }) => {
-  const { stats, expenses, categories, accounts, investments } = useFinance();
+  const { stats, expenses, categories, accounts, investments, setFilterCategoryId, setSortField, setSortDirection } = useFinance();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
 
   const totalInvested = stats?.totalInvestedActive ?? (investments ? investments.filter(i => i.status === 'active').reduce((sum, i) => sum + i.amount, 0) : 0);
@@ -73,7 +73,15 @@ export const BentoDashboard: React.FC<BentoDashboardProps> = ({ setActiveTab }) 
         { label: '5', val: totalIncome }
       ];
 
-  const handleNav = (tab: string) => {
+  const handleNav = (tab: string, options?: { categoryId?: string; sortByAmount?: boolean }) => {
+    if (options?.categoryId !== undefined) {
+      setFilterCategoryId(options.categoryId);
+    }
+    if (options?.sortByAmount) {
+      setFilterCategoryId('');
+      setSortField('amount');
+      setSortDirection('desc');
+    }
     if (setActiveTab) {
       setActiveTab(tab);
     }
@@ -222,7 +230,7 @@ export const BentoDashboard: React.FC<BentoDashboardProps> = ({ setActiveTab }) 
 
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 font-bold flex items-center justify-between">
             <span>{categories.length} Categorías totales</span>
-            <button onClick={() => handleNav('categories')} className="text-brand-500 hover:underline flex items-center gap-0.5 cursor-pointer">
+            <button onClick={() => handleNav('transactions', { sortByAmount: true })} className="text-brand-500 hover:underline flex items-center gap-0.5 cursor-pointer">
               Detalles <ArrowRight size={12} />
             </button>
           </div>

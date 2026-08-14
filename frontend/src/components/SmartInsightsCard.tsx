@@ -19,7 +19,7 @@ import { DashboardData } from '../types';
 
 interface SmartInsightsCardProps {
   stats: DashboardData | null;
-  onNavigate?: (tab: string) => void;
+  onNavigate?: (tab: string, options?: { categoryId?: string; sortByAmount?: boolean }) => void;
 }
 
 interface InsightItem {
@@ -34,6 +34,7 @@ interface InsightItem {
   calloutComponent?: React.ReactNode;
   actionText?: string;
   actionTab?: string;
+  actionCategoryId?: string;
 }
 
 const formatCurrency = (val: number) => {
@@ -327,8 +328,9 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
               </div>
             </div>
           ),
-          actionText: 'Ver Categorías',
-          actionTab: 'categories'
+          actionText: 'Ver Transacciones',
+          actionTab: 'transactions',
+          actionCategoryId: topCategory.id
         });
       }
     }
@@ -536,7 +538,7 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
         {/* Action CTA Button */}
         {currentInsight.actionText && (
           <button
-            onClick={() => onNavigate && currentInsight.actionTab && onNavigate(currentInsight.actionTab)}
+            onClick={() => onNavigate && currentInsight.actionTab && onNavigate(currentInsight.actionTab, { categoryId: currentInsight.actionCategoryId })}
             className="text-[11px] font-bold text-brand-300 hover:text-white bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/30 px-3 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-all group"
           >
             <span>{currentInsight.actionText}</span>
