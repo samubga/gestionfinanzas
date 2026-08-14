@@ -18,8 +18,10 @@ interface BentoDashboardProps {
 }
 
 export const BentoDashboard: React.FC<BentoDashboardProps> = ({ setActiveTab }) => {
-  const { stats, expenses, categories, accounts } = useFinance();
+  const { stats, expenses, categories, accounts, investments } = useFinance();
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+
+  const totalInvested = stats?.totalInvestedActive ?? (investments ? investments.filter(i => i.status === 'active').reduce((sum, i) => sum + i.amount, 0) : 0);
 
   // Filter expenses if an account card is clicked
   const activeExpenses = selectedAccountId
@@ -153,14 +155,18 @@ export const BentoDashboard: React.FC<BentoDashboardProps> = ({ setActiveTab }) 
           </div>
 
           {/* Hero Footer Stats */}
-          <div className="pt-4 mt-2 border-t border-white/10 grid grid-cols-2 gap-4 relative z-10 text-xs">
+          <div className="pt-4 mt-2 border-t border-white/10 grid grid-cols-3 gap-2 md:gap-4 relative z-10 text-xs">
             <div>
               <span className="text-white/60 font-bold text-[10px] uppercase block">Ingresos Mes</span>
-              <span className="text-emerald-300 font-black font-mono text-base">+{totalIncome.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+              <span className="text-emerald-300 font-black font-mono text-xs md:text-base">+{totalIncome.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
             </div>
             <div>
               <span className="text-white/60 font-bold text-[10px] uppercase block">Gastos Mes</span>
-              <span className="text-red-300 font-black font-mono text-base">-{totalExpense.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+              <span className="text-red-300 font-black font-mono text-xs md:text-base">-{totalExpense.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+            </div>
+            <div>
+              <span className="text-white/60 font-bold text-[10px] uppercase block">Inversiones</span>
+              <span className="text-indigo-200 font-black font-mono text-xs md:text-base">{totalInvested.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
             </div>
           </div>
         </div>
