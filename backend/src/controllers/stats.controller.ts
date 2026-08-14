@@ -298,9 +298,15 @@ export async function getDashboardStats(req: AuthRequest, res: Response) {
       ? allSummaries.reduce((sum, s) => sum + s.totalExpense, 0) / allSummaries.length
       : currentExpense;
 
-    // 8. Historical evolution (All summaries for custom filtering)
+    // 8. Historical evolution (Exclude future months beyond current month)
     const evolutionSummaries = await prisma.monthlySummary.findMany({
-      where: { userId },
+      where: {
+        userId,
+        OR: [
+          { year: { lt: now.getFullYear() } },
+          { year: now.getFullYear(), month: { lte: now.getMonth() + 1 } }
+        ]
+      },
       orderBy: [
         { year: 'desc' },
         { month: 'desc' }

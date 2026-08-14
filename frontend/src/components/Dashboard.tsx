@@ -47,10 +47,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
   const filteredEvolution = useMemo(() => {
     if (!evolution) return [];
-    if (evolutionRange === '3m') return evolution.slice(-3);
-    if (evolutionRange === '6m') return evolution.slice(-6);
-    if (evolutionRange === '1y') return evolution.slice(-12);
-    return evolution;
+    const now = new Date();
+    const curY = now.getFullYear();
+    const curM = now.getMonth() + 1;
+    const validEvolution = evolution.filter(d => d.year < curY || (d.year === curY && d.month <= curM));
+    if (evolutionRange === '3m') return validEvolution.slice(-3);
+    if (evolutionRange === '6m') return validEvolution.slice(-6);
+    if (evolutionRange === '1y') return validEvolution.slice(-12);
+    return validEvolution;
   }, [evolution, evolutionRange]);
 
   const rangeLabel =
