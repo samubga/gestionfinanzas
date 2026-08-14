@@ -7,7 +7,7 @@ import { Download, Upload, AlertCircle, CheckCircle, Loader2, Database, Palette,
 export const BackupManager: React.FC = () => {
   const { refreshAll } = useFinance();
   const [loading, setLoading] = useState(false);
-  const { colorTheme, setColorTheme, dark, toggleTheme } = useTheme();
+  const { colorTheme, setColorTheme, dark, toggleTheme, layoutMode, setLayoutMode } = useTheme();
 
   const themes = [
     { id: 'indigo', name: 'Día / Noche Clásico', description: 'Gama de grises y azules clásica (por defecto)', hex: '#4f46e5' },
@@ -161,6 +161,36 @@ export const BackupManager: React.FC = () => {
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-normal">
             Personaliza el aspecto de tu aplicación seleccionando uno de nuestros temas visuales de color o cambiando entre modo claro y modo oscuro.
           </p>
+
+          {/* Layout mode switcher card */}
+          <div className="p-4 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100/50 dark:border-slate-850/10 space-y-3">
+            <div>
+              <span className="font-bold text-xs text-slate-800 dark:text-white block">Estructura de Pantalla</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">Elige entre el nuevo diseño Bento v2 o el diseño clásico v1</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => setLayoutMode('bento')}
+                className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  layoutMode === 'bento'
+                    ? 'bg-brand-600 text-white border-brand-500 shadow-md'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                }`}
+              >
+                <span>✨ Bento Canvas (v2)</span>
+              </button>
+              <button
+                onClick={() => setLayoutMode('classic')}
+                className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  layoutMode === 'classic'
+                    ? 'bg-brand-600 text-white border-brand-500 shadow-md'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                }`}
+              >
+                <span>📊 Clásico (v1)</span>
+              </button>
+            </div>
+          </div>
 
           {/* Quick dark/light toggle card */}
           <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-slate-100/50 dark:border-slate-850/10">
