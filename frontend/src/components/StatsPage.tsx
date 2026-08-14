@@ -594,55 +594,64 @@ export const StatsPage: React.FC = () => {
               </div>
 
               {/* YEARLY CHARTS */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* Income vs Expenses Bar Chart */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm lg:col-span-2">
-                  <div className="mb-4">
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-white">Comparativa Mensual de Ingresos y Gastos</h4>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500">Visualización agregada mes a mes</p>
-                  </div>
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={yearlyStats.monthlyBreakdown} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/60" />
-                        <XAxis dataKey="label" stroke="#94a3b8" fontSize={10} tickLine={false} />
-                        <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
-                        <Bar dataKey="income" name="Ingresos" fill="#10B981" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="expense" name="Gastos" fill="#EF4444" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+              {(() => {
+                const now = new Date();
+                const curY = now.getFullYear();
+                const curM = now.getMonth() + 1;
+                const filteredMonthlyBreakdown = selectedYear === curY
+                  ? yearlyStats.monthlyBreakdown.filter(m => m.month <= curM)
+                  : yearlyStats.monthlyBreakdown;
 
-                {/* Savings Rate Line Chart */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-                  <div className="mb-4">
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-white">Tasa de Ahorro Mensual (%)</h4>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500">Porcentaje de ingresos guardados por mes</p>
-                  </div>
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={yearlyStats.monthlyBreakdown.map(m => ({
-                          label: m.label,
-                          'Tasa Ahorro': m.income > 0 ? parseFloat(((m.savings / m.income) * 100).toFixed(1)) : 0
-                        }))}
-                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/60" />
-                        <XAxis dataKey="label" stroke="#94a3b8" fontSize={9} tickLine={false} />
-                        <YAxis stroke="#94a3b8" fontSize={9} tickLine={false} />
-                        <Tooltip formatter={(value: number) => [`${value}%`, 'Tasa Ahorro']} />
-                        <Line type="monotone" dataKey="Tasa Ahorro" stroke="#6366F1" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Income vs Expenses Bar Chart */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm lg:col-span-2">
+                      <div className="mb-4">
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-white">Comparativa Mensual de Ingresos y Gastos</h4>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500">Visualización agregada mes a mes</p>
+                      </div>
+                      <div className="h-72">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={filteredMonthlyBreakdown} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/60" />
+                            <XAxis dataKey="label" stroke="#94a3b8" fontSize={10} tickLine={false} />
+                            <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
+                            <Bar dataKey="income" name="Ingresos" fill="#10B981" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="expense" name="Gastos" fill="#EF4444" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
 
-              </div>
+                    {/* Savings Rate Line Chart */}
+                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                      <div className="mb-4">
+                        <h4 className="text-sm font-bold text-slate-800 dark:text-white">Tasa de Ahorro Mensual (%)</h4>
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500">Porcentaje de ingresos guardados por mes</p>
+                      </div>
+                      <div className="h-72">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={filteredMonthlyBreakdown.map(m => ({
+                              label: m.label,
+                              'Tasa Ahorro': m.income > 0 ? parseFloat(((m.savings / m.income) * 100).toFixed(1)) : 0
+                            }))}
+                            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                          >
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/60" />
+                            <XAxis dataKey="label" stroke="#94a3b8" fontSize={9} tickLine={false} />
+                            <YAxis stroke="#94a3b8" fontSize={9} tickLine={false} />
+                            <Tooltip formatter={(value: number) => [`${value}%`, 'Tasa Ahorro']} />
+                            <Line type="monotone" dataKey="Tasa Ahorro" stroke="#6366F1" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Desglose de Categorías Anuales */}
               <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
