@@ -93,21 +93,21 @@ export const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         {/* Available Balance (Spans 2 columns on desktop for wide balance texts) */}
-        <div className="lg:col-span-2 bg-gradient-to-tr from-indigo-600 to-indigo-700 text-white rounded-2xl p-5 shadow-xl shadow-indigo-500/10 flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-gradient-to-tr from-brand-600 to-brand-700 text-white rounded-2xl p-5 shadow-xl shadow-brand-500/10 flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-200">Balance Disponible</span>
-            <div className="p-2 bg-indigo-500/30 rounded-xl">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-200">Balance Disponible</span>
+            <div className="p-2 bg-brand-500/30 rounded-xl">
               <Wallet size={18} />
             </div>
           </div>
           <div className="mt-4 space-y-3">
             <div>
               <h3 className="text-3xl font-black">{availableBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</h3>
-              <p className="text-[10px] text-indigo-200 mt-0.5">Saldo acumulado total</p>
+              <p className="text-[10px] text-brand-200 mt-0.5">Saldo acumulado total</p>
             </div>
             {stats.accountDetails ? (
-              <div className="pt-3 border-t border-indigo-500/30 space-y-2 text-[11px] font-bold text-indigo-100">
-                <div className="space-y-1.5 divide-y divide-indigo-500/20">
+              <div className="pt-3 border-t border-brand-500/30 space-y-2 text-[11px] font-bold text-brand-100">
+                <div className="space-y-1.5 divide-y divide-brand-500/20">
                   {stats.accountDetails.map((acc) => (
                     <div key={acc.id} className="flex justify-between items-center pt-1.5 first:pt-0">
                       <span className="flex items-center gap-2">
@@ -119,18 +119,18 @@ export const Dashboard: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between items-center pt-3 border-t border-indigo-500/35 text-indigo-200">
+                <div className="flex justify-between items-center pt-3 border-t border-brand-500/35 text-brand-200">
                   <span className="flex items-center gap-1.5">📈 Capital Invertido</span>
                   <span className="text-white font-bold">{(stats.totalInvestedActive ?? 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
                 </div>
-                <div className="flex justify-between items-center pt-1.5 border-t border-indigo-500/35 text-indigo-200">
+                <div className="flex justify-between items-center pt-1.5 border-t border-brand-500/35 text-brand-200">
                   <span className="flex items-center gap-1.5">💎 Patrimonio Neto</span>
                   <span className="text-white font-black text-sm">{(availableBalance + (stats.totalInvestedActive ?? 0)).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
                 </div>
               </div>
             ) : balances && (
-              <div className="pt-3 border-t border-indigo-500/30 space-y-2 text-[11px] font-bold text-indigo-100">
-                <div className="space-y-1.5 divide-y divide-indigo-500/20">
+              <div className="pt-3 border-t border-brand-500/30 space-y-2 text-[11px] font-bold text-brand-100">
+                <div className="space-y-1.5 divide-y divide-brand-500/20">
                   {Object.entries(balances).map(([bankName, balance]) => (
                     <div key={bankName} className="flex justify-between items-center pt-1.5 first:pt-0">
                       <span className="flex items-center gap-2">
@@ -141,11 +141,11 @@ export const Dashboard: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between items-center pt-3 border-t border-indigo-500/35 text-indigo-200">
+                <div className="flex justify-between items-center pt-3 border-t border-brand-500/35 text-brand-200">
                   <span className="flex items-center gap-1.5">📈 Capital Invertido</span>
                   <span className="text-white font-bold">{(stats.totalInvestedActive ?? 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
                 </div>
-                <div className="flex justify-between items-center pt-1.5 border-t border-indigo-500/35 text-indigo-200">
+                <div className="flex justify-between items-center pt-1.5 border-t border-brand-500/35 text-brand-200">
                   <span className="flex items-center gap-1.5">💎 Patrimonio Neto</span>
                   <span className="text-white font-black text-sm">{(availableBalance + (stats.totalInvestedActive ?? 0)).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
                 </div>
@@ -211,13 +211,13 @@ export const Dashboard: React.FC = () => {
         <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Ahorro del Mes</span>
-            <div className="p-2 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 rounded-xl">
+            <div className="p-2 bg-brand-50 dark:bg-brand-950/20 text-brand-500 rounded-xl">
               <PiggyBank size={18} />
             </div>
           </div>
           <div className="mt-4">
             <h3 className={`text-2xl font-black ${
-              currentMonth.savings >= 0 ? 'text-indigo-600 dark:text-indigo-400' : 'text-rose-500'
+              currentMonth.savings >= 0 ? 'text-brand-600 dark:text-brand-400' : 'text-rose-500'
             }`}>
               {currentMonth.savings.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
             </h3>
@@ -232,7 +232,7 @@ export const Dashboard: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-3.5">
               <div className="flex items-center gap-2">
-                <TrendingUp className="text-indigo-500" size={18} />
+                <TrendingUp className="text-brand-500" size={18} />
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white">Objetivo de Ahorro del Mes</h4>
               </div>
               
@@ -255,7 +255,7 @@ export const Dashboard: React.FC = () => {
               ) : (
                 <button
                   onClick={startEditGoal}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
                 >
                   <Edit2 size={12} />
                   {currentMonth.savingGoal > 0 ? `${currentMonth.savingGoal} €` : 'Establecer meta'}
@@ -267,7 +267,7 @@ export const Dashboard: React.FC = () => {
               <div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden mb-2">
                   <div
-                    className="bg-gradient-to-r from-indigo-500 to-indigo-600 h-full rounded-full transition-all duration-500"
+                    className="bg-gradient-to-r from-brand-500 to-brand-600 h-full rounded-full transition-all duration-500"
                     style={{ width: `${goalPercent}%` }}
                   />
                 </div>
@@ -302,7 +302,7 @@ export const Dashboard: React.FC = () => {
                 onClick={() => setZoomEnabled(!zoomEnabled)}
                 className={`px-2.5 py-1.5 text-[9px] font-bold rounded-xl border transition-all ${
                   zoomEnabled
-                    ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 border-indigo-200 dark:border-indigo-800/40 shadow-sm'
+                    ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-500 border-brand-200 dark:border-brand-800/40 shadow-sm'
                     : 'bg-slate-50 dark:bg-slate-950 text-slate-450 border-slate-100 dark:border-slate-800/60 hover:text-slate-600'
                 }`}
                 title="Ajustar escala vertical para magnificar fluctuaciones (zoom)"
@@ -323,7 +323,7 @@ export const Dashboard: React.FC = () => {
                     onClick={() => setEvolutionRange(opt.id)}
                     className={`px-2.5 py-1 text-[9px] font-bold rounded-lg transition-all ${
                       evolutionRange === opt.id
-                        ? 'bg-white dark:bg-slate-900 text-indigo-500 shadow-sm border border-slate-100 dark:border-slate-800/40'
+                        ? 'bg-white dark:bg-slate-900 text-brand-500 shadow-sm border border-slate-100 dark:border-slate-800/40'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
                   >
@@ -331,6 +331,7 @@ export const Dashboard: React.FC = () => {
                   </button>
                 ))}
               </div>
+            </div>
             </div>
           </div>
           <div className="h-96">
@@ -460,7 +461,7 @@ export const Dashboard: React.FC = () => {
                       <span className="text-slate-500 dark:text-slate-400">{item.amount.toFixed(2)} €</span>
                     </div>
                     <div className="w-full bg-slate-100 dark:bg-slate-800/80 h-1.5 rounded-full overflow-hidden">
-                      <div className="bg-indigo-500 h-full rounded-full" style={{ width: `${percentage}%` }} />
+                      <div className="bg-brand-500 h-full rounded-full" style={{ width: `${percentage}%` }} />
                     </div>
                   </div>
                 );
@@ -481,7 +482,7 @@ export const Dashboard: React.FC = () => {
               <h4 className="text-sm font-bold text-slate-800 dark:text-white">Mayores Gastos del Mes</h4>
               <p className="text-[10px] text-slate-400 dark:text-slate-500">Top 10 compras con importes más altos</p>
             </div>
-            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2.5 py-1 rounded-full">Top 10</span>
+            <span className="text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/30 px-2.5 py-1 rounded-full">Top 10</span>
           </div>
 
           {topExpenses.length > 0 ? (

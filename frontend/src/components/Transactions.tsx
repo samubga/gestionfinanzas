@@ -209,9 +209,9 @@ export const Transactions: React.FC<TransactionsProps> = ({
       return <ChevronsUpDown size={12} className="text-slate-300 dark:text-slate-600 ml-1.5 shrink-0" />;
     }
     if (sortDirection === 'asc') {
-      return <ChevronUp size={12} className="text-indigo-600 dark:text-indigo-400 ml-1.5 shrink-0" />;
+      return <ChevronUp size={12} className="text-brand-600 dark:text-brand-400 ml-1.5 shrink-0" />;
     }
-    return <ChevronDown size={12} className="text-indigo-600 dark:text-indigo-400 ml-1.5 shrink-0" />;
+    return <ChevronDown size={12} className="text-brand-600 dark:text-brand-400 ml-1.5 shrink-0" />;
   };
 
   const currentItems = activeTab === 'expenses' ? expenses : incomes;
@@ -692,11 +692,11 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 onClick={() => setPreviewTab(tab.id as any)}
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   previewTab === tab.id
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    ? 'bg-brand-600 text-white shadow-md shadow-brand-600/20'
                     : 'text-slate-550 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-200'
                 }`}
               >
-                {tab.label} <span className={`text-[10px] ml-0.5 ${previewTab === tab.id ? 'text-indigo-200' : 'text-slate-400'}`}>({tab.count})</span>
+                {tab.label} <span className={`text-[10px] ml-0.5 ${previewTab === tab.id ? 'text-brand-200' : 'text-slate-400'}`}>({tab.count})</span>
               </button>
             ))}
           </div>
@@ -758,7 +758,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                                 ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-100 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/30'
                                 : item.type === 'income'
                                   ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-100 dark:border-emerald-900/50 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-950/30'
-                                  : 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-100 dark:border-indigo-900/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-950/30'
+                                  : 'bg-brand-50 dark:bg-brand-950/20 border-brand-100 dark:border-brand-900/50 text-brand-600 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-950/30'
                             }`}
                           >
                             {item.type === 'expense' ? 'Gasto' : item.type === 'income' ? 'Ingreso' : 'Movimiento'}
@@ -774,7 +774,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                                 value={item.description}
                                 disabled={item.alreadyExists}
                                 onChange={(e) => handleEditRow(index, 'description', e.target.value)}
-                                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-indigo-500 transition-all disabled:opacity-85 disabled:cursor-not-allowed"
+                                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-brand-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-brand-500 transition-all disabled:opacity-85 disabled:cursor-not-allowed"
                               />
                               {item.alreadyExists && (
                                 <span className="shrink-0 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/40 uppercase tracking-wider">
@@ -786,7 +786,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                               <span className={`text-[9px] font-bold w-fit px-1.5 py-0.5 rounded-md ${
                                 item.notes.includes('Trade Republic')
                                   ? 'bg-orange-50 dark:bg-orange-950/20 text-orange-650 dark:text-orange-400 border border-orange-100/30 dark:border-orange-900/30'
-                                  : 'bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400 border border-indigo-100/30 dark:border-indigo-900/30'
+                                  : 'bg-brand-50 dark:bg-brand-950/20 text-brand-650 dark:text-brand-400 border border-brand-100/30 dark:border-brand-900/30'
                               }`}>
                                 {item.notes.replace('Importado de ', '')}
                               </span>
@@ -801,14 +801,14 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             value={item.date}
                             disabled={item.alreadyExists}
                             onChange={(e) => handleEditRow(index, 'date', e.target.value)}
-                            className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-indigo-555 transition-all disabled:opacity-85 disabled:cursor-not-allowed"
+                            className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-brand-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-brand-555 transition-all disabled:opacity-85 disabled:cursor-not-allowed"
                           />
                         </td>
 
                         {/* AMOUNT INPUT */}
                         <td className="py-3 px-4">
                           <div className="relative">
-                            <span className={`absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold ${item.type === 'expense' ? 'text-rose-500' : (item.type === 'income' ? 'text-emerald-500' : 'text-indigo-500')}`}>
+                            <span className={`absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold ${item.type === 'expense' ? 'text-rose-500' : (item.type === 'income' ? 'text-emerald-500' : 'text-brand-500')}`}>
                               {item.type === 'expense' ? '-' : (item.type === 'income' ? '+' : '↔')}
                             </span>
                             <input
@@ -817,7 +817,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                               value={item.amount}
                               disabled={item.alreadyExists}
                               onChange={(e) => handleEditRow(index, 'amount', e.target.value)}
-                              className="w-full pl-6 pr-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-bold text-slate-800 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-indigo-500 transition-all text-right disabled:opacity-85 disabled:cursor-not-allowed"
+                              className="w-full pl-6 pr-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-bold text-slate-800 dark:text-white focus:border-brand-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-brand-500 transition-all text-right disabled:opacity-85 disabled:cursor-not-allowed"
                             />
                           </div>
                         </td>
@@ -831,7 +831,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                                 value={item.fromAccountId || ''}
                                 disabled={item.alreadyExists}
                                 onChange={(e) => handleEditRow(index, 'fromAccountId', e.target.value)}
-                                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer disabled:opacity-85 disabled:cursor-not-allowed"
+                                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-brand-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-brand-500 transition-all cursor-pointer disabled:opacity-85 disabled:cursor-not-allowed"
                               >
                                 <option value="">Origen...</option>
                                 {accounts.map(acc => (
@@ -848,7 +848,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                                 value={item.toAccountId || ''}
                                 disabled={item.alreadyExists}
                                 onChange={(e) => handleEditRow(index, 'toAccountId', e.target.value)}
-                                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer disabled:opacity-85 disabled:cursor-not-allowed"
+                                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:border-brand-500 focus:bg-white dark:focus:bg-slate-900 focus:ring-1 focus:ring-brand-500 transition-all cursor-pointer disabled:opacity-85 disabled:cursor-not-allowed"
                               >
                                 <option value="">Destino...</option>
                                 {accounts.map(acc => (
@@ -943,7 +943,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                                   {(item.tags || []).map((tName: string) => (
                                     <span
                                       key={tName}
-                                      className="inline-flex items-center px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 rounded text-[9px] font-bold border border-indigo-100/30"
+                                      className="inline-flex items-center px-1.5 py-0.5 bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-400 rounded text-[9px] font-bold border border-brand-100/30"
                                     >
                                       #{tName}
                                       <button
@@ -952,7 +952,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                                           const updatedTags = (item.tags || []).filter((t: string) => t !== tName);
                                           handleEditRow(index, 'tags', updatedTags);
                                         }}
-                                        className="ml-1 text-indigo-400 hover:text-indigo-650 cursor-pointer"
+                                        className="ml-1 text-brand-400 hover:text-brand-650 cursor-pointer"
                                       >
                                         <X size={10} />
                                       </button>
@@ -969,7 +969,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                                       handleEditRow(index, 'tags', [...(item.tags || []), newTag]);
                                     }
                                   }}
-                                  className="w-full px-2 py-1 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-[11px] font-medium text-slate-700 dark:text-slate-300 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-900 transition-all cursor-pointer disabled:opacity-85 disabled:cursor-not-allowed"
+                                  className="w-full px-2 py-1 bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/60 rounded-lg text-[11px] font-medium text-slate-700 dark:text-slate-300 focus:border-brand-500 focus:bg-white dark:focus:bg-slate-900 transition-all cursor-pointer disabled:opacity-85 disabled:cursor-not-allowed"
                                 >
                                   <option value="">+ Añadir etiqueta</option>
                                   {availableTags.map(tag => (
@@ -1027,7 +1027,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 type="button"
                 onClick={handleConfirmImport}
                 disabled={importLoading || newCount === 0}
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/50 disabled:cursor-not-allowed disabled:hover:bg-indigo-600 text-white rounded-xl font-bold text-xs shadow-md shadow-indigo-500/10 cursor-pointer h-10 flex items-center justify-center gap-1.5 transition-all"
+                className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-600/50 disabled:cursor-not-allowed disabled:hover:bg-brand-600 text-white rounded-xl font-bold text-xs shadow-md shadow-brand-500/10 cursor-pointer h-10 flex items-center justify-center gap-1.5 transition-all"
               >
                 {importLoading ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
                 Confirmar e importar ({newCount})
@@ -1050,7 +1050,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
             <p className="text-xs text-slate-400 dark:text-slate-500">Historial completo y control de transacciones</p>
           </div>
           {loading && (expenses.length > 0 || incomes.length > 0) && (
-            <div className="w-5 h-5 border-2 border-indigo-600 dark:border-indigo-400 border-t-transparent rounded-full animate-spin shrink-0 mt-1" title="Sincronizando..." />
+            <div className="w-5 h-5 border-2 border-brand-600 dark:border-brand-400 border-t-transparent rounded-full animate-spin shrink-0 mt-1" title="Sincronizando..." />
           )}
         </div>
         <div className="flex gap-2">
@@ -1064,7 +1064,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
           </button>
           <button
             onClick={() => onOpenAddExpense(activeTab === 'expenses' ? 'expense' : activeTab === 'incomes' ? 'income' : 'transfer')}
-            className="hidden md:inline-flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
+            className="hidden md:inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-brand-500/20 transition-all cursor-pointer"
           >
             <Plus size={16} />
             {activeTab === 'expenses' ? 'Añadir Gasto' : activeTab === 'incomes' ? 'Añadir Ingreso' : 'Añadir Movimiento'}
@@ -1122,7 +1122,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
               
               <button
                 onClick={() => { resetBulkFields(); setIsBulkModalOpen(true); }}
-                className="px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center gap-1.5 text-xs font-semibold shadow-md shadow-indigo-500/20 transition-all cursor-pointer flex-shrink-0"
+                className="px-3 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-xl flex items-center gap-1.5 text-xs font-semibold shadow-md shadow-brand-500/20 transition-all cursor-pointer flex-shrink-0"
               >
                 <Edit size={14} />
                 <span>Editar Lote ({selectedIds.length})</span>
@@ -1136,7 +1136,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
               placeholder="Buscar por descripción..."
               value={filterSearch}
               onChange={(e) => setFilterSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:ring-1 focus:ring-indigo-500 shadow-sm"
+              className="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-800 dark:text-white focus:ring-1 focus:ring-brand-500 shadow-sm"
             />
           </div>
 
@@ -1144,14 +1144,14 @@ export const Transactions: React.FC<TransactionsProps> = ({
             onClick={() => setShowFilters(!showFilters)}
             className={`px-3 py-2 border rounded-xl flex items-center gap-1.5 text-xs font-semibold shadow-sm transition-colors cursor-pointer ${
               showFilters || activeFilterCount > 0
-                ? 'bg-indigo-50 dark:bg-indigo-950/20 border-indigo-200 text-indigo-700 dark:text-indigo-400'
+                ? 'bg-brand-50 dark:bg-brand-950/20 border-brand-200 text-brand-700 dark:text-brand-400'
                 : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
             }`}
           >
             <Filter size={14} />
             <span className="hidden sm:inline">Filtros</span>
             {activeFilterCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[9px] font-bold">
+              <span className="w-4 h-4 rounded-full bg-brand-600 text-white flex items-center justify-center text-[9px] font-bold">
                 {activeFilterCount}
               </span>
             )}
@@ -1225,7 +1225,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
               placeholder="Ej. Súper, Alquiler..."
               value={filterSearch}
               onChange={(e) => setFilterSearch(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-lg text-xs text-slate-800 dark:text-white focus:ring-1 focus:ring-indigo-500"
+              className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-lg text-xs text-slate-800 dark:text-white focus:ring-1 focus:ring-brand-500"
             />
           </div>
 
@@ -1238,7 +1238,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 placeholder="Mín"
                 value={filterMinAmount}
                 onChange={(e) => setFilterMinAmount(e.target.value)}
-                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-lg text-xs text-slate-800 dark:text-white focus:ring-1 focus:ring-indigo-500"
+                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-lg text-xs text-slate-800 dark:text-white focus:ring-1 focus:ring-brand-500"
               />
               <span className="text-xs text-slate-400">-</span>
               <input
@@ -1246,7 +1246,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 placeholder="Máx"
                 value={filterMaxAmount}
                 onChange={(e) => setFilterMaxAmount(e.target.value)}
-                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-lg text-xs text-slate-800 dark:text-white focus:ring-1 focus:ring-indigo-500"
+                className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-lg text-xs text-slate-800 dark:text-white focus:ring-1 focus:ring-brand-500"
               />
             </div>
           </div>
@@ -1266,7 +1266,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                       onClick={() => handleTagToggle(tag.name)}
                       className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
                         isSelected
-                          ? 'bg-indigo-600 border-indigo-600 text-white'
+                          ? 'bg-brand-600 border-brand-600 text-white'
                           : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
                       }`}
                     >
@@ -1293,7 +1293,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
       {/* Loader */}
       {loading && expenses.length === 0 && incomes.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-12">
-          <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
         /* Transactions List */
@@ -1309,7 +1309,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           type="checkbox"
                           checked={expenses.length > 0 && selectedIds.length === expenses.length}
                           onChange={handleSelectAll}
-                          className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-900 cursor-pointer"
+                          className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 dark:bg-slate-900 cursor-pointer"
                         />
                       </th>
                       <th onClick={() => handleSort('description')} className="py-4 px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
@@ -1357,7 +1357,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                       <tr
                         key={exp.id}
                         className={`hover:bg-slate-50/40 dark:hover:bg-slate-800/10 text-xs transition-colors ${
-                          selectedIds.includes(exp.id) ? 'bg-indigo-50/30 dark:bg-indigo-950/10' : ''
+                          selectedIds.includes(exp.id) ? 'bg-brand-50/30 dark:bg-brand-950/10' : ''
                         }`}
                       >
                         <td className="py-4 px-6 text-center">
@@ -1365,7 +1365,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             type="checkbox"
                             checked={selectedIds.includes(exp.id)}
                             onChange={(e) => handleSelectItem(exp.id, e.target.checked)}
-                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-900 cursor-pointer"
+                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 dark:bg-slate-900 cursor-pointer"
                           />
                         </td>
                         {/* Concept */}
@@ -1397,7 +1397,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                         <td className="py-4 px-4 hidden md:table-cell">
                           <div className="flex flex-wrap gap-1">
                             {exp.tags.map(t => (
-                              <span key={t.id} className="px-1.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 rounded text-[9px] font-bold">
+                              <span key={t.id} className="px-1.5 py-0.5 bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 rounded text-[9px] font-bold">
                                 #{t.name}
                               </span>
                             ))}
@@ -1444,7 +1444,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           <div className="inline-flex gap-2">
                             <button
                               onClick={() => handleDuplicate(exp.id)}
-                              className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg transition-colors cursor-pointer"
+                              className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg transition-colors cursor-pointer"
                               title="Duplicar"
                             >
                               <Copy size={14} />
@@ -1488,7 +1488,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           type="checkbox"
                           checked={incomes.length > 0 && selectedIds.length === incomes.length}
                           onChange={handleSelectAll}
-                          className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-900 cursor-pointer"
+                          className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 dark:bg-slate-900 cursor-pointer"
                         />
                       </th>
                       <th onClick={() => handleSort('description')} className="py-4 px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
@@ -1535,7 +1535,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                       <tr
                         key={inc.id}
                         className={`hover:bg-slate-50/40 dark:hover:bg-slate-800/10 text-xs transition-colors ${
-                          selectedIds.includes(inc.id) ? 'bg-indigo-50/30 dark:bg-indigo-950/10' : ''
+                          selectedIds.includes(inc.id) ? 'bg-brand-50/30 dark:bg-brand-950/10' : ''
                         }`}
                       >
                         <td className="py-4 px-6 text-center">
@@ -1543,7 +1543,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             type="checkbox"
                             checked={selectedIds.includes(inc.id)}
                             onChange={(e) => handleSelectItem(inc.id, e.target.checked)}
-                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 dark:bg-slate-900 cursor-pointer"
+                            className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 dark:bg-slate-900 cursor-pointer"
                           />
                         </td>
                         {/* Concept */}
@@ -1751,7 +1751,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-slate-400 dark:text-slate-500">
-                <span className="text-4xl mb-3"><ArrowUpRight className="inline border-2 border-indigo-500/20 p-1.5 rounded-full text-indigo-500 bg-indigo-50/10" size={50} /></span>
+                <span className="text-4xl mb-3"><ArrowUpRight className="inline border-2 border-brand-500/20 p-1.5 rounded-full text-brand-500 bg-brand-50/10" size={50} /></span>
                 <p className="font-semibold text-sm">No se encontraron movimientos</p>
                 <p className="text-xs text-slate-400 max-w-xs mt-1">Registra un nuevo movimiento o modifica tus criterios de filtrado.</p>
               </div>
@@ -1793,7 +1793,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                   id="bulk-update-date"
                   checked={bulkFields.updateDate}
                   onChange={(e) => setBulkFields(prev => ({ ...prev, updateDate: e.target.checked }))}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 mt-1 cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 mt-1 cursor-pointer"
                 />
                 <div className="flex-1 space-y-1.5">
                   <label htmlFor="bulk-update-date" className="block text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -1805,7 +1805,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                       required
                       value={bulkFields.date}
                       onChange={(e) => setBulkFields(prev => ({ ...prev, date: e.target.value }))}
-                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-indigo-500 transition-all"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-brand-500 transition-all"
                     />
                   )}
                 </div>
@@ -1818,7 +1818,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                   id="bulk-update-desc"
                   checked={bulkFields.updateDescription}
                   onChange={(e) => setBulkFields(prev => ({ ...prev, updateDescription: e.target.checked }))}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 mt-1 cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 mt-1 cursor-pointer"
                 />
                 <div className="flex-1 space-y-1.5">
                   <label htmlFor="bulk-update-desc" className="block text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -1831,7 +1831,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                       placeholder="Nuevo concepto para todos los movimientos"
                       value={bulkFields.description}
                       onChange={(e) => setBulkFields(prev => ({ ...prev, description: e.target.value }))}
-                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-indigo-500 transition-all"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-brand-500 transition-all"
                     />
                   )}
                 </div>
@@ -1844,7 +1844,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                   id="bulk-update-notes"
                   checked={bulkFields.updateNotes}
                   onChange={(e) => setBulkFields(prev => ({ ...prev, updateNotes: e.target.checked }))}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 mt-1 cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 mt-1 cursor-pointer"
                 />
                 <div className="flex-1 space-y-1.5">
                   <label htmlFor="bulk-update-notes" className="block text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -1855,7 +1855,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                       placeholder="Nuevas observaciones para todos los movimientos"
                       value={bulkFields.notes}
                       onChange={(e) => setBulkFields(prev => ({ ...prev, notes: e.target.value }))}
-                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-indigo-500 transition-all min-h-[60px]"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-brand-500 transition-all min-h-[60px]"
                     />
                   )}
                 </div>
@@ -1868,7 +1868,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                   id="bulk-update-cat"
                   checked={bulkFields.updateCategory}
                   onChange={(e) => setBulkFields(prev => ({ ...prev, updateCategory: e.target.checked }))}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 mt-1 cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 mt-1 cursor-pointer"
                 />
                 <div className="flex-1 space-y-1.5">
                   <label htmlFor="bulk-update-cat" className="block text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -1878,7 +1878,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                     <select
                       value={bulkFields.categoryId}
                       onChange={(e) => setBulkFields(prev => ({ ...prev, categoryId: e.target.value }))}
-                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-brand-500 transition-all cursor-pointer"
                     >
                       <option value="">{activeTab === 'expenses' ? 'Sin categoría (Auto)' : 'Ninguna'}</option>
                       {filterCategoriesList.map(cat => (
@@ -1896,7 +1896,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                   id="bulk-update-bank"
                   checked={bulkFields.updateBank}
                   onChange={(e) => setBulkFields(prev => ({ ...prev, updateBank: e.target.checked }))}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 mt-1 cursor-pointer"
+                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 mt-1 cursor-pointer"
                 />
                 <div className="flex-1 space-y-1.5">
                   <label htmlFor="bulk-update-bank" className="block text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -1906,7 +1906,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                     <select
                       value={bulkFields.bank}
                       onChange={(e) => setBulkFields(prev => ({ ...prev, bank: e.target.value }))}
-                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer"
+                      className="w-full px-2.5 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-xs font-semibold text-slate-800 dark:text-white focus:ring-1 focus:ring-brand-500 transition-all cursor-pointer"
                     >
                       {accounts.map((acc) => (
                         <option key={acc.id} value={acc.id}>
@@ -1926,7 +1926,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                     id="bulk-update-tags"
                     checked={bulkFields.updateTags}
                     onChange={(e) => setBulkFields(prev => ({ ...prev, updateTags: e.target.checked }))}
-                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-indigo-600 focus:ring-indigo-500 mt-1 cursor-pointer"
+                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 mt-1 cursor-pointer"
                   />
                   <div className="flex-1 space-y-2">
                     <label htmlFor="bulk-update-tags" className="block text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer">
@@ -1940,7 +1940,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             onClick={() => setBulkFields(prev => ({ ...prev, tagsMode: 'add' }))}
                             className={`flex-1 py-1 text-center text-[10px] font-bold rounded transition-all cursor-pointer ${
                               bulkFields.tagsMode === 'add'
-                                ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400'
+                                ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-650 dark:text-brand-400'
                                 : 'text-slate-400 dark:text-slate-500 hover:text-slate-605'
                             }`}
                           >
@@ -1951,7 +1951,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             onClick={() => setBulkFields(prev => ({ ...prev, tagsMode: 'replace' }))}
                             className={`flex-1 py-1 text-center text-[10px] font-bold rounded transition-all cursor-pointer ${
                               bulkFields.tagsMode === 'replace'
-                                ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-655 dark:text-indigo-400'
+                                ? 'bg-brand-50 dark:bg-brand-950/40 text-brand-655 dark:text-brand-400'
                                 : 'text-slate-400 dark:text-slate-500 hover:text-slate-605'
                             }`}
                           >
@@ -1969,7 +1969,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                                 onClick={() => handleBulkTagToggle(tag.name)}
                                 className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
                                   isSelected
-                                    ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm shadow-indigo-500/10'
+                                    ? 'bg-brand-600 border-brand-600 text-white shadow-sm shadow-brand-500/10'
                                     : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100'
                                 }`}
                               >
@@ -2006,7 +2006,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                       bulkFields.updateTags
                     )
                   }
-                  className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/50 disabled:cursor-not-allowed text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-500/10 cursor-pointer text-center flex items-center justify-center gap-1.5 transition-all"
+                  className="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-600/50 disabled:cursor-not-allowed text-white font-bold text-xs rounded-xl shadow-md shadow-brand-500/10 cursor-pointer text-center flex items-center justify-center gap-1.5 transition-all"
                 >
                   {importLoading ? <Loader2 className="animate-spin" size={14} /> : <Check size={14} />}
                   Guardar Cambios
@@ -2026,7 +2026,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
           >
             {/* Icon */}
             {confirmModal.actionType === 'duplicate' ? (
-              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-brand-50 dark:bg-brand-950/30 text-brand-600 dark:text-brand-400">
                 <Copy size={20} />
               </div>
             ) : (
@@ -2059,7 +2059,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 onClick={handleConfirmAction}
                 className={`flex-1 py-2.5 text-white font-bold text-xs rounded-xl transition-all cursor-pointer text-center shadow-md ${
                   confirmModal.actionType === 'duplicate'
-                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/10'
+                    ? 'bg-brand-600 hover:bg-brand-700 shadow-brand-500/10'
                     : 'bg-rose-600 hover:bg-rose-700 shadow-rose-500/10'
                 }`}
               >

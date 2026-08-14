@@ -250,7 +250,7 @@ export const ForecastManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-            Previsión de Gastos <span className="text-xs bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 font-bold px-2.5 py-1 rounded-lg">{monthNames[month - 1]} {year}</span>
+            Previsión de Gastos <span className="text-xs bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-300 font-bold px-2.5 py-1 rounded-lg">{monthNames[month - 1]} {year}</span>
           </h2>
           <p className="text-xs text-slate-400 dark:text-slate-500">Planifica tus presupuestos a nivel de concepto y compáralos con tus gastos reales al final del mes.</p>
         </div>
@@ -289,7 +289,7 @@ export const ForecastManager: React.FC = () => {
           {/* Create Form Card */}
           <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
             <div className="flex items-center gap-2 pb-3 border-b border-slate-50 dark:border-slate-800">
-              <Plus className="text-indigo-500" size={18} />
+              <Plus className="text-brand-500" size={18} />
               <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Nueva Estimación</h3>
             </div>
 
@@ -312,7 +312,7 @@ export const ForecastManager: React.FC = () => {
                     placeholder="Ej: Vacaciones o buffet con amigos"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-300"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm placeholder-slate-400 focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-300"
                   />
                 </div>
               </div>
@@ -331,7 +331,7 @@ export const ForecastManager: React.FC = () => {
                       placeholder="0.00"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="w-full pl-9 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-300"
+                      className="w-full pl-9 pr-8 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm placeholder-slate-400 focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-300"
                     />
                     <span className="absolute inset-y-0 right-3.5 flex items-center text-slate-400 dark:text-slate-500 text-xs font-bold">€</span>
                   </div>
@@ -344,7 +344,7 @@ export const ForecastManager: React.FC = () => {
                       type="date"
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-300 text-center"
+                      className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-300 text-center"
                     />
                   </div>
                 </div>
@@ -369,7 +369,7 @@ export const ForecastManager: React.FC = () => {
                       setTagId('');
                       setTagSearch('');
                     }}
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-300 cursor-pointer font-semibold"
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer font-semibold"
                   >
                     <option value="text">Ninguno (Concordar por texto del Concepto)</option>
                     <option value="category">Por Categoría de Gastos</option>
@@ -385,7 +385,7 @@ export const ForecastManager: React.FC = () => {
                     <select
                       value={categoryId}
                       onChange={(e) => setCategoryId(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-300 cursor-pointer font-bold border border-slate-100 dark:border-slate-800/60 focus:border-indigo-500"
+                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-300 cursor-pointer font-bold border border-slate-100 dark:border-slate-800/60 focus:border-brand-500"
                     >
                       <option value="">Selecciona una categoría...</option>
                       {expenseCategories.map((c) => (
@@ -400,8 +400,8 @@ export const ForecastManager: React.FC = () => {
                 {linkType === 'tag' && (
                   <div className="space-y-2 animate-scale-in">
                     {tagId ? (
-                      <div className="flex items-center gap-2 px-3.5 py-2.5 bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 rounded-xl text-xs font-bold text-indigo-700 dark:text-indigo-400">
-                        <Tag size={14} className="text-indigo-500 shrink-0" />
+                      <div className="flex items-center gap-2 px-3.5 py-2.5 bg-brand-50 dark:bg-brand-950/20 border border-brand-100 dark:border-brand-900/40 rounded-xl text-xs font-bold text-brand-700 dark:text-brand-400">
+                        <Tag size={14} className="text-brand-500 shrink-0" />
                         <span className="truncate">Etiqueta vinculada: {tags.find(t => t.id === tagId)?.name}</span>
                         <button
                           type="button"
@@ -409,7 +409,7 @@ export const ForecastManager: React.FC = () => {
                             setTagId('');
                             setTagSearch('');
                           }}
-                          className="ml-auto p-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 rounded-lg text-indigo-500 hover:text-indigo-700 transition-colors cursor-pointer"
+                          className="ml-auto p-1 hover:bg-brand-100 dark:hover:bg-brand-900/50 rounded-lg text-brand-500 hover:text-brand-700 transition-colors cursor-pointer"
                         >
                           <X size={14} />
                         </button>
@@ -425,7 +425,7 @@ export const ForecastManager: React.FC = () => {
                             placeholder="Buscar o crear etiqueta..."
                             value={tagSearch}
                             onChange={(e) => setTagSearch(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 text-slate-700 dark:text-slate-300 font-medium"
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-0 rounded-xl text-sm placeholder-slate-400 focus:ring-2 focus:ring-brand-500 text-slate-700 dark:text-slate-300 font-medium"
                           />
                         </div>
 
@@ -440,7 +440,7 @@ export const ForecastManager: React.FC = () => {
                                   setTagId(t.id);
                                   setTagSearch('');
                                 }}
-                                className="w-full text-left px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
+                                className="w-full text-left px-2.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
                               >
                                 <Tag size={12} className="text-slate-400 shrink-0" />
                                 <span className="truncate">{t.name}</span>
@@ -461,7 +461,7 @@ export const ForecastManager: React.FC = () => {
                                   setFormError('Error al crear la nueva etiqueta.');
                                 }
                               }}
-                              className="w-full text-left px-2.5 py-2 text-xs font-black text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
+                              className="w-full text-left px-2.5 py-2 text-xs font-black text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
                             >
                               <Plus size={12} className="shrink-0" />
                               <span className="truncate">Crear etiqueta "{tagSearch.trim()}"</span>
@@ -483,7 +483,7 @@ export const ForecastManager: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-colors shadow-md shadow-indigo-500/10 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-colors shadow-md shadow-brand-500/10 cursor-pointer disabled:opacity-50"
               >
                 {submitting ? 'Añadiendo...' : 'Añadir Previsión'}
               </button>
@@ -507,7 +507,7 @@ export const ForecastManager: React.FC = () => {
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-12 space-y-3">
-                <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin" />
                 <p className="text-xs text-slate-400 font-semibold">Cargando estimaciones...</p>
               </div>
             ) : forecastsError ? (
@@ -518,7 +518,7 @@ export const ForecastManager: React.FC = () => {
                 <button 
                   type="button"
                   onClick={fetchForecasts}
-                  className="mt-3 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-[10px] uppercase tracking-wider transition-colors cursor-pointer"
+                  className="mt-3 px-3 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg text-[10px] uppercase tracking-wider transition-colors cursor-pointer"
                 >
                   Reintentar
                 </button>
@@ -548,7 +548,7 @@ export const ForecastManager: React.FC = () => {
 
                       if (isEditing) {
                         return (
-                          <tr key={item.id} className="bg-indigo-50/20 dark:bg-indigo-950/10">
+                          <tr key={item.id} className="bg-brand-50/20 dark:bg-brand-950/10">
                             <td className="py-3 px-2" colSpan={5}>
                               <div className="space-y-3 p-2">
                                 {editError && (
@@ -581,7 +581,7 @@ export const ForecastManager: React.FC = () => {
                                       <select
                                         value={editCategoryId}
                                         onChange={(e) => setEditCategoryId(e.target.value)}
-                                        className="w-full px-2 py-1 text-xs bg-white dark:bg-slate-850 border border-indigo-100 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 cursor-pointer font-bold"
+                                        className="w-full px-2 py-1 text-xs bg-white dark:bg-slate-850 border border-brand-100 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 cursor-pointer font-bold"
                                       >
                                         <option value="">[Categoría...]</option>
                                         {expenseCategories.map((c) => (
@@ -594,7 +594,7 @@ export const ForecastManager: React.FC = () => {
                                       <select
                                         value={editTagId}
                                         onChange={(e) => setEditTagId(e.target.value)}
-                                        className="w-full px-2 py-1 text-xs bg-white dark:bg-slate-850 border border-indigo-100 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 cursor-pointer font-bold"
+                                        className="w-full px-2 py-1 text-xs bg-white dark:bg-slate-850 border border-brand-100 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 cursor-pointer font-bold"
                                       >
                                         <option value="">[Etiqueta...]</option>
                                         {tags.map((t) => (
@@ -648,8 +648,8 @@ export const ForecastManager: React.FC = () => {
                           </td>
                           <td className="py-3.5 px-2">
                             {item.tag ? (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-900/30 flex items-center gap-1.5 w-fit">
-                                <Tag size={10} className="text-indigo-500" />
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 border border-brand-100/50 dark:border-brand-900/30 flex items-center gap-1.5 w-fit">
+                                <Tag size={10} className="text-brand-500" />
                                 Tag: {item.tag.name}
                               </span>
                             ) : item.category ? (
@@ -696,7 +696,7 @@ export const ForecastManager: React.FC = () => {
                               <div className="flex items-center justify-center gap-1">
                                 <button
                                   onClick={() => startEdit(item)}
-                                  className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer"
+                                  className="p-1.5 text-slate-400 hover:text-brand-600 dark:hover:text-brand-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 rounded-lg transition-colors cursor-pointer"
                                   title="Editar previsión"
                                 >
                                   <Edit3 size={14} />
@@ -728,7 +728,7 @@ export const ForecastManager: React.FC = () => {
           
           {loadingCompare ? (
             <div className="flex flex-col items-center justify-center py-20 space-y-4">
-              <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+              <div className="w-10 h-10 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
               <p className="text-xs text-slate-400 font-semibold">Procesando y cruzando tus transacciones...</p>
             </div>
           ) : compareError ? (
@@ -739,7 +739,7 @@ export const ForecastManager: React.FC = () => {
               <button 
                 type="button"
                 onClick={fetchComparison}
-                className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-colors cursor-pointer"
+                className="mt-4 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-colors cursor-pointer"
               >
                 Reintentar
               </button>
@@ -828,9 +828,9 @@ export const ForecastManager: React.FC = () => {
                         const isExpanded = expandedItemId === item.id;
                         
                         // Progress bar color based on percentage spent
-                        let barColor = 'bg-indigo-600 dark:bg-indigo-500';
-                        let textColor = 'text-indigo-600 dark:text-indigo-400';
-                        let bgLightColor = 'bg-indigo-50 dark:bg-indigo-950/20';
+                        let barColor = 'bg-brand-600 dark:bg-brand-500';
+                        let textColor = 'text-brand-600 dark:text-brand-400';
+                        let bgLightColor = 'bg-brand-50 dark:bg-brand-950/20';
                         if (percent >= 100) {
                           barColor = 'bg-rose-500';
                           textColor = 'text-rose-500';
@@ -858,8 +858,8 @@ export const ForecastManager: React.FC = () => {
                                 </h4>
                                 <div className="flex flex-wrap items-center gap-2">
                                   {item.tag ? (
-                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-900/30 flex items-center gap-1 w-fit">
-                                      <Tag size={8} className="text-indigo-500" />
+                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-bold bg-brand-50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 border border-brand-100/50 dark:border-brand-900/30 flex items-center gap-1 w-fit">
+                                      <Tag size={8} className="text-brand-500" />
                                       Etiqueta: {item.tag.name}
                                     </span>
                                   ) : item.category ? (

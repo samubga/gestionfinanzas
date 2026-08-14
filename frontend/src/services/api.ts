@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3001/api',
+  baseURL: `${window.location.protocol}//${window.location.hostname}:3001/api`,
 });
 
 // Intercept requests to inject bearer token

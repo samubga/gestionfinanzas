@@ -205,7 +205,7 @@ export const StatsPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
-            <BarChart2 className="text-indigo-500" />
+            <BarChart2 className="text-brand-500" />
             Análisis e Informes
           </h2>
           <p className="text-xs text-slate-400 dark:text-slate-500">Métricas avanzadas, rendimiento y evolución financiera</p>
@@ -215,7 +215,7 @@ export const StatsPage: React.FC = () => {
           onClick={refreshAll}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all text-slate-600 dark:text-slate-300 self-start md:self-auto"
         >
-          <RefreshCw size={14} className={statsLoading ? "animate-spin text-indigo-500" : ""} />
+          <RefreshCw size={14} className={statsLoading ? "animate-spin text-brand-500" : ""} />
           Actualizar datos
         </button>
       </div>
@@ -233,7 +233,7 @@ export const StatsPage: React.FC = () => {
               onClick={() => setActiveTab(tab)}
               className={`flex items-center gap-2 px-4 py-3 text-xs font-bold transition-all border-b-2 whitespace-nowrap -mb-px ${
                 isActive 
-                  ? 'border-indigo-500 text-indigo-500 dark:text-indigo-400 font-extrabold'
+                  ? 'border-brand-500 text-brand-500 dark:text-brand-400 font-extrabold'
                   : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
               }`}
             >
@@ -257,7 +257,7 @@ export const StatsPage: React.FC = () => {
             <select
               value={month}
               onChange={(e) => setPeriod(year, parseInt(e.target.value))}
-              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none"
             >
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
@@ -269,7 +269,7 @@ export const StatsPage: React.FC = () => {
             <select
               value={year}
               onChange={(e) => setPeriod(parseInt(e.target.value), month)}
-              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none"
             >
               {yearsList.map(y => (
                 <option key={y} value={y}>{y}</option>
@@ -289,7 +289,7 @@ export const StatsPage: React.FC = () => {
                 </h3>
                 <p className="text-[9px] text-slate-400 dark:text-slate-500">Consumo diario ponderado</p>
               </div>
-              <div className="p-3 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 rounded-2xl shrink-0">
+              <div className="p-3 bg-brand-50 dark:bg-brand-950/20 text-brand-500 rounded-2xl shrink-0">
                 <CalendarDays size={20} />
               </div>
             </div>
@@ -313,12 +313,12 @@ export const StatsPage: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
               <div className="space-y-2">
                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Predicción Fin de Mes</span>
-                <h3 className="text-xl font-black text-indigo-600 dark:text-indigo-400">
+                <h3 className="text-xl font-black text-brand-600 dark:text-brand-400">
                   {stats.averages.prediction.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
                 </h3>
                 <p className="text-[9px] text-slate-400 dark:text-slate-500">Basado en tendencias</p>
               </div>
-              <div className="p-3 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white rounded-2xl shrink-0 shadow-md shadow-indigo-500/10">
+              <div className="p-3 bg-gradient-to-tr from-brand-500 to-purple-600 text-white rounded-2xl shrink-0 shadow-md shadow-brand-500/10">
                 <Sparkles size={20} className="animate-pulse" />
               </div>
             </div>
@@ -383,7 +383,7 @@ export const StatsPage: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col">
               <div>
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
-                  <PieIcon size={16} className="text-indigo-500" />
+                  <PieIcon size={16} className="text-brand-500" />
                   Distribución por Categorías
                 </h4>
                 <p className="text-[10px] text-slate-400 dark:text-slate-500">Reparto porcentual de egresos este mes</p>
@@ -452,7 +452,7 @@ export const StatsPage: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
               <div className="mb-4">
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
-                  <Tag size={16} className="text-indigo-500" />
+                  <Tag size={16} className="text-brand-500" />
                   Gastos por Etiquetas
                 </h4>
                 <p className="text-[10px] text-slate-400 dark:text-slate-500">Etiquetas más consumidas ordenadas de mayor a menor</p>
@@ -470,7 +470,7 @@ export const StatsPage: React.FC = () => {
                         </div>
                         <div className="w-full bg-slate-100 dark:bg-slate-800/80 h-2 rounded-full overflow-hidden">
                           <div
-                            className="bg-indigo-500 h-full rounded-full transition-all"
+                            className="bg-brand-500 h-full rounded-full transition-all"
                             style={{ width: `${percentage}%` }}
                           />
                         </div>
@@ -490,7 +490,7 @@ export const StatsPage: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
               <div className="mb-4">
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
-                  <Award size={16} className="text-indigo-500" />
+                  <Award size={16} className="text-brand-500" />
                   Top 10 Gastos más Elevados
                 </h4>
                 <p className="text-[10px] text-slate-400 dark:text-slate-500">Lista detallada de las transacciones de mayor importe del mes</p>
@@ -537,7 +537,7 @@ export const StatsPage: React.FC = () => {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none"
             >
               {yearsList.map(y => (
                 <option key={y} value={y}>{y}</option>
@@ -576,7 +576,7 @@ export const StatsPage: React.FC = () => {
                 {/* Net Savings */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
                   <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Ahorro Neto Anual</span>
-                  <h3 className={`text-xl font-black mt-2 ${yearlyStats.summary.totalSavings >= 0 ? 'text-indigo-500' : 'text-rose-500'}`}>
+                  <h3 className={`text-xl font-black mt-2 ${yearlyStats.summary.totalSavings >= 0 ? 'text-brand-500' : 'text-rose-500'}`}>
                     {yearlyStats.summary.totalSavings.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
                   </h3>
                   <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Diferencia neta positiva/negativa</p>
@@ -648,7 +648,7 @@ export const StatsPage: React.FC = () => {
               <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
                 <div className="mb-4">
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
-                    <Layers size={16} className="text-indigo-500" />
+                    <Layers size={16} className="text-brand-500" />
                     Distribución de Gastos Anuales por Categoría
                   </h4>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">Consumo acumulado en todo el año {selectedYear}</p>
@@ -738,16 +738,16 @@ export const StatsPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 
                 {/* Last Net Worth */}
-                <div className="bg-gradient-to-br from-indigo-500 to-purple-600 border-none rounded-2xl p-5 text-white shadow-md relative overflow-hidden md:col-span-2">
+                <div className="bg-gradient-to-br from-brand-500 to-purple-600 border-none rounded-2xl p-5 text-white shadow-md relative overflow-hidden md:col-span-2">
                   <div className="absolute right-0 bottom-0 opacity-10 translate-x-4 translate-y-4">
                     <NetWorthIcon size={120} />
                   </div>
                   <div className="relative space-y-3">
-                    <span className="text-[10px] font-bold text-indigo-100 uppercase tracking-wider block">Patrimonio Neto de Cierre (Actual)</span>
+                    <span className="text-[10px] font-bold text-brand-100 uppercase tracking-wider block">Patrimonio Neto de Cierre (Actual)</span>
                     <h2 className="text-3xl font-black">
                       {historicalStats.history[historicalStats.history.length - 1]?.netWorth.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
                     </h2>
-                    <div className="flex gap-4 text-xs font-semibold text-indigo-100">
+                    <div className="flex gap-4 text-xs font-semibold text-brand-100">
                       <span>Cuentas/Cash: {historicalStats.history[historicalStats.history.length - 1]?.cash.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €</span>
                       <span>Inversiones: {historicalStats.history[historicalStats.history.length - 1]?.invested.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €</span>
                     </div>
@@ -854,7 +854,7 @@ export const StatsPage: React.FC = () => {
             <select
               value={selectedCategoryId}
               onChange={(e) => setSelectedCategoryId(e.target.value)}
-              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none"
             >
               {categories.filter(c => c.type === 'expense').map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -884,7 +884,7 @@ export const StatsPage: React.FC = () => {
                 {/* Avg Monthly Spent */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
                   <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Promedio Mensual</span>
-                  <h3 className="text-xl font-black text-indigo-500 mt-2">
+                  <h3 className="text-xl font-black text-brand-500 mt-2">
                     {(catData.reduce((sum, c) => sum + c.amount, 0) / catData.length).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
                   </h3>
                   <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Consumo regular estimado</p>

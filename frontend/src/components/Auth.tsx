@@ -30,12 +30,12 @@ export const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-tr from-blue-500 via-indigo-600 to-purple-700 dark:from-slate-900 dark:via-indigo-950 dark:to-purple-950">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-tr from-blue-500 via-brand-600 to-purple-700 dark:from-slate-900 dark:via-brand-950 dark:to-purple-950">
       <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border border-white/20 dark:border-slate-800/30 p-8 transition-all duration-300">
         
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex p-3 bg-indigo-600 text-white rounded-2xl mb-4 shadow-lg shadow-indigo-500/30">
+          <div className="inline-flex p-3 bg-brand-600 text-white rounded-2xl mb-4 shadow-lg shadow-brand-500/30">
             <span className="text-3xl">💰</span>
           </div>
           <h2 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white">
@@ -68,7 +68,7 @@ export const Auth: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Juan Pérez"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
                 />
               </div>
             </div>
@@ -86,7 +86,7 @@ export const Auth: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="correo@ejemplo.com"
-                className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
               />
             </div>
           </div>
@@ -103,7 +103,7 @@ export const Auth: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
               />
             </div>
           </div>
@@ -111,7 +111,7 @@ export const Auth: React.FC = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/70 text-white rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/35 transition-all cursor-pointer group"
+            className="w-full flex items-center justify-center py-3.5 px-4 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-600/70 text-white rounded-xl font-semibold text-sm shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 transition-all cursor-pointer group"
           >
             {loading ? (
               <Loader2 className="animate-spin mr-2" size={18} />
@@ -133,7 +133,7 @@ export const Auth: React.FC = () => {
                 setIsLogin(!isLogin);
                 setError('');
               }}
-              className="ml-1.5 font-bold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 focus:outline-none transition-colors"
+              className="ml-1.5 font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 focus:outline-none transition-colors"
             >
               {isLogin ? 'Regístrate aquí' : 'Inicia sesión aquí'}
             </button>

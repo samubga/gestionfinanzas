@@ -118,7 +118,7 @@ export const CategoryTagManager: React.FC = () => {
         {/* CATEGORIES SECTION */}
         <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-50 dark:border-slate-800">
-            <Settings2 className="text-indigo-500" size={18} />
+            <Settings2 className="text-brand-500" size={18} />
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Gestión de Categorías</h3>
           </div>
 
@@ -161,7 +161,7 @@ export const CategoryTagManager: React.FC = () => {
                 placeholder="Nombre de la nueva categoría..."
                 value={newCatName}
                 onChange={(e) => setNewCatName(e.target.value)}
-                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-xs transition-all"
+                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-xs transition-all"
               />
               <div className="flex gap-2">
                 <input
@@ -173,7 +173,7 @@ export const CategoryTagManager: React.FC = () => {
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-xs transition-all shadow-md shadow-indigo-500/10 cursor-pointer"
+                  className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-xs transition-all shadow-md shadow-brand-500/10 cursor-pointer"
                 >
                   Crear
                 </button>
@@ -190,7 +190,7 @@ export const CategoryTagManager: React.FC = () => {
                     type="button"
                     onClick={() => setNewCatColor(color)}
                     className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer hover:scale-110 ${
-                      newCatColor === color ? 'border-indigo-600 scale-110' : 'border-transparent'
+                      newCatColor === color ? 'border-brand-600 scale-110' : 'border-transparent'
                     }`}
                     style={{ backgroundColor: color }}
                   />
@@ -238,7 +238,7 @@ export const CategoryTagManager: React.FC = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleStartEdit(cat)}
-                        className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg transition-colors cursor-pointer"
                       >
                         <Edit2 size={13} />
                       </button>
@@ -259,7 +259,7 @@ export const CategoryTagManager: React.FC = () => {
         {/* TAGS SECTION */}
         <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-50 dark:border-slate-800">
-            <TagIcon className="text-indigo-500" size={18} />
+            <TagIcon className="text-brand-500" size={18} />
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Gestión de Etiquetas</h3>
           </div>
 
@@ -276,11 +276,11 @@ export const CategoryTagManager: React.FC = () => {
               placeholder="Nueva etiqueta (ej. coche, novia)..."
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
-              className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-xs transition-all"
+              className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-xs transition-all"
             />
             <button
               type="submit"
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-xs transition-all shadow-md shadow-indigo-500/10 cursor-pointer flex items-center gap-1"
+              className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-xs transition-all shadow-md shadow-brand-500/10 cursor-pointer flex items-center gap-1"
             >
               <Plus size={14} />
               Crear

@@ -72,18 +72,18 @@ export const AccountManager: React.FC = () => {
     <div className="p-6 md:p-8 space-y-8 pb-24 md:pb-8 max-w-7xl mx-auto">
       
       {/* Header Banner */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-indigo-900/60 via-slate-900 to-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-xl">
-        <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
+        <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-brand-500/5 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div className="space-y-2">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center shadow-inner">
+              <div className="w-12 h-12 rounded-2xl bg-brand-600/10 border border-brand-500/20 text-brand-500 flex items-center justify-center shadow-inner">
                 <Wallet size={26} />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">Cuentas Financieras</h1>
-                <p className="text-xs md:text-sm text-slate-400 font-medium">
+                <h1 className="text-2xl md:text-3xl font-black text-slate-800 dark:text-white tracking-tight">Cuentas Financieras</h1>
+                <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium">
                   Organiza y gestiona tus cuentas bancarias, tarjetas, ahorros y efectivo.
                 </p>
               </div>
@@ -92,16 +92,16 @@ export const AccountManager: React.FC = () => {
 
           {/* Right Action & Stats */}
           <div className="flex flex-wrap items-center gap-4">
-            <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl px-5 py-3 text-right min-w-[160px]">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Saldo Total Cuentas</span>
-              <span className="text-xl md:text-2xl font-black text-emerald-400 font-mono">
+            <div className="bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800/80 rounded-2xl px-5 py-3 text-right min-w-[160px]">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">Saldo Total Cuentas</span>
+              <span className="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
                 {totalCalculatedBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
               </span>
             </div>
 
             <button
               onClick={handleOpenAddModal}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition hover:scale-105 active:scale-95 cursor-pointer"
+              className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-3 rounded-2xl font-bold text-sm shadow-lg shadow-brand-600/30 flex items-center gap-2 transition hover:scale-105 active:scale-95 cursor-pointer"
             >
               <Plus size={18} />
               Añadir Nueva Cuenta
@@ -110,8 +110,8 @@ export const AccountManager: React.FC = () => {
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 mt-6 pt-6 border-t border-slate-800/80">
-          <span className="text-xs font-semibold text-slate-400 mr-2">Filtrar por tipo:</span>
+        <div className="flex flex-wrap items-center gap-2 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800/80">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mr-2">Filtrar por tipo:</span>
           {[
             { key: 'ALL', label: 'Todas', icon: '✨' },
             { key: 'CHECKING', label: 'Corrientes', icon: '💳' },
@@ -126,8 +126,8 @@ export const AccountManager: React.FC = () => {
               onClick={() => setSelectedTypeFilter(f.key)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1.5 cursor-pointer ${
                 selectedTypeFilter === f.key
-                  ? 'bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/20'
-                  : 'bg-slate-950/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                  ? 'bg-brand-600 border-brand-500 text-white shadow-md shadow-brand-600/20'
+                  : 'bg-slate-50 dark:bg-slate-950/40 border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
               <span>{f.icon}</span>
@@ -147,7 +147,7 @@ export const AccountManager: React.FC = () => {
       {/* Grid de Tarjetas de Cuentas */}
       {accountsLoading ? (
         <div className="flex flex-col items-center justify-center py-16 space-y-3">
-          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-xs text-slate-400 font-semibold">Cargando cuentas...</p>
         </div>
       ) : filteredAccounts.length === 0 ? (
@@ -161,7 +161,7 @@ export const AccountManager: React.FC = () => {
           </p>
           <button
             onClick={handleOpenAddModal}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shadow-indigo-600/30"
+            className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shadow-brand-600/30"
           >
             + Crear Cuenta
           </button>
@@ -176,7 +176,7 @@ export const AccountManager: React.FC = () => {
             return (
               <div
                 key={acc.id}
-                className="bg-slate-900/90 border border-slate-800/90 hover:border-indigo-500/40 rounded-3xl p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-indigo-500/5 flex flex-col justify-between group relative overflow-hidden"
+                className="bg-slate-900/90 border border-slate-800/90 hover:border-brand-500/40 rounded-3xl p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-brand-500/5 flex flex-col justify-between group relative overflow-hidden"
               >
                 {/* Accent bar top */}
                 <div 
@@ -218,7 +218,7 @@ export const AccountManager: React.FC = () => {
                     <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition">
                       <button
                         onClick={() => handleOpenEditModal(acc)}
-                        className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-xl transition cursor-pointer"
+                        className="p-2 text-slate-400 hover:text-brand-400 hover:bg-slate-800 rounded-xl transition cursor-pointer"
                         title="Editar cuenta"
                       >
                         <Edit2 size={16} />

@@ -346,7 +346,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-2xl font-bold transition-all"
+                className="w-full pl-10 pr-4 py-4 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-2xl font-bold transition-all"
               />
             </div>
           </div>
@@ -362,7 +362,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 value={description}
                 onChange={(e) => handleDescriptionChange(e.target.value)}
                 onFocus={() => description && setShowDescSuggestions(true)}
-                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all"
+                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-sm transition-all"
               />
             </div>
 
@@ -374,7 +374,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                     key={idx}
                     type="button"
                     onClick={() => selectDescSuggestion(s)}
-                    className="w-full text-left px-4 py-3 hover:bg-indigo-50 dark:hover:bg-slate-700/50 flex items-center justify-between text-sm transition-colors cursor-pointer"
+                    className="w-full text-left px-4 py-3 hover:bg-brand-50 dark:hover:bg-slate-700/50 flex items-center justify-between text-sm transition-colors cursor-pointer"
                   >
                     <div>
                       <p className="font-semibold text-slate-800 dark:text-white">{s.description}</p>
@@ -382,7 +382,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                         {categories.find(c => c.id === s.categoryId)?.name || 'Sin categoría'}
                       </p>
                     </div>
-                    <div className="flex items-center text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                    <div className="flex items-center text-xs font-medium text-brand-600 dark:text-brand-400">
                       <span className="mr-1.5">{s.amount.toFixed(2)} €</span>
                       <Sparkles size={14} className="animate-pulse" />
                     </div>
@@ -404,7 +404,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all"
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-sm transition-all"
               />
             </div>
           </div>
@@ -423,7 +423,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                     onClick={() => setCategoryId(cat.id)}
                     className={`flex items-center p-2 rounded-xl border text-xs font-medium transition-all ${
                       categoryId === cat.id
-                        ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
+                        ? 'border-brand-600 dark:border-brand-500 bg-brand-50/40 dark:bg-brand-950/20 text-brand-700 dark:text-brand-300'
                         : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
                     }`}
                   >
@@ -440,7 +440,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                     onClick={() => setCategoryId('')}
                     className={`flex items-center p-2 rounded-xl border text-xs font-medium transition-all ${
                       !categoryId
-                        ? 'border-indigo-600 dark:border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
+                        ? 'border-brand-600 dark:border-brand-500 bg-brand-50/40 dark:bg-brand-950/20 text-brand-700 dark:text-brand-300'
                         : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
                     }`}
                   >
@@ -463,7 +463,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-sm transition-all"
                 >
                   <option value="Tarjeta">Tarjeta de Crédito/Débito</option>
                   <option value="Efectivo">Efectivo</option>
@@ -495,7 +495,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                         handleAddTag();
                       }
                     }}
-                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-xs transition-all"
+                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-xs transition-all"
                   />
                 </div>
                 <button
@@ -519,7 +519,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                         setTagInput('');
                         setTagSuggestions([]);
                       }}
-                      className="px-2 py-1 bg-white hover:bg-indigo-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-700 rounded text-[10px] font-medium transition-colors"
+                      className="px-2 py-1 bg-white hover:bg-brand-50 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-700 rounded text-[10px] font-medium transition-colors"
                     >
                       +{tName}
                     </button>
@@ -533,13 +533,13 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                   {selectedTags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center px-2.5 py-1 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 rounded-full text-xs font-semibold border border-indigo-100/30"
+                      className="inline-flex items-center px-2.5 py-1 bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-400 rounded-full text-xs font-semibold border border-brand-100/30"
                     >
                       #{tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
-                        className="ml-1 text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-200"
+                        className="ml-1 text-brand-400 hover:text-brand-600 dark:hover:text-brand-200"
                       >
                         <X size={12} />
                       </button>
@@ -562,7 +562,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                   <select
                     value={fromAccountId}
                     onChange={(e) => setFromAccountId(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-sm transition-all"
                   >
                     <option value="" disabled>Seleccionar origen</option>
                     {accounts.map((acc) => (
@@ -582,7 +582,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                   <select
                     value={toAccountId}
                     onChange={(e) => setToAccountId(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-sm transition-all"
                   >
                     <option value="" disabled>Seleccionar destino</option>
                     {accounts.map((acc) => (
@@ -607,7 +607,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 <select
                   value={bank}
                   onChange={(e) => setBank(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-sm transition-all"
                 >
                   {accounts.map((acc) => (
                     <option key={acc.id} value={acc.id}>
@@ -631,7 +631,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 placeholder="Escribe comentarios o detalles adicionales..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-600 text-slate-800 dark:text-white text-sm transition-all resize-none"
+                className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-sm transition-all resize-none"
               />
             </div>
           </div>
@@ -647,7 +647,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
             </button>
             <button
               type="submit"
-              className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/35 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+              className="flex-1 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-sm shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 transition-all cursor-pointer flex items-center justify-center gap-1.5"
             >
               <Plus size={16} />
               {editTransaction ? 'Guardar' : 'Añadir'}

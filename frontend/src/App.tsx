@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FinanceProvider } from './context/FinanceContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import Auth from './components/Auth';
 import Navbar from './components/Navbar';
 import Dashboard from './components/Dashboard';
@@ -21,25 +22,8 @@ const AppContent: React.FC = () => {
   const [editTx, setEditTx] = useState<any>(null);
   const [formInitialType, setFormInitialType] = useState<'expense' | 'income' | 'transfer'>('expense');
 
-  // Theme state
-  const [dark, setDark] = useState(() => {
-    const saved = localStorage.getItem('theme');
-    if (saved) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
-  // Apply class strategy for Tailwind Dark Mode
-  useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [dark]);
-
-  const toggleTheme = () => setDark(!dark);
+  // Theme state from Context
+  const { dark, toggleTheme } = useTheme();
 
   const handleOpenAddForm = (type: 'expense' | 'income' | 'transfer' = 'expense') => {
     setEditTx(null);
@@ -56,7 +40,7 @@ const AppContent: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-slate-950 transition-colors">
-        <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4" />
+        <div className="w-10 h-10 border-4 border-brand-600 border-t-transparent rounded-full animate-spin mb-4" />
         <p className="text-xs font-bold text-slate-500 dark:text-slate-400">Cargando aplicación...</p>
       </div>
     );
@@ -116,7 +100,7 @@ const AppContent: React.FC = () => {
       {/* DESKTOP FLOATING ACTION BUTTON */}
       <button
         onClick={() => handleOpenAddForm('expense')}
-        className="hidden md:flex fixed bottom-6 right-6 z-40 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full items-center justify-center shadow-xl shadow-indigo-500/30 active:scale-95 transition-all hover:scale-105 cursor-pointer font-bold"
+        className="hidden md:flex fixed bottom-6 right-6 z-40 w-14 h-14 bg-brand-600 hover:bg-brand-700 text-white rounded-full items-center justify-center shadow-xl shadow-brand-500/30 active:scale-95 transition-all hover:scale-105 cursor-pointer font-bold"
         title="Añadir Transacción"
       >
         <Plus size={24} />
@@ -139,11 +123,13 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <FinanceProvider>
-        <AppContent />
-      </FinanceProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <FinanceProvider>
+          <AppContent />
+        </FinanceProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

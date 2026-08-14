@@ -175,7 +175,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-xl">
+            <div className="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold text-xl">
               {icon}
             </div>
             <h2 className="text-xl font-bold">
@@ -214,7 +214,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                     placeholder="Buscar banco (CaixaBank, Revolut, BBVA...)"
                     value={bankSearch}
                     onChange={(e) => setBankSearch(e.target.value)}
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500 transition"
+                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand-500 transition"
                   />
                 </div>
 
@@ -225,13 +225,13 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                     onClick={() => handleSelectBank(null)}
                     className={`flex items-center gap-2 p-2 rounded-lg text-xs font-medium text-left transition ${
                       !selectedBankId 
-                        ? 'bg-indigo-600/30 border border-indigo-500/50 text-indigo-200' 
+                        ? 'bg-brand-600/30 border border-brand-500/50 text-brand-200' 
                         : 'hover:bg-slate-800 text-slate-400'
                     }`}
                   >
                     <Building2 size={16} />
                     <span>Sin banco / Efectivo</span>
-                    {!selectedBankId && <Check size={14} className="ml-auto text-indigo-400" />}
+                    {!selectedBankId && <Check size={14} className="ml-auto text-brand-400" />}
                   </button>
 
                   {filteredBanks.map((b) => {
@@ -243,7 +243,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                         onClick={() => handleSelectBank(b)}
                         className={`flex items-center gap-2 p-2 rounded-lg text-xs font-medium text-left transition ${
                           isSelected 
-                            ? 'bg-indigo-600/30 border border-indigo-500/50 text-indigo-200' 
+                            ? 'bg-brand-600/30 border border-brand-500/50 text-brand-200' 
                             : 'hover:bg-slate-800 text-slate-300'
                         }`}
                       >
@@ -252,7 +252,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                           style={{ backgroundColor: b.color }}
                         />
                         <span className="truncate">{b.name}</span>
-                        {isSelected && <Check size={14} className="ml-auto text-indigo-400 flex-shrink-0" />}
+                        {isSelected && <Check size={14} className="ml-auto text-brand-400 flex-shrink-0" />}
                       </button>
                     );
                   })}
@@ -261,7 +261,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                 <button
                   type="button"
                   onClick={() => setShowCustomBankInput(true)}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 font-medium flex items-center gap-1 mt-1"
+                  className="text-xs text-brand-400 hover:text-brand-300 font-medium flex items-center gap-1 mt-1"
                 >
                   <Plus size={14} /> ¿No encuentras tu banco? Crear personalizado
                 </button>
@@ -296,7 +296,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                 <button
                   type="button"
                   onClick={handleCreateCustomBank}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold py-2 rounded-lg transition"
+                  className="w-full bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold py-2 rounded-lg transition"
                 >
                   Guardar Banco
                 </button>
@@ -322,7 +322,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                     }}
                     className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium border transition ${
                       isSelected
-                        ? 'bg-indigo-600/20 border-indigo-500 text-indigo-300'
+                        ? 'bg-brand-600/20 border-brand-500 text-brand-300'
                         : 'bg-slate-800/40 border-slate-800 hover:border-slate-700 text-slate-400'
                     }`}
                   >
@@ -344,7 +344,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
               placeholder="Ej. Nómina, Fondo de Emergencia, Gastos Viajes..."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition"
               required
             />
           </div>
@@ -363,7 +363,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                     setCalcMessage('');
                     setActualMoneyInput('');
                   }}
-                  className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition cursor-pointer"
+                  className="text-xs text-brand-400 hover:text-brand-300 font-semibold flex items-center gap-1 transition cursor-pointer"
                 >
                   ⚙️ Calcular Saldo
                 </button>
@@ -375,7 +375,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
               placeholder="0.00"
               value={startingBalance}
               onChange={(e) => setStartingBalance(e.target.value)}
-              className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+              className="w-full bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 transition"
             />
 
             {/* Inline Calculator Panel */}
@@ -404,12 +404,12 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                     placeholder="Dinero real actual (€)"
                     value={actualMoneyInput}
                     onChange={(e) => setActualMoneyInput(e.target.value)}
-                    className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    className="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500"
                   />
                   <button
                     type="button"
                     onClick={handleCalculateStartingBalance}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition"
+                    className="bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold px-4 py-2 rounded-lg transition"
                   >
                     Calcular
                   </button>
@@ -436,7 +436,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                     type="button"
                     onClick={() => setColor(c)}
                     className={`w-6 h-6 rounded-full transition transform ${
-                      color === c ? 'scale-125 ring-2 ring-indigo-400' : 'hover:scale-110'
+                      color === c ? 'scale-125 ring-2 ring-brand-400' : 'hover:scale-110'
                     }`}
                     style={{ backgroundColor: c }}
                   />
@@ -473,7 +473,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                     type="button"
                     onClick={() => setIcon(ic)}
                     className={`w-7 h-7 rounded-lg text-sm flex items-center justify-center transition ${
-                      icon === ic ? 'bg-indigo-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                      icon === ic ? 'bg-brand-600 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
                     }`}
                   >
                     {ic}
@@ -495,7 +495,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
             <button
               type="submit"
               disabled={loading}
-              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition"
+              className="bg-brand-600 hover:bg-brand-500 disabled:opacity-50 text-white px-5 py-2.5 rounded-xl font-semibold text-sm shadow-lg shadow-brand-600/30 flex items-center gap-2 transition"
             >
               {loading && <Loader2 size={16} className="animate-spin" />}
               {accountToEdit ? 'Guardar Cambios' : 'Crear Cuenta'}

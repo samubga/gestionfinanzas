@@ -132,7 +132,7 @@ export const InvestmentsManager: React.FC = () => {
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'Acción': return 'bg-blue-50 text-blue-600 dark:bg-blue-950/20 dark:text-blue-400 border-blue-100 dark:border-blue-900/30';
-      case 'ETF': return 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/30';
+      case 'ETF': return 'bg-brand-50 text-brand-600 dark:bg-brand-950/20 dark:text-brand-400 border-brand-100 dark:border-brand-900/30';
       case 'Fondo de inversión': return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/30';
       case 'Criptomoneda': return 'bg-amber-50 text-amber-600 dark:bg-amber-950/20 dark:text-amber-400 border-amber-100 dark:border-amber-900/30';
       case 'Derivado': return 'bg-rose-50 text-rose-600 dark:bg-rose-950/20 dark:text-rose-400 border-rose-100 dark:border-rose-900/30';
@@ -150,7 +150,7 @@ export const InvestmentsManager: React.FC = () => {
         </div>
         <button
           onClick={() => setShowAddForm(true)}
-          className="inline-flex items-center gap-1.5 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-5 py-3 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-brand-500/20 transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
         >
           <Plus size={16} />
           Nueva Inversión
@@ -166,7 +166,7 @@ export const InvestmentsManager: React.FC = () => {
             <h3 className="text-2xl font-black text-slate-800 dark:text-white">{totalInvestedActive.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</h3>
             <p className="text-[10px] text-slate-400 dark:text-slate-500">Monto total actualmente en el mercado</p>
           </div>
-          <div className="p-3 bg-indigo-50 dark:bg-indigo-950/20 text-indigo-500 rounded-2xl shrink-0">
+          <div className="p-3 bg-brand-50 dark:bg-brand-950/20 text-brand-500 rounded-2xl shrink-0">
             <Wallet size={20} />
           </div>
         </div>
@@ -206,7 +206,7 @@ export const InvestmentsManager: React.FC = () => {
             </h3>
             <p className="text-[10px] text-slate-400 dark:text-slate-500">Capital activo + resultados netos realizados</p>
           </div>
-          <div className="p-3 bg-gradient-to-tr from-indigo-500 to-purple-600 text-white rounded-2xl shrink-0 shadow-md shadow-indigo-500/10">
+          <div className="p-3 bg-gradient-to-tr from-brand-500 to-purple-600 text-white rounded-2xl shrink-0 shadow-md shadow-brand-500/10">
             <Landmark size={20} />
           </div>
         </div>
@@ -218,7 +218,7 @@ export const InvestmentsManager: React.FC = () => {
           onClick={() => setActiveSubTab('active')}
           className={`pb-3 text-xs font-bold border-b-2 px-3 transition-colors cursor-pointer ${
             activeSubTab === 'active'
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+              ? 'border-brand-600 text-brand-600 dark:text-brand-400'
               : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-350'
           }`}
         >
@@ -228,7 +228,7 @@ export const InvestmentsManager: React.FC = () => {
           onClick={() => setActiveSubTab('withdrawn')}
           className={`pb-3 text-xs font-bold border-b-2 px-3 transition-colors cursor-pointer ${
             activeSubTab === 'withdrawn'
-              ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+              ? 'border-brand-600 text-brand-600 dark:text-brand-400'
               : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-350'
           }`}
         >
@@ -239,7 +239,7 @@ export const InvestmentsManager: React.FC = () => {
       {/* Tables & Lists */}
       {investmentsLoading ? (
         <div className="h-64 flex flex-col items-center justify-center">
-          <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3" />
+          <div className="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin mb-3" />
           <p className="text-xs text-slate-400 dark:text-slate-500">Cargando tus inversiones...</p>
         </div>
       ) : activeSubTab === 'active' ? (
@@ -292,7 +292,7 @@ export const InvestmentsManager: React.FC = () => {
                         </button>
                         <button
                           onClick={() => setWithdrawingInv(inv)}
-                          className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-150 dark:bg-indigo-950/40 dark:hover:bg-indigo-950/70 text-indigo-650 dark:text-indigo-400 rounded-lg font-bold text-[10px] border border-indigo-100 dark:border-indigo-900/30 cursor-pointer transition-colors"
+                          className="px-2.5 py-1 bg-brand-50 hover:bg-brand-150 dark:bg-brand-950/40 dark:hover:bg-brand-950/70 text-brand-650 dark:text-brand-400 rounded-lg font-bold text-[10px] border border-brand-100 dark:border-brand-900/30 cursor-pointer transition-colors"
                         >
                           Retirar / Vender
                         </button>
@@ -316,7 +316,7 @@ export const InvestmentsManager: React.FC = () => {
             <p className="text-xs text-slate-400 dark:text-slate-500 italic">No tienes inversiones activas registradas.</p>
             <button
               onClick={() => setShowAddForm(true)}
-              className="mt-4 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+              className="mt-4 text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline cursor-pointer"
             >
               + Añadir tu primera inversión
             </button>
@@ -435,7 +435,7 @@ export const InvestmentsManager: React.FC = () => {
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                  className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                 >
                   <option value="Acción">Acción</option>
                   <option value="ETF">ETF</option>
@@ -453,7 +453,7 @@ export const InvestmentsManager: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none placeholder-slate-400 dark:placeholder-slate-500"
+                  className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none placeholder-slate-400 dark:placeholder-slate-500"
                 />
               </div>
 
@@ -467,7 +467,7 @@ export const InvestmentsManager: React.FC = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     required
-                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                   />
                 </div>
                 <div>
@@ -478,7 +478,7 @@ export const InvestmentsManager: React.FC = () => {
                     placeholder="0.00"
                     value={buyFee}
                     onChange={(e) => setBuyFee(e.target.value)}
-                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                   />
                 </div>
               </div>
@@ -489,7 +489,7 @@ export const InvestmentsManager: React.FC = () => {
                   <select
                     value={bank}
                     onChange={(e) => setBank(e.target.value)}
-                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                   >
                     {accounts.map((acc) => (
                       <option key={acc.id} value={acc.id}>
@@ -505,7 +505,7 @@ export const InvestmentsManager: React.FC = () => {
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     required
-                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                   />
                 </div>
               </div>
@@ -523,7 +523,7 @@ export const InvestmentsManager: React.FC = () => {
                       value={withdrawnAmount}
                       onChange={(e) => setWithdrawnAmount(e.target.value)}
                       required
-                      className="w-full py-1.5 px-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                      className="w-full py-1.5 px-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                     />
                   </div>
 
@@ -536,7 +536,7 @@ export const InvestmentsManager: React.FC = () => {
                         placeholder="0.00"
                         value={sellFee}
                         onChange={(e) => setSellFee(e.target.value)}
-                        className="w-full py-1.5 px-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                        className="w-full py-1.5 px-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                       />
                     </div>
                     <div>
@@ -546,7 +546,7 @@ export const InvestmentsManager: React.FC = () => {
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                         required
-                        className="w-full py-1.5 px-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                        className="w-full py-1.5 px-3 border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                       />
                     </div>
                   </div>
@@ -559,7 +559,7 @@ export const InvestmentsManager: React.FC = () => {
                   placeholder="ISIN, cantidad, precio unitario o cualquier apunte..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none h-16 resize-none placeholder-slate-400 dark:placeholder-slate-500"
+                  className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none h-16 resize-none placeholder-slate-400 dark:placeholder-slate-500"
                 />
               </div>
 
@@ -573,7 +573,7 @@ export const InvestmentsManager: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-500/10 cursor-pointer transition-colors"
+                  className="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-brand-500/10 cursor-pointer transition-colors"
                 >
                   {editingInv ? 'Guardar Cambios' : 'Guardar Inversión'}
                 </button>
@@ -621,7 +621,7 @@ export const InvestmentsManager: React.FC = () => {
                   value={withdrawnAmount}
                   onChange={(e) => setWithdrawnAmount(e.target.value)}
                   required
-                  className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                  className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                 />
               </div>
 
@@ -634,7 +634,7 @@ export const InvestmentsManager: React.FC = () => {
                     placeholder="0.00"
                     value={sellFee}
                     onChange={(e) => setSellFee(e.target.value)}
-                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                   />
                 </div>
                 <div>
@@ -644,7 +644,7 @@ export const InvestmentsManager: React.FC = () => {
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     required
-                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-indigo-500 outline-none"
+                    className="w-full py-2 px-3 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-850 dark:text-slate-100 rounded-xl text-xs font-semibold focus:ring-1 focus:ring-brand-500 outline-none"
                   />
                 </div>
               </div>
