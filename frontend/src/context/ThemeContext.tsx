@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type ColorTheme = 'indigo' | 'emerald' | 'rose' | 'amber' | 'ocean' | 'violet' | 'obsidian';
+export type ColorTheme = 'indigo' | 'sapphire' | 'teal' | 'amber' | 'ocean' | 'violet' | 'obsidian';
 export type LayoutMode = 'classic' | 'bento';
 
 interface ThemeContextType {
@@ -24,6 +24,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
     const saved = localStorage.getItem('colorTheme');
+    if (saved === 'emerald' || saved === 'rose') return 'indigo';
     return (saved as ColorTheme) || 'indigo';
   });
 
@@ -45,7 +46,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Handle color theme class
   useEffect(() => {
-    const themes: ColorTheme[] = ['indigo', 'emerald', 'rose', 'amber', 'ocean', 'violet', 'obsidian'];
+    const themes: ColorTheme[] = ['indigo', 'sapphire', 'teal', 'amber', 'ocean', 'violet', 'obsidian'];
     
     // Remove all theme classes first
     themes.forEach((t) => {

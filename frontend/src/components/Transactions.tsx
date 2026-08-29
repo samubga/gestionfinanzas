@@ -70,6 +70,8 @@ export const Transactions: React.FC<TransactionsProps> = ({
   const [showFilters, setShowFilters] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [previewItems, setPreviewItems] = useState<any[]>([]);
+  const [showImportAccountModal, setShowImportAccountModal] = useState(false);
+  const [selectedImportAccountId, setSelectedImportAccountId] = useState('');
   const [previewTab, setPreviewTab] = useState<'all' | 'expense' | 'income' | 'transfer'>('all');
   const [importLoading, setImportLoading] = useState(false);
   const [dataSuccess, setDataSuccess] = useState('');
@@ -328,6 +330,20 @@ export const Transactions: React.FC<TransactionsProps> = ({
   };
 
   const handleCSVImportClick = () => {
+    if (accounts.length === 0) {
+      setDataError('No hay cuentas disponibles. Crea una cuenta primero.');
+      return;
+    }
+    setSelectedImportAccountId(accounts[0].id);
+    setShowImportAccountModal(true);
+  };
+
+  const handleCancelImportAccount = () => {
+    setShowImportAccountModal(false);
+  };
+
+  const handleConfirmImportAccount = () => {
+    setShowImportAccountModal(false);
     csvInputRef.current?.click();
   };
 
@@ -442,7 +458,19 @@ export const Transactions: React.FC<TransactionsProps> = ({
         }
 
         const res = await api.post('/backup/parse-csv-preview', { csvText });
-        setPreviewItems(res.data);
+        
+        // Map all preview records to the selected import account
+        const selectedAcc = accounts.find(a => a.id === selectedImportAccountId);
+        const mappedData = res.data.map((item: any) => {
+          if (item.alreadyExists) return item;
+          return {
+            ...item,
+            accountId: selectedImportAccountId,
+            bank: selectedAcc ? selectedAcc.name : item.bank
+          };
+        });
+        
+        setPreviewItems(mappedData);
       } catch (err: any) {
         setDataError(err.message || err.response?.data?.error || 'Error al procesar el archivo.');
       } finally {
@@ -472,6 +500,12 @@ export const Transactions: React.FC<TransactionsProps> = ({
       updated[index].paymentMethod = value === 'expense' ? 'Tarjeta' : null;
       updated[index].tags = value === 'expense' ? [] : null;
     }
+    
+    if (field === 'accountId') {
+      const selectedAcc = accounts.find(a => a.id === value);
+      updated[index].bank = selectedAcc ? selectedAcc.name : '';
+    }
+    
     setPreviewItems(updated);
   };
 
@@ -2065,6 +2099,70 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 }`}
               >
                 Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* IMPORT ACCOUNT SELECTION MODAL */}
+      {showImportAccountModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-sm transition-all duration-300 animate-fade-in">
+          <div 
+            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div>
+                <h3 className="text-base font-black text-slate-800 dark:text-white">
+                  Seleccionar Cuenta para Importación
+                </h3>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                  Elige la cuenta a la que se asignarán todos los movimientos del archivo.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleCancelImportAccount}
+                className="p-1.5 text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Cuenta de Destino
+                </label>
+                <select
+                  value={selectedImportAccountId}
+                  onChange={(e) => setSelectedImportAccountId(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-800 dark:text-white focus:outline-none focus:border-brand-500 transition-colors"
+                >
+                  {accounts.map(acc => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name} ({acc.bank?.name || 'Sin banco'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleCancelImportAccount}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer text-center"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmImportAccount}
+                className="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl shadow-md shadow-brand-500/20 transition-all cursor-pointer text-center"
+              >
+                Seleccionar Archivo...
               </button>
             </div>
           </div>

@@ -25,8 +25,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const themes = [
     { id: 'indigo', name: 'Día / Noche Clásico', hex: '#4f46e5' },
-    { id: 'emerald', name: 'Modo Esmeralda', hex: '#44705a' },
-    { id: 'rose', name: 'Modo Rubí', hex: '#9b3c50' },
+    { id: 'sapphire', name: 'Modo Zafiro', hex: '#2563eb' },
+    { id: 'teal', name: 'Modo Turquesa', hex: '#139488' },
     { id: 'amber', name: 'Modo Ámbar', hex: '#766246' },
     { id: 'ocean', name: 'Modo Diamante', hex: '#4c6e86' },
     { id: 'violet', name: 'Modo Amatista', hex: '#8b78dc' },

@@ -48,11 +48,11 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({
 
   const themes = [
     { id: 'indigo', name: 'Clásico', hex: '#4f46e5' },
-    { id: 'emerald', name: 'Esmeralda', hex: '#44705a' },
-    { id: 'rose', name: 'Rubí', hex: '#9b3c50' },
+    { id: 'sapphire', name: 'Zafiro', hex: '#2563eb' },
+    { id: 'teal', name: 'Turquesa', hex: '#139488' },
     { id: 'amber', name: 'Ámbar', hex: '#766246' },
     { id: 'ocean', name: 'Diamante', hex: '#4c6e86' },
-    { id: 'violet', name: 'Amatista', hex: '#70588f' },
+    { id: 'violet', name: 'Amatista', hex: '#8b78dc' },
     { id: 'obsidian', name: 'Obsidiana (OLED)', hex: '#121212' },
   ] as const;
 

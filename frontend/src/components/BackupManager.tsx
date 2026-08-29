@@ -11,8 +11,8 @@ export const BackupManager: React.FC = () => {
 
   const themes = [
     { id: 'indigo', name: 'Día / Noche Clásico', description: 'Gama de grises y azules clásica (por defecto)', hex: '#4f46e5' },
-    { id: 'emerald', name: 'Modo Esmeralda', description: 'Gama completa de verdes esmeralda financieros', hex: '#44705a' },
-    { id: 'rose', name: 'Modo Rubí', description: 'Gama de rojos intensos y rosas sofisticados', hex: '#9b3c50' },
+    { id: 'sapphire', name: 'Modo Zafiro', description: 'Gama azul zafiro real y elegante', hex: '#2563eb' },
+    { id: 'teal', name: 'Modo Turquesa', description: 'Tonalidad verde mar azulado, fresca y equilibrada', hex: '#139488' },
     { id: 'amber', name: 'Modo Ámbar', description: 'Tonalidad dorada de lujo, cálida y elegante', hex: '#766246' },
     { id: 'ocean', name: 'Modo Diamante', description: 'Tonalidad azul glaciar y cian cristalino', hex: '#4c6e86' },
     { id: 'violet', name: 'Modo Amatista', description: 'Gama morada mística, creativa y profunda', hex: '#8b78dc' },
