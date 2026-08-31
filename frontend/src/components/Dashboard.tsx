@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import AccountCardStack from './AccountCardStack';
 import SmartInsightsCard from './SmartInsightsCard';
+import api from '../services/api';
 import {
   AreaChart,
   Area,
@@ -9,9 +10,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   CartesianGrid
 } from 'recharts';
 import {
@@ -26,11 +24,22 @@ import {
   Receipt,
   Activity,
   ArrowRight,
-  Target
+  Target,
+  Landmark
 } from 'lucide-react';
 
 interface DashboardProps {
   setActiveTab?: (tab: string) => void;
+}
+
+interface PortfolioMarketSummary {
+  configured: boolean;
+  quotes: Array<{
+    investmentId: string;
+    units: number | null;
+    unitPrice: number | null;
+    quote: { close: number };
+  }>;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
@@ -40,8 +49,32 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const [evolutionRange, setEvolutionRange] = useState<'3m' | '6m' | '1y' | 'all'>('6m');
   const [zoomEnabled, setZoomEnabled] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [portfolioMarketSummary, setPortfolioMarketSummary] = useState<PortfolioMarketSummary | null>(null);
 
   const totalInvested = stats?.totalInvestedActive ?? (investments ? investments.filter(i => i.status === 'active').reduce((sum, i) => sum + i.amount, 0) : 0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPortfolioMarketSummary = async () => {
+      if (!investments.some(investment => investment.status === 'active')) {
+        setPortfolioMarketSummary(null);
+        return;
+      }
+
+      try {
+        const response = await api.get<PortfolioMarketSummary>('/investments/market/summary');
+        if (!cancelled) setPortfolioMarketSummary(response.data);
+      } catch {
+        if (!cancelled) setPortfolioMarketSummary(null);
+      }
+    };
+
+    void loadPortfolioMarketSummary();
+    return () => {
+      cancelled = true;
+    };
+  }, [investments]);
 
   const evolution = stats?.evolution;
 
@@ -107,9 +140,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const goalAmount = currentMonth.savingGoal || 0;
   const goalProgress = goalAmount > 0 ? Math.min(100, Math.round((netSavings / goalAmount) * 100)) : 0;
 
-  // Recharts colors
-  const COLORS = ['#6366F1', '#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EC4899', '#06B6D4', '#EF4444', '#14B8A6', '#6B7280'];
-
   // Filter expenses if an account card is clicked
   const activeExpenses = selectedAccountId
     ? expenses.filter(e => {
@@ -118,24 +148,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       })
     : expenses;
 
-  // Top spending categories for bento card
-  const categoryTotals: Record<string, number> = {};
-  activeExpenses.forEach(exp => {
-    categoryTotals[exp.categoryId] = (categoryTotals[exp.categoryId] || 0) + exp.amount;
+  const activeInvestments = investments.filter(investment => investment.status === 'active');
+  const withdrawnInvestments = investments.filter(investment => investment.status === 'withdrawn');
+  const unrealizedResults = (portfolioMarketSummary?.quotes || []).flatMap(quote => {
+    if (quote.units === null || quote.unitPrice === null || !Number.isFinite(quote.quote.close)) return [];
+    return [(quote.quote.close - quote.unitPrice) * quote.units];
   });
-
-  const sortedCategories = Object.entries(categoryTotals)
-    .map(([catId, amt]) => {
-      const catObj = categories.find(c => c.id === catId);
-      return {
-        id: catId,
-        name: catObj?.name || 'Varios',
-        color: catObj?.color || '#6366F1',
-        amount: amt
-      };
-    })
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 4);
+  const activeProfit = unrealizedResults.reduce((sum, result) => sum + Math.max(0, result), 0);
+  const activeLoss = unrealizedResults.reduce((sum, result) => sum + Math.min(0, result), 0);
+  const hasMarketResults = portfolioMarketSummary?.configured === true && unrealizedResults.length > 0;
 
   // Sparkline data for hero card
   const sparkData = stats.evolution && stats.evolution.length > 0
@@ -272,7 +293,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           />
         </div>
 
-        {/* TOP GASTOS POR CATEGORÍA CARD */}
+        {/* GASTOS DEL MES POR CATEGORÍA */}
         <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -280,16 +301,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                 <div className="p-2 bg-brand-50 dark:bg-brand-950/40 text-brand-500 rounded-xl border border-brand-100 dark:border-brand-800/40">
                   <PieChartIcon size={16} />
                 </div>
-                <h3 className="font-extrabold text-sm text-slate-800 dark:text-white">Top Gastos</h3>
+                <h3 className="font-extrabold text-sm text-slate-800 dark:text-white">Gastos del mes</h3>
               </div>
-              <span className="text-[10px] font-bold text-slate-400">Por Categoría</span>
+              <span className="text-[10px] font-bold text-slate-400">Por categoría</span>
             </div>
 
-            <div className="space-y-3 my-2">
-              {sortedCategories.length === 0 ? (
+            <div className="space-y-3 my-2 max-h-[185px] overflow-y-auto pr-1 scrollbar-thin">
+              {categoryBreakdown.length === 0 ? (
                 <p className="text-xs text-slate-400 italic text-center py-4">Sin gastos registrados este período.</p>
               ) : (
-                sortedCategories.map(cat => {
+                categoryBreakdown.map(cat => {
                   const percent = totalExpense > 0 ? Math.round((cat.amount / totalExpense) * 100) : 0;
                   return (
                     <div key={cat.id} className="space-y-1">
@@ -314,9 +335,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           </div>
 
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 font-bold flex items-center justify-between">
-            <span>{categories.length} Categorías totales</span>
-            <button onClick={() => handleNav('transactions', { sortByAmount: true })} className="text-brand-500 hover:underline flex items-center gap-0.5 cursor-pointer">
-              Detalles <ArrowRight size={12} />
+            <span>{categoryBreakdown.length} con gastos este mes</span>
+            <button onClick={() => handleNav('stats')} className="text-brand-500 hover:underline flex items-center gap-0.5 cursor-pointer">
+              Ver análisis <ArrowRight size={12} />
             </button>
           </div>
         </div>
@@ -488,7 +509,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
       </div>
 
-      {/* ROW 4: ÚLTIMOS MOVIMIENTOS & GASTOS POR CATEGORÍA */}
+      {/* ROW 4: ÚLTIMOS MOVIMIENTOS & RESUMEN DE INVERSIONES */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
         {/* Últimos Movimientos Feed (Span 3 cols) */}
@@ -564,64 +585,89 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           </div>
         </div>
 
-        {/* Gastos por Categoría Donut Chart (Right 1 col, next to Últimos Movimientos) */}
+        {/* Resumen de Inversiones (Right 1 col, next to Últimos Movimientos) */}
         <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-          <div>
-            <div className="mb-4">
-              <h4 className="text-sm font-bold text-slate-800 dark:text-white">Gastos por Categoría</h4>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">Distribución porcentual este mes</p>
+          <div className="space-y-5">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2.5 bg-violet-50 dark:bg-violet-950/35 text-violet-600 dark:text-violet-400 rounded-2xl border border-violet-100 dark:border-violet-800/40">
+                <Landmark size={18} />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-slate-800 dark:text-white">Inversiones</h4>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500">Resumen de tu cartera activa</p>
+              </div>
             </div>
 
-            {categoryBreakdown.length > 0 ? (
+            {activeInvestments.length > 0 ? (
               <>
-                <div className="h-44 relative flex items-center justify-center shrink-0">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={categoryBreakdown}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={55}
-                        outerRadius={75}
-                        paddingAngle={4}
-                        dataKey="amount"
-                      >
-                        {categoryBreakdown.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                    </PieChart>
-                  </ResponsiveContainer>
-                  {/* Center total */}
-                  <div className="absolute text-center">
-                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">TOTAL GASTO</p>
-                    <p className="text-base font-black font-mono text-slate-800 dark:text-white">{totalExpense.toFixed(0)} €</p>
+                <div className="rounded-2xl bg-gradient-to-br from-violet-600 to-brand-700 p-4 text-white shadow-lg shadow-violet-500/15">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">Capital activo invertido</p>
+                  <p className="mt-1 text-2xl font-black font-mono tracking-tight">
+                    {totalInvested.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/15 pt-3 text-[10px] font-semibold text-white/80">
+                    <span>{activeInvestments.length} {activeInvestments.length === 1 ? 'activa' : 'activas'}</span>
+                    <span className="text-right">{withdrawnInvestments.length} {withdrawnInvestments.length === 1 ? 'retirada' : 'retiradas'}</span>
                   </div>
                 </div>
 
-                {/* Legend list */}
-                <div className="flex-1 overflow-y-auto mt-2 space-y-2 pr-1 max-h-[140px]">
-                  {categoryBreakdown.slice(0, 4).map((entry, index) => {
-                    const percent = totalExpense > 0 ? ((entry.amount / totalExpense) * 100).toFixed(0) : '0';
-                    return (
-                      <div key={entry.id} className="flex items-center justify-between text-[11px]">
-                        <div className="flex items-center gap-2 truncate">
-                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: entry.color || COLORS[index % COLORS.length] }} />
-                          <span className="font-semibold text-slate-700 dark:text-slate-300 truncate">{entry.name}</span>
-                        </div>
-                        <span className="font-bold text-slate-500 dark:text-slate-400 text-right">{entry.amount.toFixed(2)} € ({percent}%)</span>
-                      </div>
-                    );
-                  })}
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="rounded-xl bg-emerald-50 p-2.5 dark:bg-emerald-950/25">
+                    <p className="text-[9px] font-bold uppercase tracking-wide text-emerald-600/80 dark:text-emerald-400/80">En beneficio</p>
+                    <p className="mt-1 text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">
+                      {hasMarketResults ? `+${activeProfit.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €` : '—'}
+                    </p>
+                  </div>
+                  <div className="rounded-xl bg-rose-50 p-2.5 dark:bg-rose-950/25">
+                    <p className="text-[9px] font-bold uppercase tracking-wide text-rose-600/80 dark:text-rose-400/80">En pérdidas</p>
+                    <p className="mt-1 text-sm font-black font-mono text-rose-600 dark:text-rose-400">
+                      {hasMarketResults ? `${activeLoss.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €` : '—'}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Inversiones activas</p>
+                  <div className="max-h-[132px] space-y-1.5 overflow-y-auto pr-1 scrollbar-thin">
+                    {activeInvestments.map(investment => (
+                      <button
+                        key={investment.id}
+                        onClick={() => handleNav('investments')}
+                        className="flex w-full items-center justify-between gap-3 rounded-xl bg-slate-50 px-2.5 py-2 text-left transition hover:bg-violet-50 dark:bg-slate-950/50 dark:hover:bg-violet-950/20"
+                      >
+                        <span className="min-w-0">
+                          <span className="block truncate text-[11px] font-bold text-slate-700 dark:text-slate-200">{investment.name}</span>
+                          <span className="block truncate text-[9px] font-semibold text-slate-400 dark:text-slate-500">
+                            {investment.ticker || investment.type}
+                          </span>
+                        </span>
+                        <span className="shrink-0 text-[10px] font-black font-mono text-slate-600 dark:text-slate-300">
+                          {investment.amount.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  {!hasMarketResults && (
+                    <p className="mt-2 text-[9px] font-medium leading-relaxed text-slate-400 dark:text-slate-500">
+                      Añade tickers y configura el mercado para ver el beneficio y la pérdida actuales.
+                    </p>
+                  )}
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-4 py-8">
-                <span className="text-3xl mb-2">🍽️</span>
-                <p className="text-xs text-slate-400 italic">No hay registros este mes para desglosar.</p>
+              <div className="rounded-2xl border border-dashed border-violet-200 bg-violet-50/50 p-5 text-center dark:border-violet-900/70 dark:bg-violet-950/20">
+                <Landmark size={24} className="mx-auto mb-2 text-violet-400" />
+                <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Aún no hay inversiones activas.</p>
               </div>
             )}
           </div>
+
+          <button
+            onClick={() => handleNav('investments')}
+            className="mt-5 flex items-center justify-between border-t border-slate-100 pt-3 text-xs font-bold text-brand-500 transition hover:text-brand-600 dark:border-slate-800"
+          >
+            Ver inversiones <ArrowRight size={14} />
+          </button>
         </div>
 
       </div>

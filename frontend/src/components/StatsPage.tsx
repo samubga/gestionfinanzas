@@ -5,10 +5,10 @@ import {
   AreaChart, Area, LineChart, Line, PieChart, Pie, Cell, CartesianGrid 
 } from 'recharts';
 import { 
-  Calendar, CalendarDays, Award, Sparkles, Tag, Folder, 
+  Calendar, CalendarDays, Award, Tag, Folder,
   TrendingUp, TrendingDown, DollarSign, PieChart as PieIcon, 
   BarChart2, RefreshCw, AlertCircle, ArrowUpRight, ArrowDownRight,
-  TrendingUp as NetWorthIcon, Layers
+  TrendingUp as NetWorthIcon, Layers, X
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -27,13 +27,13 @@ export const StatsPage: React.FC = () => {
     fetchHistoricalStats,
     refreshAll,
     expenses,
-    incomes,
     categories
   } = useFinance();
 
   const [activeTab, setActiveTab] = useState<'monthly' | 'yearly' | 'historical' | 'categories'>('monthly');
   const [selectedYear, setSelectedYear] = useState(year);
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
+  const [selectedExpenseDate, setSelectedExpenseDate] = useState<string | null>(null);
 
   // Generar lista de años desde 2017 hasta el año siguiente al actual, en orden descendente
   const currentYear = new Date().getFullYear();
@@ -159,17 +159,19 @@ export const StatsPage: React.FC = () => {
       .filter(exp => exp.date.startsWith(dateQueryStr))
       .reduce((sum, exp) => sum + exp.amount, 0);
 
-    const dayIncome = incomes
-      .filter(inc => inc.date.startsWith(dateQueryStr))
-      .reduce((sum, inc) => sum + inc.amount, 0);
-
     return {
       day: dayNum,
       label: dayStr,
+      date: dateQueryStr,
       Gastos: parseFloat(dayExpense.toFixed(2)),
-      Ingresos: parseFloat(dayIncome.toFixed(2)),
     };
   });
+
+  const selectedDayExpenses = selectedExpenseDate
+    ? expenses.filter(expense => expense.date.startsWith(selectedExpenseDate))
+    : [];
+  const selectedDayTotal = selectedDayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const highestExpenseDay = dailyData.reduce((highest, day) => day.Gastos > highest.Gastos ? day : highest, dailyData[0]);
 
   const categoryBreakdown = stats?.categoryBreakdown || [];
   const tagBreakdown = stats?.tagBreakdown || [];
@@ -196,6 +198,34 @@ export const StatsPage: React.FC = () => {
       );
     }
     return null;
+  };
+
+  const CategoryTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+
+    const category = payload[0].payload;
+    const amount = Number(payload[0].value || 0);
+    const percentage = (amount / Math.max(1, currentExpense)) * 100;
+
+    return (
+      <div className="min-w-[160px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-2xl shadow-slate-900/15 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/30">
+        <div className="flex items-center gap-2 border-b border-slate-100 px-3.5 py-2.5 dark:border-slate-800">
+          <span
+            className="h-2.5 w-2.5 shrink-0 rounded-full ring-4 ring-slate-100 dark:ring-slate-800"
+            style={{ backgroundColor: category.color || '#6366F1' }}
+          />
+          <span className="truncate text-xs font-bold text-slate-600 dark:text-slate-300">{category.name}</span>
+        </div>
+        <div className="px-3.5 py-3">
+          <p className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
+            {amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+          </p>
+          <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+            {percentage.toFixed(1)} % del total mensual
+          </p>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -249,6 +279,68 @@ export const StatsPage: React.FC = () => {
       {/* 1. MONTHLY VIEW */}
       {activeTab === 'monthly' && stats && (
         <div className="space-y-6">
+          {selectedExpenseDate && (
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="daily-expenses-title"
+              onMouseDown={() => setSelectedExpenseDate(null)}
+            >
+              <div
+                className="w-full max-w-md overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
+                onMouseDown={(event) => event.stopPropagation()}
+              >
+                <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Gastos del día</p>
+                    <h4 id="daily-expenses-title" className="mt-0.5 text-base font-black capitalize text-slate-800 dark:text-white">
+                      {new Date(`${selectedExpenseDate}T12:00:00`).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                    </h4>
+                  </div>
+                  <button
+                    onClick={() => setSelectedExpenseDate(null)}
+                    className="rounded-xl p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                    aria-label="Cerrar detalle de gastos"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div className="bg-rose-50 px-5 py-3 dark:bg-rose-950/20">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500/80 dark:text-rose-400/80">Total gastado</p>
+                  <p className="mt-0.5 text-2xl font-black font-mono text-rose-600 dark:text-rose-400">
+                    {selectedDayTotal.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                  </p>
+                </div>
+
+                <div className="max-h-[320px] space-y-2 overflow-y-auto p-4 scrollbar-thin">
+                  {selectedDayExpenses.map(expense => {
+                    const category = categories.find(item => item.id === expense.categoryId);
+                    return (
+                      <div key={expense.id} className="flex items-center justify-between gap-3 rounded-2xl bg-slate-50 px-3 py-2.5 dark:bg-slate-950/50">
+                        <div className="min-w-0 flex items-center gap-2.5">
+                          <span
+                            className="h-2.5 w-2.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: category?.color || '#6366F1' }}
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate text-xs font-bold text-slate-700 dark:text-slate-200">
+                              {expense.description || category?.name || 'Gasto'}
+                            </p>
+                            <p className="truncate text-[10px] font-medium text-slate-400 dark:text-slate-500">{category?.name || 'Sin categoría'}</p>
+                          </div>
+                        </div>
+                        <span className="shrink-0 text-xs font-black font-mono text-rose-500 dark:text-rose-400">
+                          -{expense.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* MONTHLY FILTERS */}
           <div className="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-900/40 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/50">
@@ -279,6 +371,24 @@ export const StatsPage: React.FC = () => {
 
           {/* MONTHLY KPI CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+
+            {/* Net Month Income vs Expenses */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+              <div className="space-y-1.5 flex-1">
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Balance de Flujos</span>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500">Ingresos:</span>
+                  <span className="font-extrabold text-emerald-500">+{currentIncome.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €</span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500">Gastos:</span>
+                  <span className="font-extrabold text-rose-500">-{currentExpense.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €</span>
+                </div>
+              </div>
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/20 text-amber-500 rounded-2xl shrink-0 ml-4">
+                <DollarSign size={20} />
+              </div>
+            </div>
             
             {/* Daily Avg */}
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
@@ -309,35 +419,19 @@ export const StatsPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Prediction */}
+            {/* Highest spending day */}
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
               <div className="space-y-2">
-                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Predicción Fin de Mes</span>
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Día de mayor gasto</span>
                 <h3 className="text-xl font-black text-brand-600 dark:text-brand-400">
-                  {stats.averages.prediction.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
+                  {highestExpenseDay.Gastos.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €
                 </h3>
-                <p className="text-[9px] text-slate-400 dark:text-slate-500">Basado en tendencias</p>
+                <p className="text-[9px] text-slate-400 dark:text-slate-500">
+                  {highestExpenseDay.Gastos > 0 ? `El ${highestExpenseDay.label}` : 'Sin gastos este mes'}
+                </p>
               </div>
               <div className="p-3 bg-gradient-to-tr from-brand-500 to-purple-600 text-white rounded-2xl shrink-0 shadow-md shadow-brand-500/10">
-                <Sparkles size={20} className="animate-pulse" />
-              </div>
-            </div>
-
-            {/* Net Month Income vs Expenses */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-              <div className="space-y-1.5 flex-1">
-                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Balance de Flujos</span>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500">Ingresos:</span>
-                  <span className="font-extrabold text-emerald-500">+{currentIncome.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-500">Gastos:</span>
-                  <span className="font-extrabold text-rose-500">-{currentExpense.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €</span>
-                </div>
-              </div>
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/20 text-amber-500 rounded-2xl shrink-0 ml-4">
-                <DollarSign size={20} />
+                <Award size={20} />
               </div>
             </div>
 
@@ -350,30 +444,61 @@ export const StatsPage: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm lg:col-span-2">
               <div className="mb-4 flex justify-between items-center">
                 <div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución Diaria de Gastos e Ingresos</h4>
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500">Historial diario del mes actual</p>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución Diaria de Gastos</h4>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">Pulsa un punto para ver los gastos de ese día</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Registros del mes</p>
+                  <p className="text-sm font-black text-rose-500 dark:text-rose-400">
+                    {expenses.length}
+                  </p>
                 </div>
               </div>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={dailyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <AreaChart
+                    data={dailyData}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    onClick={(state: any) => {
+                      const dayData = state.activePayload?.[0]?.payload;
+                      if (dayData?.date && dayData.Gastos > 0) setSelectedExpenseDate(dayData.date);
+                    }}
+                  >
                     <defs>
                       <linearGradient id="colorGastos" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#EF4444" stopOpacity={0.2}/>
                         <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
-                      </linearGradient>
-                      <linearGradient id="colorIngresos" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/60" />
                     <XAxis dataKey="day" stroke="#94a3b8" fontSize={9} tickLine={false} />
                     <YAxis stroke="#94a3b8" fontSize={9} tickLine={false} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Legend verticalAlign="top" height={36} wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
-                    <Area type="monotone" dataKey="Gastos" stroke="#EF4444" strokeWidth={2} fillOpacity={1} fill="url(#colorGastos)" />
-                    <Area type="monotone" dataKey="Ingresos" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorIngresos)" />
+                    <Area
+                      type="monotone"
+                      dataKey="Gastos"
+                      stroke="#EF4444"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorGastos)"
+                      activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }}
+                      dot={(props: any) => {
+                        const { cx, cy, payload } = props;
+                        if (!payload?.Gastos) return <g />;
+                        return (
+                          <circle
+                            cx={cx}
+                            cy={cy}
+                            r={4}
+                            fill="#EF4444"
+                            stroke="#fff"
+                            strokeWidth={2}
+                            className="cursor-pointer"
+                            onClick={() => setSelectedExpenseDate(payload.date)}
+                          />
+                        );
+                      }}
+                    />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -407,7 +532,7 @@ export const StatsPage: React.FC = () => {
                             <Cell key={idx} fill={cat.color || '#6366F1'} />
                           ))}
                         </Pie>
-                        <Tooltip formatter={(value: number) => [`${value.toFixed(2)} €`, 'Gastado']} />
+                        <Tooltip content={<CategoryTooltip />} cursor={false} wrapperStyle={{ zIndex: 20 }} />
                       </PieChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -419,7 +544,7 @@ export const StatsPage: React.FC = () => {
                   </div>
 
                   <div className="space-y-2 flex-1 overflow-y-auto max-h-[140px] pr-1 scrollbar-thin">
-                    {categoryBreakdown.slice(0, 5).map((cat) => {
+                    {categoryBreakdown.map((cat) => {
                       const percentage = (cat.amount / Math.max(1, currentExpense)) * 100;
                       return (
                         <div key={cat.id} className="flex justify-between items-center text-[10px] font-bold">
