@@ -1,6 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import { rateLimit } from 'express-rate-limit';
 import authRoutes from './routes/auth.routes';
 import categoryRoutes from './routes/category.routes';
 import tagRoutes from './routes/tag.routes';
@@ -14,15 +17,36 @@ import bankAccountRoutes from './routes/bankAccount.routes';
 import bankRoutes from './routes/bank.routes';
 import accountRoutes from './routes/account.routes';
 import transferRoutes from './routes/transfer.routes';
+import { assertProductionConfiguration, allowedOrigins } from './utils/security';
+import { requireTrustedOrigin } from './middleware/requestSecurity.middleware';
 
 dotenv.config();
+assertProductionConfiguration();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middlewares
-app.use(cors());
-app.use(express.json({ limit: '50mb' })); // Higher limit for backup imports
+app.set('trust proxy', 1);
+app.disable('x-powered-by');
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'same-origin' } }));
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins().includes(origin)) return callback(null, true);
+    callback(new Error('Origen no permitido por CORS.'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type'],
+}));
+app.use(express.json({ limit: '21mb' })); // A 15 MB PDF is ~20 MB after base64 encoding.
+app.use(cookieParser());
+app.use(requireTrustedOrigin);
+
+const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: 'draft-8', legacyHeaders: false });
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: 'Demasiados intentos. Espera unos minutos.' } });
+app.use('/api', apiLimiter);
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
 
 // Disable caching for API responses
 app.use((req, res, next) => {
@@ -35,10 +59,7 @@ app.use((req, res, next) => {
 
 // Logging middleware
 app.use((req, res, next) => {
-  console.log(`[Request] ${req.method} ${req.url}`);
-  res.on('finish', () => {
-    console.log(`[Response] ${req.method} ${req.url} -> ${res.statusCode}`);
-  });
+  res.on('finish', () => console.info(`[API] ${req.method} ${req.path} -> ${res.statusCode}`));
   next();
 });
 
@@ -61,6 +82,12 @@ app.use('/api/bank-accounts', bankAccountRoutes);
 app.use('/api/banks', bankRoutes);
 app.use('/api/accounts', accountRoutes);
 app.use('/api/transfers', transferRoutes);
+
+app.use((error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (res.headersSent) return next(error);
+  console.error(`[API] Error no controlado: ${error.name}`);
+  res.status(500).json({ error: 'No se pudo procesar la solicitud.' });
+});
 
 import prisma from './utils/prisma';
 
@@ -105,7 +132,10 @@ app.listen(PORT, async () => {
       }
     }
 
-    // 2. Migration: Populate Account entities for existing users
+    // Legacy migrations modify user data. They must be explicitly enabled for a one-off run,
+    // never executed automatically each time a public server restarts.
+    if (process.env.RUN_LEGACY_ACCOUNT_MIGRATION !== 'true') return;
+
     const allUsers = await prisma.user.findMany({
       include: { bankAccounts: true, accounts: true }
     });
@@ -114,7 +144,7 @@ app.listen(PORT, async () => {
 
     for (const u of allUsers) {
       if (u.accounts.length === 0) {
-        console.log(`[Migration] Creando entidades Account para el usuario ${u.email}`);
+        console.log('[Migration] Creando entidades Account para un usuario existente');
         
         const legacyAccounts = u.bankAccounts.length > 0 ? u.bankAccounts : [
           { name: 'Manual', startingBalance: u.startingBalance },
@@ -180,7 +210,7 @@ app.listen(PORT, async () => {
       });
     }
 
-    console.log('[Migration] Migración de entidades de Cuentas y Bancos completada exitosamente.');
+    console.log('[Migration] Migración heredada de cuentas completada exitosamente.');
   } catch (err) {
     console.error('[Migration] Error durante la migración de cuentas y bancos:', err);
   }

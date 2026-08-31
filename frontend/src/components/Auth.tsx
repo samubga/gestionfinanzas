@@ -8,6 +8,7 @@ export const Auth: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +21,7 @@ export const Auth: React.FC = () => {
       if (isLogin) {
         await login(email, password);
       } else {
-        await register(email, password, name);
+        await register(email, password, name, inviteCode);
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Ocurrió un error. Revisa tus credenciales.');
@@ -35,8 +36,8 @@ export const Auth: React.FC = () => {
         
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex p-3 bg-brand-600 text-white rounded-2xl mb-4 shadow-lg shadow-brand-500/30">
-            <span className="text-3xl">💰</span>
+          <div className="inline-flex p-1.5 bg-white/90 dark:bg-slate-800/90 rounded-2xl mb-4 shadow-lg shadow-brand-500/30">
+            <img src="/brand/finanzas-logo.png" alt="Logo de Finanzas" className="w-14 h-14 object-contain" />
           </div>
           <h2 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white">
             {isLogin ? '¡Bienvenido de nuevo!' : 'Crea tu cuenta'}
@@ -56,22 +57,37 @@ export const Auth: React.FC = () => {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {!isLogin && (
-            <div className="relative">
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Nombre completo</label>
+            <>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                  <UserIcon size={18} />
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Nombre completo</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                    <UserIcon size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    maxLength={80}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Juan Pérez"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
+                  />
                 </div>
+              </div>
+              <div className="relative">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Código de invitación</label>
                 <input
-                  type="text"
+                  type="password"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Juan Pérez"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
+                  minLength={8}
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value)}
+                  placeholder="Código que te ha dado el administrador"
+                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
                 />
               </div>
-            </div>
+            </>
           )}
 
           <div className="relative">
@@ -100,9 +116,11 @@ export const Auth: React.FC = () => {
               <input
                 type="password"
                 required
+                minLength={isLogin ? 1 : 12}
+                autoComplete={isLogin ? 'current-password' : 'new-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder={isLogin ? '••••••••' : '12+ caracteres, letras y números'}
                 className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
               />
             </div>

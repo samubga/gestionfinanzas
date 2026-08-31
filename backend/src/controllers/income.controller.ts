@@ -84,15 +84,19 @@ export async function createIncome(req: AuthRequest, res: Response) {
   }
 
   try {
+    if (categoryId) {
+      const category = await prisma.category.findFirst({ where: { id: categoryId, userId, type: 'income' } });
+      if (!category) return res.status(400).json({ error: 'La categoría indicada no te pertenece.' });
+    }
     const reqAccountId = req.body.accountId;
-    let targetAccountId = reqAccountId || null;
+    let targetAccountId = null;
     let targetBankName = bank || null;
 
     if (reqAccountId) {
       const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
-      if (acc) {
-        targetBankName = acc.name;
-      }
+      if (!acc) return res.status(400).json({ error: 'La cuenta indicada no te pertenece.' });
+      targetAccountId = acc.id;
+      targetBankName = acc.name;
     } else if (bank) {
       const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
       if (acc) {
@@ -141,6 +145,10 @@ export async function updateIncome(req: AuthRequest, res: Response) {
     if (!existingIncome) {
       return res.status(404).json({ error: 'Ingreso no encontrado' });
     }
+    if (categoryId) {
+      const category = await prisma.category.findFirst({ where: { id: categoryId, userId, type: 'income' } });
+      if (!category) return res.status(400).json({ error: 'La categoría indicada no te pertenece.' });
+    }
 
     const oldDate = new Date(existingIncome.date);
     const incomeDate = date ? new Date(date) : existingIncome.date;
@@ -151,9 +159,9 @@ export async function updateIncome(req: AuthRequest, res: Response) {
 
     if (reqAccountId) {
       const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
-      if (acc) {
-        targetBankName = acc.name;
-      }
+      if (!acc) return res.status(400).json({ error: 'La cuenta indicada no te pertenece.' });
+      targetAccountId = acc.id;
+      targetBankName = acc.name;
     } else if (bank) {
       const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
       if (acc) {
@@ -260,13 +268,15 @@ export async function updateIncomesBulk(req: AuthRequest, res: Response) {
   const userId = req.userId!;
   const { ids, bank, categoryId, description, notes, date } = req.body;
 
-  console.log('updateIncomesBulk payload:', { ids, bank, categoryId, description, notes, date });
-
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ error: 'IDs de ingresos requeridos' });
   }
 
   try {
+    if (categoryId) {
+      const category = await prisma.category.findFirst({ where: { id: categoryId, userId, type: 'income' } });
+      if (!category) return res.status(400).json({ error: 'La categoría indicada no te pertenece.' });
+    }
     const updatedMonths = new Map<string, { year: number; month: number }>();
 
     for (const id of ids) {

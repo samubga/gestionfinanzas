@@ -113,6 +113,9 @@ export async function createExpense(req: AuthRequest, res: Response) {
   }
 
   try {
+    const category = await prisma.category.findFirst({ where: { id: categoryId, userId, type: 'expense' } });
+    if (!category) return res.status(400).json({ error: 'La categoría indicada no te pertenece.' });
+
     // 1. Resolve or create tags
     const tagIds: string[] = [];
     if (tags && Array.isArray(tags)) {
@@ -132,14 +135,14 @@ export async function createExpense(req: AuthRequest, res: Response) {
     }
 
     const reqAccountId = req.body.accountId;
-    let targetAccountId = reqAccountId || null;
+    let targetAccountId = null;
     let targetBankName = bank || null;
 
     if (reqAccountId) {
       const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
-      if (acc) {
-        targetBankName = acc.name;
-      }
+      if (!acc) return res.status(400).json({ error: 'La cuenta indicada no te pertenece.' });
+      targetAccountId = acc.id;
+      targetBankName = acc.name;
     } else if (bank) {
       const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
       if (acc) {
@@ -204,6 +207,10 @@ export async function updateExpense(req: AuthRequest, res: Response) {
     if (!existingExpense) {
       return res.status(404).json({ error: 'Gasto no encontrado' });
     }
+    if (categoryId !== undefined) {
+      const category = await prisma.category.findFirst({ where: { id: categoryId, userId, type: 'expense' } });
+      if (!category) return res.status(400).json({ error: 'La categoría indicada no te pertenece.' });
+    }
 
     const oldDate = new Date(existingExpense.date);
 
@@ -244,9 +251,9 @@ export async function updateExpense(req: AuthRequest, res: Response) {
 
     if (reqAccountId) {
       const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
-      if (acc) {
-        targetBankName = acc.name;
-      }
+      if (!acc) return res.status(400).json({ error: 'La cuenta indicada no te pertenece.' });
+      targetAccountId = acc.id;
+      targetBankName = acc.name;
     } else if (bank) {
       const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
       if (acc) {
@@ -424,13 +431,15 @@ export async function updateExpensesBulk(req: AuthRequest, res: Response) {
   const userId = req.userId!;
   const { ids, bank, categoryId, paymentMethod, description, notes, date, tags, tagsMode } = req.body;
 
-  console.log('updateExpensesBulk payload:', { ids, bank, categoryId, paymentMethod, description, notes, date, tags, tagsMode });
-
   if (!ids || !Array.isArray(ids) || ids.length === 0) {
     return res.status(400).json({ error: 'IDs de gastos requeridos' });
   }
 
   try {
+    if (categoryId !== undefined) {
+      const category = await prisma.category.findFirst({ where: { id: categoryId, userId, type: 'expense' } });
+      if (!category) return res.status(400).json({ error: 'La categoría indicada no te pertenece.' });
+    }
     const updatedMonths = new Map<string, { year: number; month: number }>();
 
     // 1. Resolve tags if provided

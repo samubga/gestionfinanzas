@@ -100,12 +100,12 @@ export async function deleteCategory(req: AuthRequest, res: Response) {
 
     // Check if there are expenses using this category
     const expenseCount = await prisma.expense.count({
-      where: { categoryId: id },
+      where: { categoryId: id, userId },
     });
 
     // Check if there are incomes using this category
     const incomeCount = await prisma.income.count({
-      where: { categoryId: id },
+      where: { categoryId: id, userId },
     });
 
     if (expenseCount > 0 || incomeCount > 0) {

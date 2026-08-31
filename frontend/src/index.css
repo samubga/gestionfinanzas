@@ -330,7 +330,61 @@
   --slate-950: 12 8 18;
 }
 
-/* 7. Theme: Obsidian / Obsidiana (OLED Pure Black & Muted Silver) */
+/* 7. Theme: Rose / Rosa Pastel (Soft Blush & Dusty Rose) */
+.theme-rose {
+  --brand-50: 255 247 249;
+  --brand-100: 253 235 241;
+  --brand-200: 248 211 222;
+  --brand-300: 240 180 198;
+  --brand-400: 225 146 170;
+  --brand-500: 217 140 168;
+  --brand-600: 190 104 137;
+  --brand-700: 157 75 110;
+  --brand-800: 126 56 88;
+  --brand-900: 94 40 66;
+  --brand-950: 58 22 40;
+
+  --gray-50: 255 249 251;
+  --slate-50: 255 249 251;
+  --slate-100: 252 238 243;
+  --slate-200: 244 216 226;
+  --slate-300: 229 187 202;
+  --slate-400: 194 146 166;
+  --slate-500: 158 108 131;
+  --slate-600: 125 79 101;
+  --slate-700: 96 57 77;
+  --slate-800: 68 38 55;
+  --slate-900: 45 24 36;
+  --slate-950: 30 14 24;
+}
+.dark.theme-rose {
+  --brand-50: 255 247 249;
+  --brand-100: 253 235 241;
+  --brand-200: 248 211 222;
+  --brand-300: 240 180 198;
+  --brand-400: 225 146 170;
+  --brand-500: 217 140 168;
+  --brand-600: 190 104 137;
+  --brand-700: 157 75 110;
+  --brand-800: 126 56 88;
+  --brand-900: 94 40 66;
+  --brand-950: 58 22 40;
+
+  --gray-50: 252 246 249;
+  --slate-50: 252 246 249;
+  --slate-100: 242 229 236;
+  --slate-200: 220 198 210;
+  --slate-300: 183 155 171;
+  --slate-400: 142 113 131;
+  --slate-500: 106 79 96;
+  --slate-600: 78 55 69;
+  --slate-700: 56 37 49;
+  --slate-800: 38 24 33;
+  --slate-900: 26 16 23;
+  --slate-950: 16 9 14;
+}
+
+/* 8. Theme: Obsidian / Obsidiana (OLED Pure Black & Muted Silver) */
 .theme-obsidian {
   --brand-50: 248 250 252;
   --brand-100: 241 245 249;

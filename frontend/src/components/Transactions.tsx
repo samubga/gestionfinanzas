@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { Search, Filter, Trash2, Edit3, Edit, Copy, Plus, ArrowUpRight, ArrowDownRight, ChevronUp, ChevronDown, ChevronsUpDown, Upload, AlertCircle, CheckCircle, Loader2, Check, X, AlertTriangle } from 'lucide-react';
 import api from '../services/api';
-import * as XLSX from 'xlsx';
 
 // Returns '#000000' or '#ffffff' depending on which gives better contrast with bgHex
 function getContrastColor(bgHex: string): string {
@@ -351,8 +350,11 @@ export const Transactions: React.FC<TransactionsProps> = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const fileName = file.name.toLowerCase();
-    const isExcel = fileName.endsWith('.xls') || fileName.endsWith('.xlsx');
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      setDataError('Por seguridad, la importación acepta únicamente archivos CSV. Exporta el Excel como CSV e inténtalo de nuevo.');
+      e.target.value = '';
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -361,101 +363,8 @@ export const Transactions: React.FC<TransactionsProps> = ({
       setDataError('');
       
       try {
-        let csvText = '';
-        if (isExcel) {
-          const arrayBuffer = event.target?.result as ArrayBuffer;
-          if (!arrayBuffer) throw new Error('No se pudo leer el contenido del archivo Excel.');
-          
-          const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const rows = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1, defval: '' });
-          
-          let headerRowIdx = -1;
-          let headers: string[] = [];
-          for (let r = 0; r < rows.length; r++) {
-            const row = rows[r];
-            const rowVals = row.map(v => String(v).trim());
-            if (rowVals.includes('F. Operación') && (rowVals.includes('Ingreso (+)') || rowVals.includes('Gasto (-)'))) {
-              headerRowIdx = r;
-              headers = rowVals;
-              break;
-            }
-          }
-          
-          if (headerRowIdx === -1) {
-            throw new Error('No se detectaron las cabeceras de CaixaBank (F. Operación, Ingreso, Gasto) en el archivo Excel.');
-          }
-          
-          const colDate = headers.indexOf('F. Operación');
-          const colIngreso = headers.indexOf('Ingreso (+)');
-          const colGasto = headers.indexOf('Gasto (-)');
-          
-          const conceptCols: number[] = [];
-          headers.forEach((h, idx) => {
-            if (h.startsWith('Concepto complementario') || h === 'Concepto propio') {
-              conceptCols.push(idx);
-            }
-          });
-          
-          const csvRows: string[] = [];
-          csvRows.push('Concepto;Fecha;Importe');
-          
-          for (let r = headerRowIdx + 1; r < rows.length; r++) {
-            const row = rows[r];
-            if (!row || row.length <= colDate) continue;
-            
-            const dateVal = String(row[colDate]).trim();
-            if (!dateVal) continue;
-            
-            const ingresoVal = colIngreso !== -1 && row.length > colIngreso ? row[colIngreso] : '';
-            const gastoVal = colGasto !== -1 && row.length > colGasto ? row[colGasto] : '';
-            
-            const parseAmount = (val: any): number => {
-              if (val === null || val === undefined || val === '') return 0;
-              if (typeof val === 'number') return val;
-              const cleaned = String(val).replace(/\./g, '').replace(',', '.').trim();
-              const parsed = parseFloat(cleaned);
-              return isNaN(parsed) ? 0 : parsed;
-            };
-            
-            const ingreso = parseAmount(ingresoVal);
-            const gasto = parseAmount(gastoVal);
-            
-            let amount = 0;
-            if (ingreso > 0) {
-              amount = ingreso;
-            } else if (gasto > 0) {
-              amount = -gasto;
-            } else {
-              if (ingresoVal === '' && gastoVal === '') continue;
-            }
-            
-            const conceptParts: string[] = [];
-            conceptCols.forEach(cIdx => {
-              if (row.length > cIdx) {
-                const val = String(row[cIdx]).trim();
-                if (val) conceptParts.push(val);
-              }
-            });
-            
-            let concepto = conceptParts.join(' - ');
-            concepto = concepto.replace(/\s+/g, ' ').trim();
-            if (!concepto) {
-              concepto = 'Movimiento CaixaBank';
-            }
-            
-            const escapedConcepto = `"${concepto.replace(/"/g, '""')}"`;
-            const formattedAmount = amount.toFixed(2).replace('.', ',');
-            
-            csvRows.push(`${escapedConcepto};${dateVal};${formattedAmount}`);
-          }
-          
-          csvText = csvRows.join('\n');
-        } else {
-          csvText = event.target?.result as string;
-          if (typeof csvText !== 'string') throw new Error('No se pudo leer el contenido del archivo CSV.');
-        }
+        const csvText = event.target?.result as string;
+        if (typeof csvText !== 'string') throw new Error('No se pudo leer el contenido del archivo CSV.');
 
         const res = await api.post('/backup/parse-csv-preview', { csvText });
         
@@ -478,11 +387,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
       }
     };
 
-    if (isExcel) {
-      reader.readAsArrayBuffer(file);
-    } else {
-      reader.readAsText(file, 'UTF-8');
-    }
+    reader.readAsText(file, 'UTF-8');
     e.target.value = '';
   };
 
@@ -2174,7 +2079,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
         type="file"
         ref={csvInputRef}
         onChange={handleCSVFileChange}
-        accept=".csv,.xls,.xlsx"
+        accept=".csv,text/csv"
         className="hidden"
       />
 

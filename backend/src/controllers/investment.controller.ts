@@ -46,22 +46,22 @@ export async function getInvestments(req: AuthRequest, res: Response) {
 
 export async function createInvestment(req: AuthRequest, res: Response) {
   const userId = req.userId!;
-  const { type, name, amount, buyFee, bank, startDate, notes } = req.body;
+  const { type, name, ticker, isin, exchange, currency, bank, notes } = req.body;
 
-  if (!type || !name || amount === undefined || !startDate) {
-    return res.status(400).json({ error: 'Tipo, nombre, importe invertido y fecha son requeridos' });
+  if (!type || !name) {
+    return res.status(400).json({ error: 'Tipo y nombre son requeridos' });
   }
 
   try {
     const reqAccountId = req.body.accountId;
-    let targetAccountId = reqAccountId || null;
+    let targetAccountId = null;
     let targetBankName = bank || 'Trade Republic';
 
     if (reqAccountId) {
       const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
-      if (acc) {
-        targetBankName = acc.name;
-      }
+      if (!acc) return res.status(400).json({ error: 'La cuenta indicada no te pertenece.' });
+      targetAccountId = acc.id;
+      targetBankName = acc.name;
     } else if (bank) {
       const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
       if (acc) {
@@ -74,11 +74,15 @@ export async function createInvestment(req: AuthRequest, res: Response) {
       data: {
         type,
         name,
-        amount: parseFloat(amount),
-        buyFee: buyFee !== undefined ? parseFloat(buyFee) : 0,
+        ticker: ticker?.trim().toUpperCase() || null,
+        isin: isin?.trim().toUpperCase() || null,
+        exchange: exchange?.trim() || null,
+        currency: currency || 'EUR',
+        amount: 0,
+        buyFee: 0,
         bank: targetBankName,
         accountId: targetAccountId,
-        startDate: new Date(startDate),
+        startDate: new Date(),
         notes: notes || null,
         status: 'active',
         userId,
@@ -94,7 +98,7 @@ export async function createInvestment(req: AuthRequest, res: Response) {
 export async function updateInvestment(req: AuthRequest, res: Response) {
   const userId = req.userId!;
   const { id } = req.params;
-  const { type, name, amount, buyFee, bank, startDate, status, withdrawnAmount, sellFee, endDate, notes } = req.body;
+  const { type, name, ticker, isin, exchange, currency, units, unitPrice, amount, buyFee, bank, startDate, status, withdrawnAmount, sellFee, endDate, notes } = req.body;
 
   try {
     const existing = await prisma.investment.findFirst({
@@ -111,9 +115,9 @@ export async function updateInvestment(req: AuthRequest, res: Response) {
 
     if (reqAccountId) {
       const acc = await prisma.account.findFirst({ where: { id: reqAccountId, userId } });
-      if (acc) {
-        targetBankName = acc.name;
-      }
+      if (!acc) return res.status(400).json({ error: 'La cuenta indicada no te pertenece.' });
+      targetAccountId = acc.id;
+      targetBankName = acc.name;
     } else if (bank) {
       const acc = await prisma.account.findFirst({ where: { OR: [{ id: bank }, { name: bank }], userId } });
       if (acc) {
@@ -125,6 +129,12 @@ export async function updateInvestment(req: AuthRequest, res: Response) {
     const data: any = {};
     if (type !== undefined) data.type = type;
     if (name !== undefined) data.name = name;
+    if (ticker !== undefined) data.ticker = ticker?.trim().toUpperCase() || null;
+    if (isin !== undefined) data.isin = isin?.trim().toUpperCase() || null;
+    if (exchange !== undefined) data.exchange = exchange?.trim() || null;
+    if (currency !== undefined) data.currency = currency || 'EUR';
+    if (units !== undefined) data.units = units !== null && units !== '' ? parseFloat(units) : null;
+    if (unitPrice !== undefined) data.unitPrice = unitPrice !== null && unitPrice !== '' ? parseFloat(unitPrice) : null;
     if (amount !== undefined) data.amount = parseFloat(amount);
     if (buyFee !== undefined) data.buyFee = parseFloat(buyFee);
     if (bank !== undefined || reqAccountId !== undefined) {

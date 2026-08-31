@@ -16,6 +16,7 @@ export const BackupManager: React.FC = () => {
     { id: 'amber', name: 'Modo Ámbar', description: 'Tonalidad dorada de lujo, cálida y elegante', hex: '#766246' },
     { id: 'ocean', name: 'Modo Diamante', description: 'Tonalidad azul glaciar y cian cristalino', hex: '#4c6e86' },
     { id: 'violet', name: 'Modo Amatista', description: 'Gama morada mística, creativa y profunda', hex: '#8b78dc' },
+    { id: 'rose', name: 'Modo Rosa Pastel', description: 'Tonos rosa empolvado, suaves y luminosos', hex: '#d98ca8' },
     { id: 'obsidian', name: 'Modo Obsidiana', description: 'Negro puro OLED y acentos grises/plata minimalistas', hex: '#121212' },
   ] as const;
 

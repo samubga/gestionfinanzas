@@ -1,14 +1,41 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import { z } from 'zod';
 import prisma from '../utils/prisma';
+import { ACCESS_COOKIE_NAME, clearSessionCookieOptions, createAccessToken, sessionCookieOptions } from '../utils/security';
+
+const registerSchema = z.object({
+  email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+  password: z.string().min(12).max(128)
+    .refine((value) => /[A-Za-z]/.test(value) && /\d/.test(value), 'La contraseña debe incluir letras y números.'),
+  name: z.string().trim().min(1).max(80).optional(),
+  inviteCode: z.string().min(8).max(256),
+});
+
+const loginSchema = z.object({
+  email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+  password: z.string().min(1).max(128),
+});
+
+function isValidInviteCode(inviteCode: string): boolean {
+  const configuredCodes = (process.env.INVITE_CODES || '').split(',').map((code) => code.trim()).filter(Boolean);
+  return configuredCodes.some((configured) => {
+    const expected = Buffer.from(configured);
+    const received = Buffer.from(inviteCode);
+    return expected.length === received.length && crypto.timingSafeEqual(expected, received);
+  });
+}
+
+function setSession(res: Response, userId: string) {
+  res.cookie(ACCESS_COOKIE_NAME, createAccessToken(userId), sessionCookieOptions());
+}
 
 export async function register(req: Request, res: Response) {
-  const { email, password, name } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email y contraseña requeridos' });
-  }
+  const parsed = registerSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Revisa el correo, la contraseña y el código de invitación.' });
+  const { email, password, name, inviteCode } = parsed.data;
+  if (!isValidInviteCode(inviteCode)) return res.status(403).json({ error: 'El código de invitación no es válido.' });
 
   try {
     const existingUser = await prisma.user.findUnique({
@@ -19,7 +46,7 @@ export async function register(req: Request, res: Response) {
       return res.status(400).json({ error: 'El usuario ya existe' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await prisma.user.create({
       data: {
@@ -60,14 +87,9 @@ export async function register(req: Request, res: Response) {
       ],
     });
 
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'super-secret-key-change-in-production',
-      { expiresIn: '30d' }
-    );
+    setSession(res, user.id);
 
     res.status(201).json({
-      token,
       user: {
         id: user.id,
         email: user.email,
@@ -80,11 +102,9 @@ export async function register(req: Request, res: Response) {
 }
 
 export async function login(req: Request, res: Response) {
-  const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email y contraseña requeridos' });
-  }
+  const parsed = loginSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Credenciales inválidas.' });
+  const { email, password } = parsed.data;
 
   try {
     const user = await prisma.user.findUnique({
@@ -100,14 +120,9 @@ export async function login(req: Request, res: Response) {
       return res.status(400).json({ error: 'Credenciales inválidas' });
     }
 
-    const token = jwt.sign(
-      { userId: user.id },
-      process.env.JWT_SECRET || 'super-secret-key-change-in-production',
-      { expiresIn: '30d' }
-    );
+    setSession(res, user.id);
 
     res.json({
-      token,
       user: {
         id: user.id,
         email: user.email,
@@ -117,6 +132,11 @@ export async function login(req: Request, res: Response) {
   } catch (error: any) {
     res.status(500).json({ error: error.message || 'Error al iniciar sesión' });
   }
+}
+
+export async function logout(_req: Request, res: Response) {
+  res.clearCookie(ACCESS_COOKIE_NAME, clearSessionCookieOptions());
+  res.status(204).send();
 }
 
 export async function getMe(req: any, res: Response) {
@@ -198,4 +218,3 @@ export async function updateStartingBalance(req: any, res: Response) {
     res.status(500).json({ error: error.message || 'Error al actualizar el saldo inicial' });
   }
 }
-

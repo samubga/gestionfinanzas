@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: gestionfinanzas
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,15 +20,16 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: ../Dockerfile.backend
+      dockerfile: ../Dockerfile.backend.dev
     container_name: finance_backend
     restart: always
     ports:
       - "3001:3001"
+    env_file:
+      - ./backend/.env
     environment:
       - PORT=3001
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/gestionfinanzas?schema=public
-      - JWT_SECRET=super-secret-key-change-in-production
+      - DATABASE_URL=${DATABASE_URL:-postgresql://postgres:postgres@db:5432/gestionfinanzas?schema=public}
       - NODE_ENV=development
     depends_on:
       db:
@@ -40,7 +41,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: ../Dockerfile.frontend
+      dockerfile: ../Dockerfile.frontend.dev
     container_name: finance_frontend
     restart: always
     ports:

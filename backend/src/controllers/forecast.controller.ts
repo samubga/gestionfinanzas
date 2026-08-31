@@ -17,6 +17,18 @@ function getKeywords(desc: string): string[] {
     .filter(w => w.length > 2 && !stopwords.has(w));
 }
 
+async function validateOwnedRelations(userId: string, categoryId: unknown, tagId: unknown): Promise<string | null> {
+  if (categoryId) {
+    const category = await prisma.category.findFirst({ where: { id: String(categoryId), userId, type: 'expense' } });
+    if (!category) return 'La categoría indicada no te pertenece.';
+  }
+  if (tagId) {
+    const tag = await prisma.tag.findFirst({ where: { id: String(tagId), userId } });
+    if (!tag) return 'La etiqueta indicada no te pertenece.';
+  }
+  return null;
+}
+
 export async function getForecasts(req: AuthRequest, res: Response) {
   const userId = req.userId!;
   const { year, month } = req.query;
@@ -56,6 +68,8 @@ export async function createForecast(req: AuthRequest, res: Response) {
   }
 
   try {
+    const relationError = await validateOwnedRelations(userId, categoryId, tagId);
+    if (relationError) return res.status(400).json({ error: relationError });
     const forecast = await prisma.expenseForecast.create({
       data: {
         amount: parseFloat(amount),
@@ -90,6 +104,8 @@ export async function updateForecast(req: AuthRequest, res: Response) {
     if (!existing || existing.userId !== userId) {
       return res.status(404).json({ error: 'Previsión no encontrada' });
     }
+    const relationError = await validateOwnedRelations(userId, categoryId, tagId);
+    if (relationError) return res.status(400).json({ error: relationError });
 
     const updated = await prisma.expenseForecast.update({
       where: { id },

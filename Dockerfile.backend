@@ -1,20 +1,27 @@
-FROM node:20-slim
+FROM node:20-slim AS build
 
-# Install OpenSSL required by Prisma schema/query engines
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
-
+RUN apt-get update && apt-get install -y --no-install-recommends openssl poppler-utils && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 COPY package*.json ./
-COPY tsconfig.json ./
-
-RUN npm install
-
+RUN npm ci
 COPY . .
+RUN npx prisma generate && npm run build
 
-# Generate Prisma Client
-RUN npx prisma generate
+FROM node:20-slim AS runtime
 
+RUN apt-get update && apt-get install -y --no-install-recommends openssl poppler-utils && rm -rf /var/lib/apt/lists/* \
+    && useradd --system --uid 10001 --create-home appuser
+WORKDIR /app
+
+COPY --from=build /app/package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+
+RUN chown -R appuser:appuser /app
+USER appuser
 EXPOSE 3001
-
-CMD ["sh", "-c", "npx prisma generate && npm run dev"]
+CMD ["node", "dist/index.js"]

@@ -7,6 +7,12 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true, // Needed for docker container port mapping
+    proxy: {
+      '/api': {
+        target: 'http://backend:3001',
+        changeOrigin: true,
+      },
+    },
     watch: {
       usePolling: true
     }

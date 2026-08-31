@@ -30,6 +30,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'amber', name: 'Modo Ámbar', hex: '#766246' },
     { id: 'ocean', name: 'Modo Diamante', hex: '#4c6e86' },
     { id: 'violet', name: 'Modo Amatista', hex: '#8b78dc' },
+    { id: 'rose', name: 'Modo Rosa Pastel', hex: '#d98ca8' },
     { id: 'obsidian', name: 'Modo Obsidiana (OLED)', hex: '#121212' },
   ] as const;
 
@@ -75,8 +76,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 shrink-0 h-screen sticky top-0 p-6">
         {/* Brand */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 bg-brand-600 rounded-xl text-white shadow-md shadow-brand-500/20">
-            <span className="text-xl">💰</span>
+          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50/70 dark:bg-slate-800 shadow-md shadow-brand-500/20 overflow-hidden">
+            <img src="/brand/finanzas-logo.png" alt="Logo de Finanzas" className="w-full h-full object-contain p-0.5" />
           </div>
           <div>
             <h1 className="font-extrabold text-slate-800 dark:text-white leading-none">Finanzas</h1>
@@ -187,7 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       {/* MOBILE HEADER & BOTTOM NAV */}
       <header className="md:hidden flex items-center justify-between px-5 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800/60 sticky top-0 z-40">
         <div className="flex items-center gap-2">
-          <span className="text-2xl">💰</span>
+          <img src="/brand/finanzas-logo.png" alt="Logo de Finanzas" className="w-8 h-8 object-contain" />
           <span className="font-extrabold text-slate-800 dark:text-white text-base">Finanzas</span>
         </div>
 

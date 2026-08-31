@@ -194,6 +194,12 @@ model Investment {
   id              String    @id @default(uuid())
   type            String    // e.g., "Acción", "ETF", "Fondo", "Criptomoneda", "Derivado"
   name            String
+  ticker          String?   // Símbolo de mercado, ej. AAPL o VWCE.DE
+  isin            String?   // Identificador internacional del instrumento
+  exchange        String?   // Bolsa o mercado principal, ej. XETRA o NASDAQ
+  currency        String    @default("EUR")
+  units           Float?    // Número de participaciones, acciones o unidades
+  unitPrice       Float?    // Precio de compra por unidad, en la divisa del activo
   amount          Float     // Capital invertido
   buyFee          Float     @default(0) // Comisiones/Costos de compra
   bank            String    @default("Trade Republic") // CaixaBank, Trade Republic, Manual, etc.
@@ -207,8 +213,27 @@ model Investment {
   account         Account?  @relation(fields: [accountId], references: [id], onDelete: SetNull)
   userId          String
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions    InvestmentTransaction[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+model InvestmentTransaction {
+  id           String     @id @default(uuid())
+  type         String     // PURCHASE, SAVEBACK, BONUS_SHARES, CASH_REWARD, DIVIDEND, SALE, TAX, FEE, ADJUSTMENT
+  date         DateTime
+  amount       Float      // Importe bruto del movimiento en la divisa de la inversión
+  units        Float?     // Participaciones afectadas, si aplica
+  unitPrice    Float?     // Precio por participación, si aplica
+  fee          Float      @default(0)
+  tax          Float      @default(0)
+  notes        String?
+  investmentId String
+  investment   Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([investmentId, date])
 }
 
 model BankAccount {

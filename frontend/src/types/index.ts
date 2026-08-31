@@ -74,6 +74,12 @@ export interface Investment {
   id: string;
   type: string; // e.g. "Acción", "ETF", "Fondo de inversión", "Criptomoneda", "Derivado"
   name: string;
+  ticker?: string | null;
+  isin?: string | null;
+  exchange?: string | null;
+  currency: string;
+  units?: number | null;
+  unitPrice?: number | null;
   amount: number;
   buyFee: number;
   bank: string;
@@ -84,6 +90,23 @@ export interface Investment {
   endDate?: string | null;
   notes?: string | null;
   userId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type InvestmentTransactionType = 'PURCHASE' | 'SAVEBACK' | 'BONUS_SHARES' | 'CASH_REWARD' | 'DIVIDEND' | 'SALE' | 'TAX' | 'FEE' | 'ADJUSTMENT';
+
+export interface InvestmentTransaction {
+  id: string;
+  type: InvestmentTransactionType;
+  date: string;
+  amount: number;
+  units?: number | null;
+  unitPrice?: number | null;
+  fee: number;
+  tax: number;
+  notes?: string | null;
+  investmentId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -281,4 +304,3 @@ export interface HistoricalStatsData {
     netWorth: number;
   }>;
 }
-

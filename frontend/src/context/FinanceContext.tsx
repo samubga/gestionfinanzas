@@ -389,7 +389,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return res.data;
   };
 
-  // Carga inicial y por cambio de periodo
+  // Carga inicial y por cambio de periodo. Las transacciones se cargan
+  // exclusivamente en el efecto de filtros inferior, cuando el rango de
+  // fechas ya se ha sincronizado con el periodo seleccionado.
   useEffect(() => {
     if (user) {
       fetchCategories();
@@ -401,7 +403,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       fetchBankAccounts();
       fetchAccounts();
       fetchBanks();
-      fetchTransfers();
     } else {
       setExpenses([]);
       setIncomes([]);
@@ -418,14 +419,16 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   }, [user, year, month]);
 
-  // Carga reactiva de transacciones al cambiar filtros o periodo
+  // Carga reactiva de transacciones al cambiar los filtros. Al cambiar el
+  // periodo, el efecto anterior actualiza primero filterStartDate y
+  // filterEndDate; así evitamos lanzar una petición con el mes anterior.
   useEffect(() => {
     if (user) {
       fetchExpenses();
       fetchIncomes();
       fetchTransfers();
     }
-  }, [user, year, month, filterStartDate, filterEndDate, filterCategoryId, filterTags, filterSearch, filterBank, filterMinAmount, filterMaxAmount]);
+  }, [user, filterStartDate, filterEndDate, filterCategoryId, filterTags, filterSearch, filterBank, filterMinAmount, filterMaxAmount]);
 
   const refreshAll = () => {
     fetchCategories();

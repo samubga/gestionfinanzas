@@ -53,6 +53,7 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({
     { id: 'amber', name: 'Ámbar', hex: '#766246' },
     { id: 'ocean', name: 'Diamante', hex: '#4c6e86' },
     { id: 'violet', name: 'Amatista', hex: '#8b78dc' },
+    { id: 'rose', name: 'Rosa Pastel', hex: '#d98ca8' },
     { id: 'obsidian', name: 'Obsidiana (OLED)', hex: '#121212' },
   ] as const;
 
@@ -72,8 +73,8 @@ export const FloatingNavbar: React.FC<FloatingNavbarProps> = ({
         {/* Left Brand */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('dashboard')}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 text-white flex items-center justify-center font-extrabold shadow-md shadow-brand-500/20">
-              💰
+            <div className="w-9 h-9 rounded-xl bg-brand-50/70 dark:bg-slate-800 shadow-md shadow-brand-500/20 overflow-hidden">
+              <img src="/brand/finanzas-logo.png" alt="Logo de Finanzas" className="w-full h-full object-contain p-0.5" />
             </div>
             <div className="hidden sm:block">
               <span className="font-black text-slate-800 dark:text-white text-sm leading-none block">Finanzas</span>
