@@ -1,0 +1,5 @@
+# Do not upload local files, Git history, backups, or secrets to Cloud Build.
+.gcloudignore
+.git
+.gitignore
+#!include:.gitignore

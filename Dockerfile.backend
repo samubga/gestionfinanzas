@@ -23,5 +23,5 @@ COPY --from=build /app/prisma ./prisma
 
 RUN chown -R appuser:appuser /app
 USER appuser
-EXPOSE 3001
+EXPOSE 8080
 CMD ["node", "dist/index.js"]

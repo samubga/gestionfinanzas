@@ -1,7 +1,10 @@
 import { CookieOptions } from 'express';
 import jwt from 'jsonwebtoken';
 
-export const ACCESS_COOKIE_NAME = 'gf_session';
+// Firebase Hosting only forwards this specifically named cookie to Cloud Run.
+// Keeping the session host-only, HttpOnly and Secure still prevents client-side
+// code from reading it and keeps it scoped to the API path.
+export const ACCESS_COOKIE_NAME = '__session';
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000;
 
 function jwtSecret(): string {
