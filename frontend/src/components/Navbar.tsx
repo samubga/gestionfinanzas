@@ -144,8 +144,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* User profile & Actions */}
         <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm">
-              {user?.name?.slice(0, 1).toUpperCase() || user?.email?.slice(0, 1).toUpperCase()}
+            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm overflow-hidden">
+              {user?.avatarData ? <img src={user.avatarData} alt="Foto de perfil" className="w-full h-full object-cover" /> : (user?.name?.slice(0, 1).toUpperCase() || user?.email?.slice(0, 1).toUpperCase())}
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{user?.name || 'Usuario'}</p>

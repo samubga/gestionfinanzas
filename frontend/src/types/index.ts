@@ -2,6 +2,7 @@ export interface User {
   id: string;
   email: string;
   name?: string | null;
+  avatarData?: string | null;
   startingBalance: number;
   startingBalanceCaixa: number;
   startingBalanceTrade: number;

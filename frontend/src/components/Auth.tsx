@@ -1,24 +1,32 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Lock, Mail, User as UserIcon, Loader2, ArrowRight } from 'lucide-react';
+import { Lock, Mail, User as UserIcon, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 export const Auth: React.FC = () => {
-  const { login, register } = useAuth();
+  const { login, register, requestPasswordReset } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [inviteCode, setInviteCode] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showInviteCode, setShowInviteCode] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
 
     try {
-      if (isLogin) {
+      if (isForgotPassword) {
+        const message = await requestPasswordReset(email);
+        setSuccess(message);
+      } else if (isLogin) {
         await login(email, password);
       } else {
         await register(email, password, name, inviteCode);
@@ -40,10 +48,10 @@ export const Auth: React.FC = () => {
             <img src="/brand/finanzas-logo.png" alt="Logo de Finanzas" className="w-14 h-14 object-contain" />
           </div>
           <h2 className="text-3xl font-extrabold tracking-tight text-slate-800 dark:text-white">
-            {isLogin ? '¡Bienvenido de nuevo!' : 'Crea tu cuenta'}
+            {isForgotPassword ? 'Restablece tu contraseña' : isLogin ? '¡Bienvenido de nuevo!' : 'Crea tu cuenta'}
           </h2>
           <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm">
-            {isLogin ? 'Ingresa para gestionar tus finanzas personales' : 'Comienza a ahorrar y registrar tus gastos hoy'}
+            {isForgotPassword ? 'Te enviaremos un enlace para crear una nueva contraseña' : isLogin ? 'Ingresa para gestionar tus finanzas personales' : 'Comienza a ahorrar y registrar tus gastos hoy'}
           </p>
         </div>
 
@@ -54,9 +62,15 @@ export const Auth: React.FC = () => {
           </div>
         )}
 
+        {success && (
+          <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-950/30 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 text-sm rounded-xl">
+            {success}
+          </div>
+        )}
+
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {!isLogin && (
+          {!isLogin && !isForgotPassword && (
             <>
               <div className="relative">
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Nombre completo</label>
@@ -77,15 +91,18 @@ export const Auth: React.FC = () => {
               </div>
               <div className="relative">
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Código de invitación</label>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value)}
-                  placeholder="Código que te ha dado el administrador"
-                  className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
-                />
+                <div className="relative">
+                  <input
+                    type={showInviteCode ? 'text' : 'password'}
+                    required
+                    minLength={8}
+                    value={inviteCode}
+                    onChange={(e) => setInviteCode(e.target.value)}
+                    placeholder="Código que te ha dado el administrador"
+                    className="w-full px-4 py-3 pr-12 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
+                  />
+                  <button type="button" onClick={() => setShowInviteCode(!showInviteCode)} className="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-brand-600 cursor-pointer" aria-label={showInviteCode ? 'Ocultar código de invitación' : 'Mostrar código de invitación'}>{showInviteCode ? <EyeOff size={18} /> : <Eye size={18} />}</button>
+                </div>
               </div>
             </>
           )}
@@ -107,24 +124,25 @@ export const Auth: React.FC = () => {
             </div>
           </div>
 
-          <div className="relative">
+          {!isForgotPassword && <div className="relative">
             <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-2">Contraseña</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                 <Lock size={18} />
               </div>
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
-                minLength={isLogin ? 1 : 12}
+                minLength={isLogin ? 1 : 8}
                 autoComplete={isLogin ? 'current-password' : 'new-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={isLogin ? '••••••••' : '12+ caracteres, letras y números'}
-                className="w-full pl-10 pr-4 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
+                placeholder={isLogin ? '••••••••' : '8+ caracteres, letras y números'}
+                className="w-full pl-10 pr-12 py-3 bg-slate-100 dark:bg-slate-800/50 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white placeholder-slate-400 text-sm transition-all"
               />
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-brand-600 cursor-pointer" aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button>
             </div>
-          </div>
+          </div>}
 
           <button
             type="submit"
@@ -135,7 +153,7 @@ export const Auth: React.FC = () => {
               <Loader2 className="animate-spin mr-2" size={18} />
             ) : (
               <>
-                {isLogin ? 'Iniciar Sesión' : 'Registrarse'}
+                {isForgotPassword ? 'Enviar enlace' : isLogin ? 'Iniciar Sesión' : 'Registrarse'}
                 <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={16} />
               </>
             )}
@@ -145,17 +163,31 @@ export const Auth: React.FC = () => {
         {/* Toggle Mode */}
         <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            {isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?'}
+            {isForgotPassword ? '¿Ya recuerdas tu contraseña?' : isLogin ? '¿No tienes una cuenta?' : '¿Ya tienes una cuenta?'}
             <button
               onClick={() => {
-                setIsLogin(!isLogin);
+                if (isForgotPassword) {
+                  setIsForgotPassword(false);
+                  setIsLogin(true);
+                } else {
+                  setIsLogin(!isLogin);
+                }
                 setError('');
+                setSuccess('');
               }}
               className="ml-1.5 font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 focus:outline-none transition-colors"
             >
-              {isLogin ? 'Regístrate aquí' : 'Inicia sesión aquí'}
+              {isForgotPassword ? 'Inicia sesión' : isLogin ? 'Regístrate aquí' : 'Inicia sesión aquí'}
             </button>
           </p>
+          {isLogin && !isForgotPassword && (
+            <button
+              onClick={() => { setIsForgotPassword(true); setError(''); setSuccess(''); }}
+              className="mt-3 text-xs font-bold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 focus:outline-none transition-colors"
+            >
+              ¿Has olvidado tu contraseña?
+            </button>
+          )}
         </div>
 
       </div>

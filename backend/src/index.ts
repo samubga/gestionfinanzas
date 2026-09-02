@@ -47,6 +47,8 @@ const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 10, standardHea
 app.use('/api', apiLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
 
 // Disable caching for API responses
 app.use((req, res, next) => {

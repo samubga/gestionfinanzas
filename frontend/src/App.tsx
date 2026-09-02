@@ -13,6 +13,7 @@ import ExpenseForm from './components/ExpenseForm';
 import ForecastManager from './components/ForecastManager';
 import InvestmentsManager from './components/InvestmentsManager';
 import AccountManager from './components/AccountManager';
+import ResetPassword from './components/ResetPassword';
 import { Plus } from 'lucide-react';
 
 const AppContent: React.FC = () => {
@@ -24,6 +25,7 @@ const AppContent: React.FC = () => {
 
   // Theme state from Context
   const { dark, toggleTheme } = useTheme();
+  const resetToken = new URLSearchParams(window.location.search).get('resetToken');
 
   const handleOpenAddForm = (type: 'expense' | 'income' | 'transfer' = 'expense') => {
     setEditTx(null);
@@ -47,6 +49,10 @@ const AppContent: React.FC = () => {
   }
 
   // Not authenticated screen
+  if (resetToken) {
+    return <ResetPassword token={resetToken} />;
+  }
+
   if (!user) {
     return <Auth />;
   }

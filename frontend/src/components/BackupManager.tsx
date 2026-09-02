@@ -3,10 +3,12 @@ import api from '../services/api';
 import { useFinance } from '../context/FinanceContext';
 import { useTheme } from '../context/ThemeContext';
 import { Download, Upload, AlertCircle, CheckCircle, Loader2, Database, Palette, Sun, Moon } from 'lucide-react';
+import AccountSecurity from './AccountSecurity';
 
 export const BackupManager: React.FC = () => {
   const { refreshAll } = useFinance();
   const [loading, setLoading] = useState(false);
+  const [settingsTab, setSettingsTab] = useState<'account' | 'data' | 'appearance'>('account');
   const { colorTheme, setColorTheme, dark, toggleTheme } = useTheme();
 
   const themes = [
@@ -90,9 +92,26 @@ export const BackupManager: React.FC = () => {
         <p className="text-xs text-slate-400 dark:text-slate-500">Gestiona tus copias de seguridad e historial de datos</p>
       </div>
 
+      <div className="flex gap-2 overflow-x-auto pb-1">
+        {[
+          { id: 'account', label: 'Cuenta' },
+          { id: 'data', label: 'Datos' },
+          { id: 'appearance', label: 'Apariencia' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setSettingsTab(tab.id as typeof settingsTab)}
+            className={`shrink-0 rounded-xl px-4 py-2.5 text-xs font-bold transition-colors cursor-pointer ${settingsTab === tab.id ? 'bg-brand-600 text-white shadow-sm shadow-brand-500/25' : 'bg-white text-slate-500 border border-slate-200 hover:border-brand-300 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800'}`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-6">
+        {settingsTab === 'account' && <AccountSecurity />}
         {/* Database JSON Backup Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+        {settingsTab === 'data' && <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
             <Database className="text-brand-500" size={18} />
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Copias de Seguridad (JSON)</h3>
@@ -150,10 +169,10 @@ export const BackupManager: React.FC = () => {
               <span>{dataSuccess}</span>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* Color Theme Selector Card */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-brand-800 rounded-2xl p-6 shadow-sm space-y-6">
+        {settingsTab === 'appearance' && <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-brand-800 rounded-2xl p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-brand-800">
             <Palette className="text-brand-500" size={18} />
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Apariencia y Colores</h3>
@@ -226,7 +245,7 @@ export const BackupManager: React.FC = () => {
               })}
             </div>
           </div>
-        </div>
+        </div>}
       </div>
     </div>
   );

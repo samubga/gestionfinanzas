@@ -7,6 +7,10 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string, inviteCode: string) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<string>;
+  changePassword: (currentPassword: string, password: string) => Promise<string>;
+  changeEmail: (currentPassword: string, email: string) => Promise<void>;
+  updateProfile: (name: string, avatarData?: string | null) => Promise<void>;
   logout: () => Promise<void>;
   updateStartingBalance: (balances: { manual?: number; caixa?: number; trade?: number }) => Promise<void>;
 }
@@ -40,6 +44,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(res.data.user);
   };
 
+  const requestPasswordReset = async (email: string) => {
+    const res = await api.post('/auth/forgot-password', { email });
+    return res.data.message;
+  };
+
+  const changePassword = async (currentPassword: string, password: string) => {
+    const res = await api.put('/auth/password', { currentPassword, password });
+    return res.data.message;
+  };
+
+  const changeEmail = async (currentPassword: string, email: string) => {
+    const res = await api.put('/auth/email', { currentPassword, email });
+    setUser(res.data);
+  };
+
+  const updateProfile = async (name: string, avatarData?: string | null) => {
+    const res = await api.put('/auth/profile', { name, avatarData });
+    setUser(res.data);
+  };
+
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -58,7 +82,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateStartingBalance }}>
+    <AuthContext.Provider value={{ user, loading, login, register, requestPasswordReset, changePassword, changeEmail, updateProfile, logout, updateStartingBalance }}>
       {children}
     </AuthContext.Provider>
   );

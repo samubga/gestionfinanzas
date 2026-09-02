@@ -24,6 +24,8 @@ backups/
 *.sql
 !backend/prisma/migrations/20260830160000_add_market_position_fields/migration.sql
 !backend/prisma/migrations/20260830180000_add_investment_transactions/migration.sql
+!backend/prisma/migrations/20260902090000_add_password_reset_tokens/migration.sql
+!backend/prisma/migrations/20260902100000_add_user_avatar/migration.sql
 
 # IDEs and editors
 .idea/

@@ -15,22 +15,24 @@ function jwtSecret(): string {
   return secret;
 }
 
-export function createAccessToken(userId: string): string {
-  return jwt.sign({ sub: userId }, jwtSecret(), {
+export function createAccessToken(userId: string, sessionVersion: number): string {
+  return jwt.sign({ sub: userId, sv: sessionVersion }, jwtSecret(), {
     expiresIn: '12h',
     issuer: 'gestionfinanzas',
     audience: 'gestionfinanzas-web',
   });
 }
 
-export function verifyAccessToken(token: string): string {
+export function verifyAccessToken(token: string): { userId: string; sessionVersion: number } {
   const payload = jwt.verify(token, jwtSecret(), {
     issuer: 'gestionfinanzas',
     audience: 'gestionfinanzas-web',
   }) as jwt.JwtPayload;
 
-  if (typeof payload.sub !== 'string' || !payload.sub) throw new Error('Token sin usuario válido.');
-  return payload.sub;
+  if (typeof payload.sub !== 'string' || !payload.sub || !Number.isInteger(payload.sv)) {
+    throw new Error('Token sin usuario válido.');
+  }
+  return { userId: payload.sub, sessionVersion: payload.sv };
 }
 
 export function sessionCookieOptions(): CookieOptions {
