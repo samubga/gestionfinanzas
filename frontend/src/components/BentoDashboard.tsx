@@ -88,10 +88,10 @@ export const BentoDashboard: React.FC<BentoDashboardProps> = ({ setActiveTab }) 
   };
 
   return (
-    <div className="space-y-6 pb-24 md:pb-12 max-w-7xl mx-auto px-4">
+    <div className="space-y-6 pb-28 lg:pb-12 max-w-7xl mx-auto px-4">
       
       {/* Bento Asymmetric Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         
         {/* 1. HERO TILE: Total Net Worth & Financial Pulse (Span 2 cols on lg) */}
         <div className="lg:col-span-2 bg-gradient-to-br from-brand-600 via-brand-700 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand-500/15 relative overflow-hidden flex flex-col justify-between group">

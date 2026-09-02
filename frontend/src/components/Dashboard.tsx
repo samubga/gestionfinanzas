@@ -197,10 +197,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-8 pb-24 md:pb-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 space-y-8 pb-28 lg:pb-8 max-w-7xl mx-auto">
 
       {/* ROW 1: HERO BENTO GRID (CAPITAL DISPONIBLE, CUENTAS, TOP GASTOS) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         
         {/* HERO CARD: Capital Total Disponible */}
         <div className="lg:col-span-2 bg-gradient-to-br from-brand-600 via-brand-700 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand-500/15 relative overflow-hidden flex flex-col justify-between group">

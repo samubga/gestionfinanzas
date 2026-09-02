@@ -19,8 +19,6 @@ export const AccountManager: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
-  const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('ALL');
-
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -61,15 +59,10 @@ export const AccountManager: React.FC = () => {
     return acc.startingBalance;
   };
 
-  const filteredAccounts = accounts.filter(acc => {
-    if (selectedTypeFilter === 'ALL') return true;
-    return acc.type === selectedTypeFilter;
-  });
-
   const totalCalculatedBalance = accounts.reduce((sum, acc) => sum + getAccountCurrentBalance(acc), 0);
 
   return (
-    <div className="p-6 md:p-8 space-y-8 pb-24 md:pb-8 max-w-7xl mx-auto">
+    <div className="p-6 md:p-8 space-y-8 pb-28 lg:pb-8 max-w-7xl mx-auto">
       
       {/* Header Banner */}
       <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
@@ -109,32 +102,6 @@ export const AccountManager: React.FC = () => {
           </div>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800/80">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 mr-2">Filtrar por tipo:</span>
-          {[
-            { key: 'ALL', label: 'Todas', icon: '✨' },
-            { key: 'CHECKING', label: 'Corrientes', icon: '💳' },
-            { key: 'SAVINGS', label: 'Ahorro', icon: '💰' },
-            { key: 'CASH', label: 'Efectivo', icon: '💵' },
-            { key: 'INVESTMENT', label: 'Inversión', icon: '📈' },
-            { key: 'CREDIT_CARD', label: 'Tarjetas', icon: '💳' },
-            { key: 'CRYPTO', label: 'Cripto', icon: '🪙' },
-          ].map(f => (
-            <button
-              key={f.key}
-              onClick={() => setSelectedTypeFilter(f.key)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1.5 cursor-pointer ${
-                selectedTypeFilter === f.key
-                  ? 'bg-brand-600 border-brand-500 text-white shadow-md shadow-brand-600/20'
-                  : 'bg-slate-50 dark:bg-slate-950/40 border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
-            >
-              <span>{f.icon}</span>
-              <span>{f.label}</span>
-            </button>
-          ))}
-        </div>
       </div>
 
       {errorMessage && (
@@ -150,15 +117,11 @@ export const AccountManager: React.FC = () => {
           <div className="w-10 h-10 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
           <p className="text-xs text-slate-400 font-semibold">Cargando cuentas...</p>
         </div>
-      ) : filteredAccounts.length === 0 ? (
+      ) : accounts.length === 0 ? (
         <div className="text-center py-16 bg-slate-900/40 rounded-3xl border border-slate-800 p-8 max-w-lg mx-auto">
           <Building2 size={48} className="mx-auto text-slate-600 mb-4" />
           <h3 className="text-slate-200 font-bold text-lg mb-1">No hay cuentas que mostrar</h3>
-          <p className="text-xs text-slate-400 mb-6">
-            {selectedTypeFilter === 'ALL' 
-              ? 'Añade tu primera cuenta bancaria o de efectivo para ver tus fondos agrupados.' 
-              : 'No se encontraron cuentas para el filtro seleccionado.'}
-          </p>
+          <p className="text-xs text-slate-400 mb-6">Añade tu primera cuenta bancaria o de efectivo para ver tus fondos agrupados.</p>
           <button
             onClick={handleOpenAddModal}
             className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-bold text-xs transition shadow-lg shadow-brand-600/30"
@@ -168,7 +131,7 @@ export const AccountManager: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAccounts.map((acc) => {
+          {accounts.map((acc) => {
             const currentBal = getAccountCurrentBalance(acc);
             const isDeleting = deletingId === acc.id;
             const typeConfig = ACCOUNT_TYPE_CONFIG[acc.type] || ACCOUNT_TYPE_CONFIG.OTHER;

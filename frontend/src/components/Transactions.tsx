@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useFinance } from '../context/FinanceContext';
-import { Search, Filter, Trash2, Edit3, Edit, Copy, Plus, ArrowUpRight, ArrowDownRight, ChevronUp, ChevronDown, ChevronsUpDown, Upload, AlertCircle, CheckCircle, Loader2, Check, X, AlertTriangle } from 'lucide-react';
+import { Search, Filter, Trash2, Edit3, Edit, Copy, Plus, ArrowUpRight, ArrowDownRight, ChevronUp, ChevronDown, ChevronsUpDown, Upload, AlertCircle, CheckCircle, Loader2, Check, X, AlertTriangle, CircleHelp } from 'lucide-react';
 import api from '../services/api';
 
 // Returns '#000000' or '#ffffff' depending on which gives better contrast with bgHex
@@ -67,6 +67,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
   const [activeTab, setActiveTab] = useState<'expenses' | 'incomes' | 'transfers'>('expenses');
   const [showFilters, setShowFilters] = useState(false);
+  const [showCsvHelp, setShowCsvHelp] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [previewItems, setPreviewItems] = useState<any[]>([]);
   const [showImportAccountModal, setShowImportAccountModal] = useState(false);
@@ -563,7 +564,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
     const netTotal = totalIncomes - totalExpenses;
 
     return (
-      <div className="p-6 space-y-6 pb-24 md:pb-6 max-w-6xl mx-auto flex flex-col min-h-screen">
+      <div className="p-6 space-y-6 pb-28 lg:pb-6 max-w-6xl mx-auto flex flex-col min-h-screen">
         {/* Title */}
         <div className="flex items-center justify-between">
           <div>
@@ -980,34 +981,51 @@ export const Transactions: React.FC<TransactionsProps> = ({
   }
 
   return (
-    <div className="p-6 space-y-6 pb-24 md:pb-6 max-w-7xl mx-auto flex flex-col min-h-[calc(100vh-60px)] md:min-h-screen">
+    <div className="p-6 space-y-6 pb-28 lg:pb-6 max-w-7xl mx-auto flex flex-col min-h-[calc(100vh-60px)] lg:min-h-screen">
       
       {/* Title & Add Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div>
-            <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Listado de Movimientos</h2>
+            <h2 className="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Listado de Transacciones</h2>
             <p className="text-xs text-slate-400 dark:text-slate-500">Historial completo y control de transacciones</p>
           </div>
           {loading && (expenses.length > 0 || incomes.length > 0) && (
             <div className="w-5 h-5 border-2 border-brand-600 dark:border-brand-400 border-t-transparent rounded-full animate-spin shrink-0 mt-1" title="Sincronizando..." />
           )}
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={handleCSVImportClick}
-            disabled={importLoading}
-            className="hidden md:inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-xl font-semibold text-xs transition-all cursor-pointer h-10"
-          >
-            {importLoading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
-            Importar CSV
-          </button>
+        <div className="flex w-full gap-2 sm:w-auto">
+          <div className="relative flex flex-1 sm:flex-none">
+            <button
+              onClick={handleCSVImportClick}
+              disabled={importLoading}
+              className="inline-flex h-11 w-full items-center justify-center gap-1.5 px-3 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 rounded-xl font-semibold text-xs transition-all cursor-pointer sm:px-4"
+            >
+              {importLoading ? <Loader2 className="animate-spin" size={14} /> : <Upload size={14} />}
+              Importar CSV
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCsvHelp(!showCsvHelp)}
+              aria-label="Ayuda sobre importar CSV"
+              aria-expanded={showCsvHelp}
+              className="absolute -right-1.5 -top-1.5 z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-slate-500 text-white shadow-sm transition hover:bg-brand-600 dark:border-slate-900"
+            >
+              <CircleHelp size={12} />
+            </button>
+            {showCsvHelp && (
+              <div role="tooltip" className="absolute left-0 top-full z-30 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-3 text-[11px] leading-relaxed text-slate-600 shadow-xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                Importa las transacciones desde un archivo CSV exportado por tu banco. Primero elegirás la cuenta y podrás revisar los registros antes de guardarlos.
+              </div>
+            )}
+          </div>
           <button
             onClick={() => onOpenAddExpense(activeTab === 'expenses' ? 'expense' : activeTab === 'incomes' ? 'income' : 'transfer')}
-            className="hidden md:inline-flex items-center gap-1.5 px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-brand-500/20 transition-all cursor-pointer"
+            className="inline-flex h-11 flex-1 items-center justify-center gap-1.5 px-3 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-xs shadow-md shadow-brand-500/20 transition-all cursor-pointer sm:flex-none sm:px-4"
           >
             <Plus size={16} />
-            {activeTab === 'expenses' ? 'Añadir Gasto' : activeTab === 'incomes' ? 'Añadir Ingreso' : 'Añadir Movimiento'}
+            <span className="sm:hidden">{activeTab === 'expenses' ? 'Gasto' : activeTab === 'incomes' ? 'Ingreso' : 'Movimiento'}</span>
+            <span className="hidden sm:inline">{activeTab === 'expenses' ? 'Añadir Gasto' : activeTab === 'incomes' ? 'Añadir Ingreso' : 'Añadir Movimiento'}</span>
           </button>
         </div>
       </div>
@@ -1240,11 +1258,11 @@ export const Transactions: React.FC<TransactionsProps> = ({
         <div className="flex-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
           {activeTab === 'expenses' ? (
             expenses.length > 0 ? (
-              <div className="overflow-auto max-h-[calc(100vh-220px)] min-h-[300px] flex-1">
+              <div className="overflow-x-auto overflow-y-auto scrollbar-thin max-h-[calc(100vh-220px)] min-h-[300px] flex-1">
                 <table className="w-full text-left border-collapse">
                   <thead className="sticky top-0 bg-white dark:bg-slate-900 z-10 shadow-[inset_0_-1px_0_rgba(226,232,240,1)] dark:shadow-[inset_0_-1px_0_rgba(30,41,59,1)]">
                     <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">
-                      <th className="py-4 px-6 w-12 text-center">
+                      <th className="hidden sm:table-cell py-4 px-6 w-12 text-center">
                         <input
                           type="checkbox"
                           checked={expenses.length > 0 && selectedIds.length === expenses.length}
@@ -1252,7 +1270,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 dark:bg-slate-900 cursor-pointer"
                         />
                       </th>
-                      <th onClick={() => handleSort('description')} className="py-4 px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <th onClick={() => handleSort('description')} className="py-3 px-3 sm:py-4 sm:px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                         <div className="flex items-center">
                           Concepto
                           {renderSortIcon('description')}
@@ -1264,7 +1282,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           {renderSortIcon('date')}
                         </div>
                       </th>
-                      <th onClick={() => handleSort('category')} className="py-4 px-4 hidden sm:table-cell cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <th onClick={() => handleSort('category')} className="py-3 px-2 sm:py-4 sm:px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                         <div className="flex items-center">
                           Categoría
                           {renderSortIcon('category')}
@@ -1277,7 +1295,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           {renderSortIcon('bank')}
                         </div>
                       </th>
-                      <th onClick={() => handleSort('amount')} className="py-4 px-4 text-right cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <th onClick={() => handleSort('amount')} className="py-3 px-2 sm:py-4 sm:px-4 text-right cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                         <div className="flex items-center justify-end">
                           Importe
                           {renderSortIcon('amount')}
@@ -1289,7 +1307,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           {renderSortIcon('createdAt')}
                         </div>
                       </th>
-                      <th className="py-4 px-6 text-right">Acciones</th>
+                      <th className="py-3 px-2 sm:py-4 sm:px-6 text-right"><span className="hidden sm:inline">Acciones</span></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800/40">
@@ -1300,7 +1318,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           selectedIds.includes(exp.id) ? 'bg-brand-50/30 dark:bg-brand-950/10' : ''
                         }`}
                       >
-                        <td className="py-4 px-6 text-center">
+                        <td className="hidden sm:table-cell py-4 px-6 text-center">
                           <input
                             type="checkbox"
                             checked={selectedIds.includes(exp.id)}
@@ -1309,7 +1327,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           />
                         </td>
                         {/* Concept */}
-                        <td className="py-4 px-4 max-w-xs">
+                        <td className="py-3 px-3 max-w-[96px] sm:py-4 sm:px-4 sm:max-w-xs">
                           <div>
                             <p className="font-bold text-slate-800 dark:text-slate-200 truncate">{exp.description}</p>
                             <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 sm:hidden">
@@ -1327,10 +1345,10 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           {new Date(exp.date).toLocaleDateString('es-ES')}
                         </td>
                         {/* Category */}
-                        <td className="py-4 px-4 hidden sm:table-cell">
-                          <span className="inline-flex items-center gap-1.5">
+                        <td className="py-3 px-2 sm:py-4 sm:px-4 max-w-[80px]">
+                          <span className="inline-flex max-w-full items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: exp.category?.color || '#94A3B8' }} />
-                            <span className="font-medium text-slate-600 dark:text-slate-400">{exp.category?.name || 'Sin categoría'}</span>
+                            <span className="truncate font-medium text-slate-600 dark:text-slate-400">{exp.category?.name || 'Sin categoría'}</span>
                           </span>
                         </td>
                         {/* Tags */}
@@ -1372,19 +1390,19 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           )}
                         </td>
                         {/* Amount */}
-                        <td className="py-4 px-4 text-right">
-                          <span className="font-extrabold text-red-500 text-sm">-{exp.amount.toFixed(2)} €</span>
+                        <td className="py-3 px-2 sm:py-4 sm:px-4 text-right whitespace-nowrap">
+                          <span className="font-extrabold text-red-500 text-[11px] sm:text-sm">-{exp.amount.toFixed(2)} €</span>
                         </td>
                         {/* Created At */}
                         <td className="py-4 px-4 hidden lg:table-cell text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap">
                           {new Date(exp.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </td>
                         {/* Action Buttons */}
-                        <td className="py-4 px-6 text-right">
+                        <td className="py-3 px-2 sm:py-4 sm:px-6 text-right">
                           <div className="inline-flex gap-2">
                             <button
                               onClick={() => handleDuplicate(exp.id)}
-                              className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg transition-colors cursor-pointer"
+                              className="hidden sm:inline-flex p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg transition-colors cursor-pointer"
                               title="Duplicar"
                             >
                               <Copy size={14} />
@@ -1398,7 +1416,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             </button>
                             <button
                               onClick={() => handleDeleteExpense(exp.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer"
+                              className="inline-flex p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer"
                               title="Eliminar"
                             >
                               <Trash2 size={14} />
@@ -1419,11 +1437,11 @@ export const Transactions: React.FC<TransactionsProps> = ({
             )
           ) : activeTab === 'incomes' ? (
             incomes.length > 0 ? (
-              <div className="overflow-auto max-h-[calc(100vh-220px)] min-h-[300px] flex-1">
+              <div className="overflow-x-auto overflow-y-auto scrollbar-thin max-h-[calc(100vh-220px)] min-h-[300px] flex-1">
                 <table className="w-full text-left border-collapse">
                   <thead className="sticky top-0 bg-white dark:bg-slate-900 z-10 shadow-[inset_0_-1px_0_rgba(226,232,240,1)] dark:shadow-[inset_0_-1px_0_rgba(30,41,59,1)]">
                     <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">
-                      <th className="py-4 px-6 w-12 text-center">
+                      <th className="hidden sm:table-cell py-4 px-6 w-12 text-center">
                         <input
                           type="checkbox"
                           checked={incomes.length > 0 && selectedIds.length === incomes.length}
@@ -1431,7 +1449,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-brand-600 focus:ring-brand-500 dark:bg-slate-900 cursor-pointer"
                         />
                       </th>
-                      <th onClick={() => handleSort('description')} className="py-4 px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <th onClick={() => handleSort('description')} className="py-3 px-3 sm:py-4 sm:px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                         <div className="flex items-center">
                           Concepto
                           {renderSortIcon('description')}
@@ -1443,7 +1461,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           {renderSortIcon('date')}
                         </div>
                       </th>
-                      <th onClick={() => handleSort('category')} className="py-4 px-4 hidden sm:table-cell cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <th onClick={() => handleSort('category')} className="py-3 px-2 sm:py-4 sm:px-4 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                         <div className="flex items-center">
                           Categoría
                           {renderSortIcon('category')}
@@ -1455,7 +1473,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           {renderSortIcon('bank')}
                         </div>
                       </th>
-                      <th onClick={() => handleSort('amount')} className="py-4 px-4 text-right cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                      <th onClick={() => handleSort('amount')} className="py-3 px-2 sm:py-4 sm:px-4 text-right cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                         <div className="flex items-center justify-end">
                           Importe
                           {renderSortIcon('amount')}
@@ -1467,7 +1485,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           {renderSortIcon('createdAt')}
                         </div>
                       </th>
-                      <th className="py-4 px-6 text-right">Acciones</th>
+                      <th className="py-3 px-2 sm:py-4 sm:px-6 text-right"><span className="hidden sm:inline">Acciones</span></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50 dark:divide-slate-800/40">
@@ -1478,7 +1496,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           selectedIds.includes(inc.id) ? 'bg-brand-50/30 dark:bg-brand-950/10' : ''
                         }`}
                       >
-                        <td className="py-4 px-6 text-center">
+                        <td className="hidden sm:table-cell py-4 px-6 text-center">
                           <input
                             type="checkbox"
                             checked={selectedIds.includes(inc.id)}
@@ -1487,7 +1505,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           />
                         </td>
                         {/* Concept */}
-                        <td className="py-4 px-4 max-w-xs">
+                        <td className="py-3 px-3 max-w-[96px] sm:py-4 sm:px-4 sm:max-w-xs">
                           <div>
                             <p className="font-bold text-slate-800 dark:text-slate-200 truncate">{inc.description}</p>
                             <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 sm:hidden">
@@ -1499,11 +1517,11 @@ export const Transactions: React.FC<TransactionsProps> = ({
                         <td className="py-4 px-4 hidden sm:table-cell text-slate-650 dark:text-slate-400 font-medium">
                           {new Date(inc.date).toLocaleDateString('es-ES')}
                         </td>
-                        <td className="py-4 px-4 hidden sm:table-cell">
+                        <td className="py-3 px-2 sm:py-4 sm:px-4 max-w-[80px]">
                           {inc.category ? (
-                            <span className="inline-flex items-center gap-1.5">
+                            <span className="inline-flex max-w-full items-center gap-1.5">
                               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: inc.category.color }} />
-                              <span className="font-medium text-slate-600 dark:text-slate-400">{inc.category.name}</span>
+                              <span className="truncate font-medium text-slate-600 dark:text-slate-400">{inc.category.name}</span>
                             </span>
                           ) : (
                             <span className="text-slate-400 italic">Sin categoría</span>
@@ -1538,15 +1556,15 @@ export const Transactions: React.FC<TransactionsProps> = ({
                           )}
                         </td>
                         {/* Amount */}
-                        <td className="py-4 px-4 text-right">
-                          <span className="font-extrabold text-emerald-500 text-sm">+{inc.amount.toFixed(2)} €</span>
+                        <td className="py-3 px-2 sm:py-4 sm:px-4 text-right whitespace-nowrap">
+                          <span className="font-extrabold text-emerald-500 text-[11px] sm:text-sm">+{inc.amount.toFixed(2)} €</span>
                         </td>
                         {/* Created At */}
                         <td className="py-4 px-4 hidden lg:table-cell text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap">
                           {new Date(inc.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </td>
                         {/* Action Buttons */}
-                        <td className="py-4 px-6 text-right">
+                        <td className="py-3 px-2 sm:py-4 sm:px-6 text-right">
                           <div className="inline-flex gap-2">
                             <button
                               onClick={() => onOpenEditExpense(inc)}
@@ -1557,7 +1575,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             </button>
                             <button
                               onClick={() => handleDeleteIncome(inc.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer"
+                              className="inline-flex p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer"
                               title="Eliminar"
                             >
                               <Trash2 size={14} />
@@ -1578,7 +1596,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
             )
           ) : (
             sortedTransfers.length > 0 ? (
-              <div className="overflow-auto max-h-[calc(100vh-220px)] min-h-[300px] flex-1">
+              <div className="overflow-x-auto overflow-y-auto scrollbar-thin max-h-[calc(100vh-220px)] min-h-[300px] flex-1">
                 <table className="w-full text-left border-collapse">
                   <thead className="sticky top-0 bg-white dark:bg-slate-900 z-10 shadow-[inset_0_-1px_0_rgba(226,232,240,1)] dark:shadow-[inset_0_-1px_0_rgba(30,41,59,1)]">
                     <tr className="border-b border-slate-100 dark:border-slate-800 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider select-none">

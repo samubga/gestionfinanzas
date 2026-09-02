@@ -244,7 +244,7 @@ export const ForecastManager: React.FC = () => {
   const totalPlanned = forecasts.reduce((sum, item) => sum + item.amount, 0);
 
   return (
-    <div className="p-6 space-y-6 pb-24 md:pb-6 max-w-7xl mx-auto">
+    <div className="p-6 space-y-6 pb-28 lg:pb-6 max-w-7xl mx-auto">
       
       {/* Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

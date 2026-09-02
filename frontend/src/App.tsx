@@ -81,7 +81,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex flex-col md:flex-row transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex flex-col lg:flex-row transition-colors duration-200">
       {/* Navigation Layout (Original Left Sidebar) */}
       <Navbar
         activeTab={activeTab}
@@ -99,7 +99,7 @@ const AppContent: React.FC = () => {
       {/* DESKTOP FLOATING ACTION BUTTON */}
       <button
         onClick={() => handleOpenAddForm('expense')}
-        className="hidden md:flex fixed bottom-6 right-6 z-40 w-14 h-14 bg-brand-600 hover:bg-brand-700 text-white rounded-full items-center justify-center shadow-xl shadow-brand-500/30 active:scale-95 transition-all hover:scale-105 cursor-pointer font-bold"
+        className="hidden lg:flex fixed bottom-6 right-6 z-40 w-14 h-14 bg-brand-600 hover:bg-brand-700 text-white rounded-full items-center justify-center shadow-xl shadow-brand-500/30 active:scale-95 transition-all hover:scale-105 cursor-pointer font-bold"
         title="Añadir Transacción"
       >
         <Plus size={24} />

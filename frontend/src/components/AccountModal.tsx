@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { Account, AccountType, Bank } from '../types';
-import { X, Search, Plus, Check, Loader2, Building2 } from 'lucide-react';
+import { X, Search, Plus, Check, Loader2, Building2, CircleHelp } from 'lucide-react';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -47,6 +47,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
 
   // Calculator states
   const [showCalculator, setShowCalculator] = useState(false);
+  const [showStartingBalanceHelp, setShowStartingBalanceHelp] = useState(false);
   const [actualMoneyInput, setActualMoneyInput] = useState('');
   const [calcMessage, setCalcMessage] = useState('');
 
@@ -97,6 +98,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
     setShowCustomBankInput(false);
     setBankSearch('');
     setShowCalculator(false);
+    setShowStartingBalanceHelp(false);
     setActualMoneyInput('');
     setCalcMessage('');
   }, [accountToEdit, isOpen]);
@@ -352,9 +354,21 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
           {/* 4. Saldo Inicial */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-semibold text-slate-300">
-                Saldo Inicial (€)
-              </label>
+              <div className="flex items-center gap-1.5">
+                <label className="block text-sm font-semibold text-slate-300">
+                  Saldo Inicial (€)
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowStartingBalanceHelp(!showStartingBalanceHelp)}
+                  aria-expanded={showStartingBalanceHelp}
+                  aria-controls="starting-balance-help"
+                  aria-label="Ayuda sobre el saldo inicial"
+                  className="rounded-full text-slate-400 transition hover:text-brand-300 focus:outline-none focus:ring-2 focus:ring-brand-500/60"
+                >
+                  <CircleHelp size={16} />
+                </button>
+              </div>
               {accountToEdit && (
                 <button
                   type="button"
@@ -369,6 +383,16 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                 </button>
               )}
             </div>
+            {showStartingBalanceHelp && (
+              <div id="starting-balance-help" className="mb-3 rounded-xl border border-brand-500/25 bg-brand-500/10 p-3 text-[11px] leading-relaxed text-slate-300 animate-fade-in">
+                <p>
+                  Indica el saldo que tenía la cuenta cuando empezaste a registrar sus transacciones. Así la aplicación puede sumar esos movimientos y mostrar el dinero total real de la cuenta.
+                </p>
+                <p className="mt-2 text-slate-400">
+                  Si ya registraste transacciones, usa <strong className="font-semibold text-brand-300">Calcular saldo</strong>: introduce el dinero real actual y se rellenará automáticamente el saldo inicial que corresponde.
+                </p>
+              </div>
+            )}
             <input
               type="number"
               step="any"
@@ -382,7 +406,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
             {accountToEdit && showCalculator && (
               <div className="bg-slate-950/60 p-4 border border-slate-800 rounded-xl space-y-3 mt-3 animate-fade-in">
                 <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
-                  <span>Calculadora de Saldo Inicial Cuadrado</span>
+                  <span>Calculadora de saldo inicial</span>
                   <button 
                     type="button" 
                     onClick={() => {
@@ -395,7 +419,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                   </button>
                 </div>
                 <p className="text-[11px] text-slate-400 leading-normal">
-                  Introduce el dinero real actual en esta cuenta. Se calculará el saldo inicial necesario restando los movimientos registrados de ingresos, gastos, inversiones y transferencias.
+                  Introduce el dinero real actual en esta cuenta. Se calculará el saldo inicial necesario teniendo en cuenta las transacciones registradas.
                 </p>
                 <div className="flex gap-2">
                   <input
