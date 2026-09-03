@@ -2,16 +2,18 @@ import React, { useState, useRef } from 'react';
 import api from '../services/api';
 import { useFinance } from '../context/FinanceContext';
 import { useTheme } from '../context/ThemeContext';
-import { Download, Upload, Loader2, Database, Palette, Sun, Moon } from 'lucide-react';
+import { Download, Upload, Loader2, Database, Palette, Sun, Moon, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import AccountSecurity from './AccountSecurity';
 import { useNotification } from '../context/NotificationContext';
+import { usePrivacy } from '../context/PrivacyContext';
 
 export const BackupManager: React.FC = () => {
   const { refreshAll } = useFinance();
   const notification = useNotification();
   const [loading, setLoading] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<'account' | 'data' | 'appearance'>('account');
+  const [settingsTab, setSettingsTab] = useState<'account' | 'data' | 'appearance' | 'privacy'>('account');
   const { colorTheme, setColorTheme, dark, toggleTheme } = useTheme();
+  const { privacyModeEnabled, contentVisible, setPrivacyModeEnabled, toggleContentVisibility } = usePrivacy();
 
   const themes = [
     { id: 'indigo', name: 'Día / Noche Clásico', description: 'Gama de grises y azules clásica (por defecto)', hex: '#4f46e5' },
@@ -91,6 +93,7 @@ export const BackupManager: React.FC = () => {
           { id: 'account', label: 'Cuenta' },
           { id: 'data', label: 'Datos' },
           { id: 'appearance', label: 'Apariencia' },
+          { id: 'privacy', label: 'Privacidad' },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -149,6 +152,55 @@ export const BackupManager: React.FC = () => {
             />
           </div>
 
+        </div>}
+
+        {settingsTab === 'privacy' && <div className="space-y-5 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6">
+          <div className="flex items-center gap-2 border-b border-slate-100 pb-4 dark:border-slate-800">
+            <ShieldCheck className="text-brand-500" size={18} />
+            <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-white">Privacidad visual</h3>
+          </div>
+
+          <p className="text-xs leading-normal text-slate-500 dark:text-slate-400">
+            Evita que otras personas vean tus saldos y movimientos de un vistazo. Al abrir la aplicación o volver desde segundo plano, la información financiera aparecerá difuminada.
+          </p>
+
+          <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100/50 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-950/40">
+            <div>
+              <span className="block text-xs font-bold text-slate-800 dark:text-white">Ocultar información al entrar</span>
+              <span className="mt-1 block text-[10px] text-slate-400 dark:text-slate-500">Podrás mostrarla u ocultarla en cualquier momento desde el menú.</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPrivacyModeEnabled(!privacyModeEnabled)}
+              className={`relative h-7 w-12 shrink-0 rounded-full p-0.5 transition-colors ${privacyModeEnabled ? 'bg-brand-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+              role="switch"
+              aria-checked={privacyModeEnabled}
+              aria-label="Ocultar información financiera al entrar"
+            >
+              <span className={`block h-6 w-6 rounded-full bg-white shadow-sm transition-transform ${privacyModeEnabled ? 'translate-x-5' : ''}`} />
+            </button>
+          </div>
+
+          {privacyModeEnabled && (
+            <div className="flex items-center justify-between gap-4 rounded-2xl border border-brand-200/60 bg-brand-50/50 p-4 dark:border-brand-900/50 dark:bg-brand-950/20">
+              <div className="flex items-center gap-3">
+                <div className="rounded-xl bg-white p-2 text-brand-600 shadow-sm dark:bg-slate-800 dark:text-brand-400">
+                  {contentVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+                </div>
+                <div>
+                  <span className="block text-xs font-bold text-slate-800 dark:text-white">Estado actual</span>
+                  <span className="mt-0.5 block text-[10px] text-slate-500 dark:text-slate-400">Información {contentVisible ? 'visible' : 'oculta'}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={toggleContentVisibility}
+                className="rounded-xl border border-brand-200 bg-white px-3 py-2 text-xs font-bold text-brand-700 shadow-sm transition-colors hover:bg-brand-50 dark:border-brand-900 dark:bg-slate-800 dark:text-brand-300 dark:hover:bg-slate-700"
+              >
+                {contentVisible ? 'Ocultar ahora' : 'Mostrar ahora'}
+              </button>
+            </div>
+          )}
         </div>}
 
         {/* Color Theme Selector Card */}

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
 import { useTheme } from '../context/ThemeContext';
-import { LayoutDashboard, Receipt, BarChart3, Settings2, Database, LogOut, Sun, Moon, TrendingUp, LineChart, Wallet, Menu, Palette, X } from 'lucide-react';
+import { LayoutDashboard, Receipt, BarChart3, Settings2, Database, LogOut, Sun, Moon, TrendingUp, LineChart, Wallet, Menu, Palette, X, Eye, EyeOff } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
+import { usePrivacy } from '../context/PrivacyContext';
 
 interface NavbarProps {
   activeTab: string;
@@ -22,6 +23,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const notification = useNotification();
   const { year, month, setPeriod } = useFinance();
   const { colorTheme, setColorTheme } = useTheme();
+  const { contentVisible, toggleContentVisibility } = usePrivacy();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -166,6 +168,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div className="flex gap-2">
             <button
+              type="button"
+              onClick={toggleContentVisibility}
+              className="flex-1 py-2 px-3 border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+              title={contentVisible ? 'Ocultar información financiera' : 'Mostrar información financiera'}
+              aria-label={contentVisible ? 'Ocultar información financiera' : 'Mostrar información financiera'}
+              aria-pressed={!contentVisible}
+            >
+              {contentVisible ? <Eye size={16} /> : <EyeOff size={16} />}
+            </button>
+            <button
               onClick={toggleTheme}
               className="flex-1 py-2 px-3 border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
               title={dark ? 'Modo claro' : 'Modo oscuro'}
@@ -294,6 +306,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </nav>
 
             <div className="space-y-4 border-t border-slate-100 p-4 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={toggleContentVisibility}
+                className="flex min-h-12 w-full items-center justify-between rounded-xl bg-brand-50 px-3.5 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-100 dark:bg-brand-950/35 dark:text-brand-300 dark:hover:bg-brand-950/55"
+                aria-pressed={!contentVisible}
+              >
+                <span className="flex items-center gap-3">
+                  {contentVisible ? <Eye size={19} /> : <EyeOff size={19} />}
+                  {contentVisible ? 'Ocultar información' : 'Mostrar información'}
+                </span>
+              </button>
               <button
                 type="button"
                 onClick={toggleTheme}

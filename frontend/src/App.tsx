@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { FinanceProvider } from './context/FinanceContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
@@ -16,10 +16,12 @@ import AccountManager from './components/AccountManager';
 import ResetPassword from './components/ResetPassword';
 import { NotificationProvider } from './context/NotificationContext';
 import { AppNavigationProvider, useAppNavigation } from './context/AppNavigationContext';
+import { PrivacyProvider, usePrivacy } from './context/PrivacyContext';
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
   const { tab: activeTab, setActiveTab } = useAppNavigation();
+  const { contentHidden } = usePrivacy();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editTx, setEditTx] = useState<any>(null);
   const [formInitialType, setFormInitialType] = useState<'expense' | 'income' | 'transfer'>('expense');
@@ -27,6 +29,12 @@ const AppContent: React.FC = () => {
   // Theme state from Context
   const { dark, toggleTheme } = useTheme();
   const resetToken = new URLSearchParams(window.location.search).get('resetToken');
+
+  useEffect(() => {
+    if (!contentHidden) return;
+    setIsFormOpen(false);
+    setEditTx(null);
+  }, [contentHidden]);
 
   const handleOpenAddForm = (type: 'expense' | 'income' | 'transfer' = 'expense') => {
     setEditTx(null);
@@ -121,11 +129,13 @@ export const App: React.FC = () => {
     <NotificationProvider>
       <AuthProvider>
         <ThemeProvider>
-          <AppNavigationProvider>
-            <FinanceProvider>
-              <AppContent />
-            </FinanceProvider>
-          </AppNavigationProvider>
+          <PrivacyProvider>
+            <AppNavigationProvider>
+              <FinanceProvider>
+                <AppContent />
+              </FinanceProvider>
+            </AppNavigationProvider>
+          </PrivacyProvider>
         </ThemeProvider>
       </AuthProvider>
     </NotificationProvider>
