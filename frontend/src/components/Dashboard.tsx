@@ -295,7 +295,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         </div>
 
         {/* ACCOUNTS STACK CARD */}
-        <div className="lg:col-span-1">
+        <div className="hidden lg:col-span-1 lg:block">
           <AccountCardStack
             onSelectAccount={(accId) => setSelectedAccountId(accId)}
             onOpenAddAccount={() => handleNav('accounts')}
@@ -679,6 +679,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
           </button>
         </div>
 
+      </div>
+
+      {/* On mobile, accounts are intentionally the final dashboard section. */}
+      <div className="lg:hidden">
+        <AccountCardStack
+          onSelectAccount={(accId) => setSelectedAccountId(accId)}
+          onOpenAddAccount={() => handleNav('accounts')}
+        />
       </div>
 
     </div>

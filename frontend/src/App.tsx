@@ -14,7 +14,6 @@ import ForecastManager from './components/ForecastManager';
 import InvestmentsManager from './components/InvestmentsManager';
 import AccountManager from './components/AccountManager';
 import ResetPassword from './components/ResetPassword';
-import { Plus } from 'lucide-react';
 import { NotificationProvider } from './context/NotificationContext';
 
 const AppContent: React.FC = () => {
@@ -95,22 +94,12 @@ const AppContent: React.FC = () => {
         setActiveTab={setActiveTab}
         dark={dark}
         toggleTheme={toggleTheme}
-        onOpenAddExpense={() => handleOpenAddForm('expense')}
       />
 
       {/* Main Content Area */}
       <main className="flex-1 overflow-x-hidden">
         {renderView()}
       </main>
-
-      {/* DESKTOP FLOATING ACTION BUTTON */}
-      <button
-        onClick={() => handleOpenAddForm('expense')}
-        className="hidden lg:flex fixed bottom-6 right-6 z-40 w-14 h-14 bg-brand-600 hover:bg-brand-700 text-white rounded-full items-center justify-center shadow-xl shadow-brand-500/30 active:scale-95 transition-all hover:scale-105 cursor-pointer font-bold"
-        title="Añadir Transacción"
-      >
-        <Plus size={24} />
-      </button>
 
       {/* GLOBAL MODAL TRANSACTION FORM */}
       <ExpenseForm

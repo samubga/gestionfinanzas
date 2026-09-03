@@ -536,6 +536,15 @@
   to { opacity: 0; transform: translateY(-8px) scale(0.97); }
 }
 
+@keyframes mobile-drawer-in {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.mobile-drawer-enter {
+  animation: mobile-drawer-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .notification-popup {
   animation: notification-popup-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -546,7 +555,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .notification-popup,
-  .notification-popup-exit {
+  .notification-popup-exit,
+  .mobile-drawer-enter {
     animation: none;
   }
 }
