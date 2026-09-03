@@ -91,7 +91,7 @@ export const AccountSecurity: React.FC = () => {
     } finally { setLoading(null); }
   };
 
-  return <section className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5">
+  return <section className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-5">
     <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800"><KeyRound className="text-brand-500" size={18} /><h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Seguridad de la cuenta</h3></div>
     <p className="text-xs text-slate-500 dark:text-slate-400">Usa un correo real para poder recuperar el acceso. Los cambios requieren tu contraseña actual.</p>
     <form onSubmit={saveProfile} className="space-y-3 rounded-xl bg-slate-50/70 dark:bg-slate-950/30 p-4">

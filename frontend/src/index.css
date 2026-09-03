@@ -441,9 +441,49 @@
 
 
 @layer base {
+  html {
+    min-width: 320px;
+    overflow-x: hidden;
+  }
+
   body {
     -webkit-tap-highlight-color: transparent;
+    min-width: 320px;
+    overflow-x: hidden;
+    text-rendering: optimizeLegibility;
   }
+}
+
+/* Mobile chart/readability defaults. Recharts' inline tick sizes are tuned for
+   desktop, so the mobile override keeps axes legible at arm's length. */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  .recharts-cartesian-axis-tick text {
+    font-size: 11px !important;
+  }
+
+  .recharts-legend-item-text {
+    font-size: 11px !important;
+  }
+
+  .recharts-tooltip-wrapper {
+    max-width: calc(100vw - 2rem);
+  }
+}
+
+.chart-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(203 213 225) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dark .chart-scroll-area {
+  scrollbar-color: rgb(51 65 85) transparent;
 }
 
 /* Custom scrollbars for a premium feel */

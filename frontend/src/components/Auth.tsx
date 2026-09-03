@@ -40,7 +40,7 @@ export const Auth: React.FC = () => {
 
   return (
     <div className="public-auth min-h-screen flex items-center justify-center p-4 bg-gradient-to-tr from-[#0f172a] via-[#1e1b4b] to-[#3b0764]">
-      <div className="w-full max-w-md bg-[#0f172a]/80 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border border-[#1e293b]/30 p-8 transition-all duration-300">
+      <div className="w-full max-w-md bg-[#0f172a]/80 backdrop-blur-md rounded-3xl shadow-2xl overflow-hidden border border-[#1e293b]/30 p-5 sm:p-8 transition-all duration-300">
         
         {/* Header */}
         <div className="text-center mb-8">

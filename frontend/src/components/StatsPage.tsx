@@ -11,6 +11,7 @@ import {
   TrendingUp as NetWorthIcon, Layers, X
 } from 'lucide-react';
 import api from '../services/api';
+import ChartViewport from './ChartViewport';
 
 export const StatsPage: React.FC = () => {
   const { 
@@ -129,7 +130,7 @@ export const StatsPage: React.FC = () => {
 
   if (statsLoading && !stats) {
     return (
-      <div className="space-y-6 animate-pulse p-6 max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl animate-pulse space-y-5 p-3 sm:p-6">
         <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/4" />
         <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
         <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
@@ -229,7 +230,7 @@ export const StatsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 pb-28 lg:pb-6 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
       
       {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -441,7 +442,7 @@ export const StatsPage: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Daily Evolution Chart */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm lg:col-span-2">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm lg:col-span-2">
               <div className="mb-4 flex justify-between items-center">
                 <div>
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución Diaria de Gastos</h4>
@@ -454,7 +455,7 @@ export const StatsPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <div className="h-72">
+              <ChartViewport label="Evolución diaria de gastos" heightClassName="h-[22rem] sm:h-72" minContentWidth={680}>
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart
                     data={dailyData}
@@ -501,11 +502,11 @@ export const StatsPage: React.FC = () => {
                     />
                   </AreaChart>
                 </ResponsiveContainer>
-              </div>
+              </ChartViewport>
             </div>
 
             {/* Category Pie Chart */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col">
               <div>
                 <h4 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-1.5">
                   <PieIcon size={16} className="text-brand-500" />
@@ -516,7 +517,7 @@ export const StatsPage: React.FC = () => {
 
               {categoryBreakdown.length > 0 ? (
                 <>
-                  <div className="h-48 my-4 relative">
+                  <ChartViewport label="Distribución mensual por categorías" heightClassName="h-72 sm:h-60" className="my-3">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
@@ -541,7 +542,7 @@ export const StatsPage: React.FC = () => {
                         {currentExpense.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €
                       </span>
                     </div>
-                  </div>
+                  </ChartViewport>
 
                   <div className="space-y-2 flex-1 overflow-y-auto max-h-[140px] pr-1 scrollbar-thin">
                     {categoryBreakdown.map((cat) => {
@@ -730,12 +731,12 @@ export const StatsPage: React.FC = () => {
                 return (
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Income vs Expenses Bar Chart */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm lg:col-span-2">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm lg:col-span-2">
                       <div className="mb-4">
                         <h4 className="text-sm font-bold text-slate-800 dark:text-white">Comparativa Mensual de Ingresos y Gastos</h4>
                         <p className="text-[10px] text-slate-400 dark:text-slate-500">Visualización agregada mes a mes</p>
                       </div>
-                      <div className="h-72">
+                      <ChartViewport label="Comparativa mensual de ingresos y gastos" heightClassName="h-[22rem] sm:h-72" minContentWidth={560}>
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={filteredMonthlyBreakdown} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/60" />
@@ -747,16 +748,16 @@ export const StatsPage: React.FC = () => {
                             <Bar dataKey="expense" name="Gastos" fill="#EF4444" radius={[4, 4, 0, 0]} />
                           </BarChart>
                         </ResponsiveContainer>
-                      </div>
+                      </ChartViewport>
                     </div>
 
                     {/* Savings Rate Line Chart */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm">
                       <div className="mb-4">
                         <h4 className="text-sm font-bold text-slate-800 dark:text-white">Tasa de Ahorro Mensual (%)</h4>
                         <p className="text-[10px] text-slate-400 dark:text-slate-500">Porcentaje de ingresos guardados por mes</p>
                       </div>
-                      <div className="h-72">
+                      <ChartViewport label="Tasa de ahorro mensual" heightClassName="h-[22rem] sm:h-72" minContentWidth={520}>
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
                             data={filteredMonthlyBreakdown.map(m => ({
@@ -772,7 +773,7 @@ export const StatsPage: React.FC = () => {
                             <Line type="monotone" dataKey="Tasa Ahorro" stroke="#6366F1" strokeWidth={3} dot={{ r: 3 }} activeDot={{ r: 5 }} />
                           </LineChart>
                         </ResponsiveContainer>
-                      </div>
+                      </ChartViewport>
                     </div>
                   </div>
                 );
@@ -815,7 +816,7 @@ export const StatsPage: React.FC = () => {
                     </div>
 
                     {/* Donut Chart */}
-                    <div className="h-60 relative flex flex-col items-center justify-center">
+                    <ChartViewport label="Distribución anual por categorías" heightClassName="h-80 sm:h-64">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
@@ -840,7 +841,7 @@ export const StatsPage: React.FC = () => {
                           {yearlyStats.summary.totalExpense.toLocaleString('es-ES', { maximumFractionDigits: 0 })} €
                         </span>
                       </div>
-                    </div>
+                    </ChartViewport>
                   </div>
                 ) : (
                   <p className="text-xs text-slate-400 dark:text-slate-500 italic py-6 text-center">No hay gastos en el año {selectedYear}.</p>
@@ -905,12 +906,12 @@ export const StatsPage: React.FC = () => {
               </div>
 
               {/* NET WORTH TIMELINE AREA CHART */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm">
                 <div className="mb-4">
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución Histórica de Activos y Patrimonio Neto (Net Worth)</h4>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500">Cuentas líquidas acumuladas sumadas a las Inversiones activas</p>
                 </div>
-                <div className="h-96">
+                <ChartViewport label="Evolución histórica de activos y patrimonio neto" heightClassName="h-[26rem] sm:h-96" minContentWidth={680}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={historicalStats.history} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <defs>
@@ -932,18 +933,18 @@ export const StatsPage: React.FC = () => {
                       <Area type="monotone" dataKey="invested" stackId="1" stroke="#8B5CF6" strokeWidth={2} fillOpacity={1} fill="url(#colorInvested)" name="Inversiones Activas" />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
+                </ChartViewport>
               </div>
 
               {/* COMPARATIVA ANUAL (Cierre Patrimonio Neto) */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm">
                 <div className="mb-4">
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white">Cierre de Patrimonio Neto por Año</h4>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500">Comparativa del patrimonio acumulado al final de cada año</p>
                 </div>
                 
                 {historicalStats.history.length > 0 ? (
-                  <div className="h-64">
+                  <ChartViewport label="Cierre de patrimonio neto por año" heightClassName="h-[22rem] sm:h-64" minContentWidth={520}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={historicalStats.history.filter((h, idx, arr) => {
@@ -961,7 +962,7 @@ export const StatsPage: React.FC = () => {
                         <Bar dataKey="netWorth" name="Patrimonio de Cierre" fill="#4F46E5" radius={[6, 6, 0, 0]} maxBarSize={60} />
                       </BarChart>
                     </ResponsiveContainer>
-                  </div>
+                  </ChartViewport>
                 ) : (
                   <p className="text-xs text-slate-400 dark:text-slate-500 italic text-center py-6">No hay datos históricos suficientes.</p>
                 )}
@@ -1036,12 +1037,12 @@ export const StatsPage: React.FC = () => {
               </div>
 
               {/* 12-MONTH CATEGORY TREND CHART */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm">
                 <div className="mb-4">
                   <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución de Gasto Mensual (Últimos 12 meses)</h4>
                   <p className="text-[10px] text-slate-400 dark:text-slate-500">Tendencia mensual de consumo para la categoría seleccionada</p>
                 </div>
-                <div className="h-72">
+                <ChartViewport label="Evolución de gasto mensual de la categoría" heightClassName="h-[22rem] sm:h-72" minContentWidth={560}>
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={catData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/60" />
@@ -1056,7 +1057,7 @@ export const StatsPage: React.FC = () => {
                       />
                     </BarChart>
                   </ResponsiveContainer>
-                </div>
+                </ChartViewport>
               </div>
 
             </div>

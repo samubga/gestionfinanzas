@@ -60,10 +60,10 @@ export const AccountManager: React.FC = () => {
   const totalCalculatedBalance = accounts.reduce((sum, acc) => sum + getAccountCurrentBalance(acc), 0);
 
   return (
-    <div className="p-6 md:p-8 space-y-8 pb-28 lg:pb-8 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-8 sm:p-6 md:p-8 lg:pb-8">
       
       {/* Header Banner */}
-      <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm">
+      <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm">
         <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-brand-500/5 rounded-full blur-3xl pointer-events-none" />
         
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
@@ -130,7 +130,7 @@ export const AccountManager: React.FC = () => {
             return (
               <div
                 key={acc.id}
-                className="bg-slate-900/90 border border-slate-800/90 hover:border-brand-500/40 rounded-3xl p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-brand-500/5 flex flex-col justify-between group relative overflow-hidden"
+                className="bg-slate-900/90 border border-slate-800/90 hover:border-brand-500/40 rounded-3xl p-4 sm:p-6 shadow-xl backdrop-blur-md transition-all duration-300 hover:shadow-brand-500/5 flex flex-col justify-between group relative overflow-hidden"
               >
                 {/* Accent bar top */}
                 <div 

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Activity, BarChart3, CheckCircle2, ChevronDown, ChevronUp, CircleAlert, CircleHelp, Gauge, Info, RefreshCw, ShieldAlert, Target, TrendingUp } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import api from '../services/api';
+import ChartViewport from './ChartViewport';
 
 type AnalysisTone = 'positive' | 'neutral' | 'caution';
 type TimeRange = '1M' | '3M' | '6M' | '1A';
@@ -192,14 +193,19 @@ const PriceChart: React.FC<{
         <span className="text-slate-400">C <strong className={active.close >= active.open ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}>{formatPrice(active.close, currency)}</strong></span>
         <span className="text-slate-400">VOL <strong className="text-slate-700 dark:text-slate-200">{formatCompact(active.volume)}</strong></span>
       </div>
-      <svg
-        role="img"
-        aria-label="Gráfico histórico de precio y volumen"
-        viewBox={`0 0 ${width} ${height}`}
-        className="h-auto min-h-[260px] w-full touch-pan-y select-none"
-        onMouseMove={handlePointer}
-        onMouseLeave={() => setHoveredIndex(null)}
+      <ChartViewport
+        label="Histórico de precio y volumen"
+        heightClassName="h-[19rem] sm:h-[24rem]"
+        minContentWidth={720}
       >
+        <svg
+          role="img"
+          aria-label="Gráfico histórico de precio y volumen"
+          viewBox={`0 0 ${width} ${height}`}
+          className="h-full w-full select-none"
+          onMouseMove={handlePointer}
+          onMouseLeave={() => setHoveredIndex(null)}
+        >
         <defs>
           <linearGradient id="priceAreaGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
@@ -228,7 +234,8 @@ const PriceChart: React.FC<{
         })}
         {hoveredIndex !== null && <><line x1={x(activeIndex)} x2={x(activeIndex)} y1={priceTop} y2={volumeBottom} stroke="#64748b" strokeWidth="1" strokeDasharray="3 4" /><circle cx={x(activeIndex)} cy={y(active.adjustedClose)} r="4" fill="#fff" stroke="#6366f1" strokeWidth="2" /></>}
         {labelIndexes.map((index) => <text key={`label-${index}`} x={x(index)} y={382} textAnchor={index === 0 ? 'start' : index === points.length - 1 ? 'end' : 'middle'} className="fill-slate-400 text-[10px]">{new Date(`${points[index].date}T00:00:00`).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}</text>)}
-      </svg>
+        </svg>
+      </ChartViewport>
     </div>
   );
 };
@@ -258,7 +265,7 @@ const HelpTooltip: React.FC<{ label: string; children: React.ReactNode }> = ({ l
       >
         <CircleHelp size={13} />
       </button>
-      {isOpen && <span role="tooltip" className="absolute bottom-full left-0 z-30 mb-2 w-64 rounded-xl bg-slate-800 px-3 py-2 text-left text-[10px] font-medium normal-case leading-relaxed text-white shadow-xl dark:bg-slate-700">{children}</span>}
+      {isOpen && <span role="tooltip" className="fixed inset-x-4 bottom-24 z-[70] rounded-xl bg-slate-800 px-3 py-2 text-left text-[10px] font-medium normal-case leading-relaxed text-white shadow-xl dark:bg-slate-700 sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:mb-2 sm:w-64">{children}</span>}
     </span>
   );
 };
@@ -391,11 +398,11 @@ export const InvestmentAnalysisPanel: React.FC<{ investmentId: string }> = ({ in
       <div className="grid gap-4 xl:grid-cols-2">
         <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
           <div className="flex items-center justify-between"><div><div className="flex items-center gap-0.5"><h5 className="text-xs font-extrabold text-slate-800 dark:text-white">Impulso bajo el precio</h5><HelpTooltip label="Impulso bajo el precio">Estos indicadores miden la velocidad y fuerza del movimiento, no el precio. Úsalos para confirmar una tendencia junto con las medias y los niveles.</HelpTooltip></div><p className="mt-0.5 text-[9px] text-slate-400">Confirma el movimiento; no lo uses de forma aislada.</p></div><div className="flex items-center gap-0.5"><div className="flex rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"><button onClick={() => setOscillator('rsi')} className={`rounded-md px-2.5 py-1 text-[9px] font-bold ${oscillator === 'rsi' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-400'}`}>RSI</button><button onClick={() => setOscillator('macd')} className={`rounded-md px-2.5 py-1 text-[9px] font-bold ${oscillator === 'macd' ? 'bg-white text-brand-600 shadow-sm dark:bg-slate-700 dark:text-brand-300' : 'text-slate-400'}`}>MACD</button></div><HelpTooltip label="RSI y MACD">RSI identifica zonas de impulso alto o bajo en una escala de 0 a 100. MACD compara dos medias móviles: el cruce de sus líneas y su histograma muestran cambios de impulso.</HelpTooltip></div></div>
-          <div className="mt-4 h-48">
+          <ChartViewport label={oscillator === 'rsi' ? 'Indicador RSI' : 'Indicador MACD'} heightClassName="h-72 sm:h-52" className="mt-3" minContentWidth={560}>
             <ResponsiveContainer width="100%" height="100%">
               {oscillator === 'rsi' ? <ComposedChart data={oscillatorData} margin={{ top: 8, right: 4, left: -22, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e2e8f0" opacity={0.55} /><XAxis dataKey="date" hide /><YAxis domain={[0, 100]} ticks={[30, 50, 70]} tick={{ fontSize: 9, fill: '#94a3b8' }} /><ReferenceLine y={70} stroke="#f43f5e" strokeDasharray="4 4" /><ReferenceLine y={30} stroke="#10b981" strokeDasharray="4 4" /><Line type="monotone" dataKey="rsi14" stroke="#6366f1" dot={false} strokeWidth={2} /><Tooltip labelFormatter={(label) => formatDate(String(label))} formatter={(value: number) => [value.toFixed(1), 'RSI 14']} contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 10 }} /></ComposedChart> : <ComposedChart data={oscillatorData} margin={{ top: 8, right: 4, left: -22, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e2e8f0" opacity={0.55} /><XAxis dataKey="date" hide /><YAxis tick={{ fontSize: 9, fill: '#94a3b8' }} /><ReferenceLine y={0} stroke="#94a3b8" /><Bar dataKey="macdHistogram" maxBarSize={5}>{oscillatorData.map((point) => <Cell key={point.date} fill={(point.macdHistogram || 0) >= 0 ? '#10b981' : '#f43f5e'} opacity={0.55} />)}</Bar><Line type="monotone" dataKey="macd" stroke="#6366f1" dot={false} strokeWidth={1.8} /><Line type="monotone" dataKey="macdSignal" stroke="#f59e0b" dot={false} strokeWidth={1.5} /><Tooltip labelFormatter={(label) => formatDate(String(label))} contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 10 }} /></ComposedChart>}
             </ResponsiveContainer>
-          </div>
+          </ChartViewport>
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
@@ -405,18 +412,18 @@ export const InvestmentAnalysisPanel: React.FC<{ investmentId: string }> = ({ in
             <div className="relative mt-4 h-2 rounded-full bg-gradient-to-r from-emerald-300 via-amber-300 to-rose-300"><span className="absolute top-1/2 h-5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-slate-800 shadow dark:border-slate-800 dark:bg-white" style={{ left: `${Math.max(1, Math.min(99, positionInRange))}%` }} /></div>
             <p className="mt-3 text-center text-[10px] text-slate-500 dark:text-slate-400">Precio actual <strong className="text-slate-800 dark:text-white">{formatPrice(metrics.latestClose, currency)}</strong></p>
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-3"><div className="rounded-xl border border-emerald-100 bg-emerald-50/55 p-3 dark:border-emerald-900/30 dark:bg-emerald-950/15"><p className="text-[8px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Soporte 20 sesiones</p><p className="mt-1 text-sm font-black text-slate-800 dark:text-white">{formatPrice(metrics.support20, currency)}</p><p className="mt-1 text-[9px] text-slate-400">Zona inferior reciente, no un suelo garantizado.</p></div><div className="rounded-xl border border-rose-100 bg-rose-50/55 p-3 dark:border-rose-900/30 dark:bg-rose-950/15"><p className="text-[8px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Resistencia 20 sesiones</p><p className="mt-1 text-sm font-black text-slate-800 dark:text-white">{formatPrice(metrics.resistance20, currency)}</p><p className="mt-1 text-[9px] text-slate-400">Zona superior reciente a vigilar.</p></div></div>
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2"><div className="rounded-xl border border-emerald-100 bg-emerald-50/55 p-3 dark:border-emerald-900/30 dark:bg-emerald-950/15"><p className="text-[8px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Soporte 20 sesiones</p><p className="mt-1 text-sm font-black text-slate-800 dark:text-white">{formatPrice(metrics.support20, currency)}</p><p className="mt-1 text-[9px] text-slate-400">Zona inferior reciente, no un suelo garantizado.</p></div><div className="rounded-xl border border-rose-100 bg-rose-50/55 p-3 dark:border-rose-900/30 dark:bg-rose-950/15"><p className="text-[8px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Resistencia 20 sesiones</p><p className="mt-1 text-sm font-black text-slate-800 dark:text-white">{formatPrice(metrics.resistance20, currency)}</p><p className="mt-1 text-[9px] text-slate-400">Zona superior reciente a vigilar.</p></div></div>
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
           <div className="flex items-center gap-0.5"><h5 className="text-xs font-extrabold text-slate-800 dark:text-white">Rentabilidad por horizonte</h5><HelpTooltip label="Rentabilidad por horizonte">Muestra el cambio porcentual del precio en cada plazo. Se calcula desde el cierre ajustado del activo, por lo que no refleja tu rentabilidad personal ni comisiones o impuestos.</HelpTooltip></div><p className="mt-0.5 text-[9px] text-slate-400">Cambio del cierre ajustado entre sesiones; no incluye tu precio de compra.</p>
-          <div className="mt-4 grid grid-cols-5 gap-2">{performanceItems.map(([label, value]) => <div key={label} className="rounded-xl bg-slate-50 px-2 py-3 text-center dark:bg-slate-950/30"><p className={`text-sm font-black ${value === null ? 'text-slate-400' : value >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}`}>{formatPercent(value)}</p><p className="mt-1 text-[8px] font-bold uppercase text-slate-400">{label}</p></div>)}</div>
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">{performanceItems.map(([label, value]) => <div key={label} className="rounded-xl bg-slate-50 px-2 py-3 text-center dark:bg-slate-950/30"><p className={`text-sm font-black ${value === null ? 'text-slate-400' : value >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}`}>{formatPercent(value)}</p><p className="mt-1 text-[8px] font-bold uppercase text-slate-400">{label}</p></div>)}</div>
           <div className="mt-4 flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2 text-[9px] dark:border-slate-800"><span className="flex items-center text-slate-400">Volumen última sesión vs. media 20<HelpTooltip label="Volumen">Compara las acciones negociadas en la última sesión con su media de 20 días. Un valor de 1× es habitual; por encima de 1× hubo más actividad de lo normal.</HelpTooltip></span><strong className="text-slate-700 dark:text-slate-200">{metrics.volumeRatio === null ? '—' : `${metrics.volumeRatio.toFixed(2)}×`} <span className="font-normal text-slate-400">({formatCompact(metrics.averageVolume20)}/día)</span></strong></div>
         </div>
 
         <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
           <div className="flex items-center gap-0.5"><h5 className="text-xs font-extrabold text-slate-800 dark:text-white">Comparativa mensual</h5><HelpTooltip label="Comparativa mensual">Cada barra refleja la variación porcentual del cierre durante un mes. Las barras verdes son meses de subida y las rojas, de bajada.</HelpTooltip></div><p className="mt-0.5 text-[9px] text-slate-400">Permite distinguir una tendencia sostenida de un único movimiento puntual.</p>
-          <div className="mt-3 h-44"><ResponsiveContainer width="100%" height="100%"><BarChart data={analysis.monthlyReturns.filter((item) => item.return !== null)} margin={{ top: 10, right: 2, left: -24, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e2e8f0" opacity={0.5} /><XAxis dataKey="label" interval={1} tick={{ fontSize: 8, fill: '#94a3b8' }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 8, fill: '#94a3b8' }} axisLine={false} tickLine={false} /><ReferenceLine y={0} stroke="#94a3b8" /><Bar dataKey="return" radius={[3, 3, 0, 0]} maxBarSize={24}>{analysis.monthlyReturns.filter((item) => item.return !== null).map((item) => <Cell key={item.month} fill={(item.return || 0) >= 0 ? '#10b981' : '#f43f5e'} opacity={0.78} />)}</Bar><Tooltip formatter={(value: number) => [formatPercent(value, 2), 'Mes']} contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 10 }} /></BarChart></ResponsiveContainer></div>
+          <ChartViewport label="Rentabilidad mensual" heightClassName="h-72 sm:h-52" className="mt-2"><ResponsiveContainer width="100%" height="100%"><BarChart data={analysis.monthlyReturns.filter((item) => item.return !== null)} margin={{ top: 10, right: 2, left: -24, bottom: 0 }}><CartesianGrid strokeDasharray="3 5" vertical={false} stroke="#e2e8f0" opacity={0.5} /><XAxis dataKey="label" interval={1} tick={{ fontSize: 8, fill: '#94a3b8' }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 8, fill: '#94a3b8' }} axisLine={false} tickLine={false} /><ReferenceLine y={0} stroke="#94a3b8" /><Bar dataKey="return" radius={[3, 3, 0, 0]} maxBarSize={24}>{analysis.monthlyReturns.filter((item) => item.return !== null).map((item) => <Cell key={item.month} fill={(item.return || 0) >= 0 ? '#10b981' : '#f43f5e'} opacity={0.78} />)}</Bar><Tooltip formatter={(value: number) => [formatPercent(value, 2), 'Mes']} contentStyle={{ borderRadius: 12, borderColor: '#e2e8f0', fontSize: 10 }} /></BarChart></ResponsiveContainer></ChartViewport>
         </div>
       </div>
 

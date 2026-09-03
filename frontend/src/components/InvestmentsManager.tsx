@@ -457,7 +457,7 @@ export const InvestmentsManager: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 pb-28 lg:pb-6 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
       {/* Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -752,8 +752,8 @@ export const InvestmentsManager: React.FC = () => {
       )}
 
       {selectedInvestment && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 dark:bg-slate-950/70 backdrop-blur-sm p-4 md:p-8">
-          <div className="mx-auto my-4 w-full max-w-6xl rounded-2xl border border-slate-100 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900 md:p-7">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/45 p-0 backdrop-blur-sm dark:bg-slate-950/70 sm:p-4 md:p-8">
+          <div className="mx-auto my-0 min-h-full w-full max-w-6xl border border-slate-100 bg-white p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:my-4 sm:min-h-0 sm:rounded-2xl sm:p-5 md:p-7">
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4 dark:border-slate-800">
               <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400">Detalle de inversión</p>
@@ -923,8 +923,8 @@ export const InvestmentsManager: React.FC = () => {
 
       {/* NEW INVESTMENT DRAWER/MODAL MODAL */}
       {showAddForm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150">
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-slate-950/40 p-0 backdrop-blur-sm dark:bg-slate-950/60 sm:items-center sm:p-4">
+          <div className="max-h-[100dvh] w-full max-w-md space-y-4 overflow-y-auto rounded-t-3xl border border-slate-100 bg-white p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl animate-in fade-in zoom-in duration-150 dark:border-slate-800 dark:bg-slate-900 sm:rounded-2xl sm:p-6">
             <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800/40 pb-3">
               <h3 className="font-extrabold text-slate-800 dark:text-white text-base">
                 {editingInv ? 'Editar Inversión' : 'Registrar Nueva Inversión'}
@@ -1106,8 +1106,8 @@ export const InvestmentsManager: React.FC = () => {
 
       {/* WITHDRAW/SELL MODAL */}
       {withdrawingInv && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in duration-150">
+        <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-slate-950/40 p-0 backdrop-blur-sm dark:bg-slate-950/60 sm:items-center sm:p-4">
+          <div className="max-h-[100dvh] w-full max-w-md space-y-4 overflow-y-auto rounded-t-3xl border border-slate-100 bg-white p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-2xl animate-in fade-in zoom-in duration-150 dark:border-slate-800 dark:bg-slate-900 sm:rounded-2xl sm:p-6">
             <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-800/40 pb-3">
               <div>
                 <h3 className="font-extrabold text-slate-800 dark:text-white text-base">Registrar Retirada / Venta</h3>

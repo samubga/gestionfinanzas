@@ -541,7 +541,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
     const netTotal = totalIncomes - totalExpenses;
 
     return (
-      <div className="p-6 space-y-6 pb-28 lg:pb-6 max-w-6xl mx-auto flex flex-col min-h-screen">
+      <div className="mx-auto flex min-h-screen max-w-6xl flex-col space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
         {/* Title */}
         <div className="flex items-center justify-between">
           <div>
@@ -954,7 +954,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
   }
 
   return (
-    <div className="p-6 space-y-6 pb-28 lg:pb-6 max-w-7xl mx-auto flex flex-col min-h-[calc(100vh-60px)] lg:min-h-screen">
+    <div className="mx-auto flex min-h-[calc(100vh-60px)] max-w-7xl flex-col space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:min-h-screen lg:pb-6">
       
       {/* Title & Add Button */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1693,9 +1693,9 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
       {/* CUSTOM BULK EDIT MODAL */}
       {isBulkModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-sm transition-all duration-300 animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm transition-all duration-300 animate-fade-in dark:bg-slate-950/60 sm:p-4">
           <div 
-            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-scale-in max-h-[85vh] overflow-y-auto"
+            className="max-h-[calc(100dvh-1.5rem)] w-full max-w-lg space-y-5 overflow-y-auto rounded-2xl border border-slate-100 bg-white p-4 shadow-2xl animate-scale-in dark:border-slate-800 dark:bg-slate-900 sm:max-h-[85vh] sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
@@ -1950,9 +1950,9 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
       {/* CUSTOM CONFIRMATION MODAL */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-sm transition-all duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm transition-all duration-300 dark:bg-slate-950/60 sm:p-4">
           <div 
-            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-5 animate-scale-in"
+            className="w-full max-w-sm space-y-5 rounded-2xl border border-slate-100 bg-white p-4 shadow-2xl animate-scale-in dark:border-slate-800 dark:bg-slate-900 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Icon */}
@@ -2003,9 +2003,9 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
       {/* IMPORT ACCOUNT SELECTION MODAL */}
       {showImportAccountModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/40 dark:bg-slate-950/60 backdrop-blur-sm transition-all duration-300 animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-3 backdrop-blur-sm transition-all duration-300 animate-fade-in dark:bg-slate-950/60 sm:p-4">
           <div 
-            className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-scale-in"
+            className="w-full max-w-md space-y-5 rounded-2xl border border-slate-100 bg-white p-4 shadow-2xl animate-scale-in dark:border-slate-800 dark:bg-slate-900 sm:p-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">

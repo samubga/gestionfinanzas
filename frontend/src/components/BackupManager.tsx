@@ -78,7 +78,7 @@ export const BackupManager: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 pb-28 lg:pb-6 max-w-2xl mx-auto">
+    <div className="mx-auto max-w-2xl space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
       
       {/* Title */}
       <div>
@@ -105,7 +105,7 @@ export const BackupManager: React.FC = () => {
       <div className="space-y-6">
         {settingsTab === 'account' && <AccountSecurity />}
         {/* Database JSON Backup Card */}
-        {settingsTab === 'data' && <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+        {settingsTab === 'data' && <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
             <Database className="text-brand-500" size={18} />
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Copias de Seguridad (JSON)</h3>
@@ -152,7 +152,7 @@ export const BackupManager: React.FC = () => {
         </div>}
 
         {/* Color Theme Selector Card */}
-        {settingsTab === 'appearance' && <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-brand-800 rounded-2xl p-6 shadow-sm space-y-6">
+        {settingsTab === 'appearance' && <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-brand-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-brand-800">
             <Palette className="text-brand-500" size={18} />
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Apariencia y Colores</h3>

@@ -87,7 +87,7 @@ export const CategoryTagManager: React.FC = () => {
   };
 
   return (
-    <div className="p-6 space-y-6 pb-28 lg:pb-6 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
       
       {/* Title */}
       <div>
@@ -98,7 +98,7 @@ export const CategoryTagManager: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
         
         {/* CATEGORIES SECTION */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-50 dark:border-slate-800">
             <Settings2 className="text-brand-500" size={18} />
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Gestión de Categorías</h3>
@@ -233,7 +233,7 @@ export const CategoryTagManager: React.FC = () => {
         </div>
 
         {/* TAGS SECTION */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-6">
+        <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-6">
           <div className="flex items-center gap-2 pb-4 border-b border-slate-50 dark:border-slate-800">
             <TagIcon className="text-brand-500" size={18} />
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Gestión de Etiquetas</h3>

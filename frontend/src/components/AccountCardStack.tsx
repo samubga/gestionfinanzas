@@ -55,7 +55,7 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
     : accounts.reduce((sum, a) => sum + getAccountCurrentBalance(a), 0);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
+    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
       {/* Background ambient glow */}
       <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
 

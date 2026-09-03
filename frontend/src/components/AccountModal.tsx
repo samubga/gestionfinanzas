@@ -168,11 +168,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden text-slate-100 my-8">
+    <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="my-0 max-h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-2xl overflow-hidden rounded-t-3xl border border-slate-800 bg-slate-900 pb-[env(safe-area-inset-bottom)] text-slate-100 shadow-2xl sm:my-8 sm:max-h-none sm:rounded-2xl sm:pb-0">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/50">
+        <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/50 px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold text-xl">
               {icon}
@@ -190,7 +190,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="max-h-[calc(100dvh-5rem-env(safe-area-inset-bottom))] space-y-6 overflow-y-auto p-4 sm:max-h-[80vh] sm:p-6">
           
           {/* 1. Selector de Banco */}
           <div>

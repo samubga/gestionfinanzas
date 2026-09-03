@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import AccountCardStack from './AccountCardStack';
 import SmartInsightsCard from './SmartInsightsCard';
+import ChartViewport from './ChartViewport';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import {
@@ -113,7 +114,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
   if (statsLoading || !stats) {
     return (
-      <div className="space-y-6 animate-pulse p-6 max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl animate-pulse space-y-5 p-3 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[1, 2, 3, 4].map(n => (
             <div key={n} className="h-32 bg-slate-100 dark:bg-slate-800/60 rounded-3xl" />
@@ -205,13 +206,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-8 pb-28 lg:pb-8 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-8 sm:p-6 md:p-8 lg:pb-8">
 
       {/* ROW 1: HERO BENTO GRID (CAPITAL DISPONIBLE, CUENTAS, TOP GASTOS) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         
         {/* HERO CARD: Capital Total Disponible */}
-        <div className="lg:col-span-2 bg-gradient-to-br from-brand-600 via-brand-700 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl shadow-brand-500/15 relative overflow-hidden flex flex-col justify-between group">
+        <div className="lg:col-span-2 bg-gradient-to-br from-brand-600 via-brand-700 to-slate-900 text-white rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl shadow-brand-500/15 relative overflow-hidden flex flex-col justify-between group">
           <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
 
           <div className="relative z-10 flex items-center justify-between mb-6">
@@ -302,7 +303,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         </div>
 
         {/* GASTOS DEL MES POR CATEGORÍA */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-4 sm:p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -356,7 +357,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Ahorro del Mes Card */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Ahorro del Mes</span>
             <h3 className="text-3xl font-black font-mono text-slate-800 dark:text-white">
@@ -372,7 +373,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         </div>
 
         {/* Objetivo de Ahorro del Mes Card */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Target size={18} className="text-brand-500" />
@@ -429,7 +430,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         {/* Evolución Histórica Chart (Left 2 cols) */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-100 dark:border-slate-800 shadow-sm">
           <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <div>
               <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución Histórica</h4>
@@ -473,7 +474,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
             </div>
           </div>
 
-          <div className="h-80">
+          <ChartViewport label="Evolución histórica de ingresos y gastos" heightClassName="h-[22rem] sm:h-80" minContentWidth={560}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={filteredEvolution} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                 <defs>
@@ -509,7 +510,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                 <Area type="monotone" dataKey="expense" stroke="#EF4444" fillOpacity={1} fill="url(#colorExpense)" strokeWidth={2.5} name="Gastos" />
               </AreaChart>
             </ResponsiveContainer>
-          </div>
+          </ChartViewport>
         </div>
 
         {/* Smart Insights Card (Right 1 col, next to Evolución Histórica) */}
@@ -521,7 +522,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
         {/* Últimos Movimientos Feed (Span 3 cols) */}
-        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
+        <div className="lg:col-span-3 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
               <div className="p-2.5 bg-brand-50 dark:bg-brand-950/40 text-brand-500 rounded-2xl border border-brand-100 dark:border-brand-800/40">
@@ -594,7 +595,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         </div>
 
         {/* Resumen de Inversiones (Right 1 col, next to Últimos Movimientos) */}
-        <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
           <div className="space-y-5">
             <div className="flex items-center gap-2.5">
               <div className="p-2.5 bg-violet-50 dark:bg-violet-950/35 text-violet-600 dark:text-violet-400 rounded-2xl border border-violet-100 dark:border-violet-800/40">

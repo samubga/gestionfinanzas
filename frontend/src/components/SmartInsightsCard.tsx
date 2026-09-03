@@ -444,7 +444,7 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
     <div
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className={`lg:col-span-1 bg-slate-900 text-white border border-slate-800 ${currentInsight.borderTopClass} border-t-4 rounded-3xl p-6 shadow-xl flex flex-col justify-between relative overflow-hidden transition-all duration-300`}
+      className={`lg:col-span-1 bg-slate-900 text-white border border-slate-800 ${currentInsight.borderTopClass} border-t-4 rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col justify-between relative overflow-hidden transition-all duration-300`}
     >
       {/* Background ambient glow effect */}
       <div className={`absolute -top-12 -right-12 w-44 h-44 rounded-full blur-3xl ${currentInsight.ambientGlowClass} pointer-events-none transition-colors duration-500`} />
