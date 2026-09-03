@@ -20,13 +20,11 @@ export const CategoryTagManager: React.FC = () => {
   const [editingCatId, setEditingCatId] = useState<string | null>(null);
   const [editCatName, setEditCatName] = useState('');
   const [editCatColor, setEditCatColor] = useState('');
-  const [catError, setCatError] = useState('');
 
   const filteredCats = categories.filter(c => c.type === catTab);
 
   // Tag State
   const [newTagName, setNewTagName] = useState('');
-  const [tagError, setTagError] = useState('');
 
   // Predefined beautiful color presets
   const COLOR_PRESETS = [
@@ -38,69 +36,53 @@ export const CategoryTagManager: React.FC = () => {
   // CATEGORY ACTIONS
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCatError('');
     if (!newCatName.trim()) return;
 
     try {
       await addCategory({ name: newCatName.trim(), color: newCatColor, type: catTab });
       setNewCatName('');
-    } catch (err: any) {
-      setCatError(err.response?.data?.error || 'Error al crear la categoría');
-    }
+    } catch { /* El aviso global lo gestiona FinanceContext. */ }
   };
 
   const handleStartEdit = (cat: any) => {
     setEditingCatId(cat.id);
     setEditCatName(cat.name);
     setEditCatColor(cat.color);
-    setCatError('');
   };
 
   const handleUpdateCategory = async () => {
-    setCatError('');
     if (!editCatName.trim() || !editingCatId) return;
 
     try {
       await updateCategory(editingCatId, { name: editCatName.trim(), color: editCatColor });
       setEditingCatId(null);
-    } catch (err: any) {
-      setCatError(err.response?.data?.error || 'Error al actualizar la categoría');
-    }
+    } catch { /* El aviso global lo gestiona FinanceContext. */ }
   };
 
   const handleDeleteCategory = async (id: string) => {
-    setCatError('');
     if (window.confirm('¿Estás seguro de eliminar esta categoría?')) {
       try {
         await deleteCategory(id);
-      } catch (err: any) {
-        setCatError(err.response?.data?.error || 'No se pudo eliminar la categoría');
-      }
+      } catch { /* El aviso global lo gestiona FinanceContext. */ }
     }
   };
 
   // TAG ACTIONS
   const handleCreateTag = async (e: React.FormEvent) => {
     e.preventDefault();
-    setTagError('');
     if (!newTagName.trim()) return;
 
     try {
       await addTag({ name: newTagName.trim() });
       setNewTagName('');
-    } catch (err: any) {
-      setTagError(err.response?.data?.error || 'Error al crear la etiqueta');
-    }
+    } catch { /* El aviso global lo gestiona FinanceContext. */ }
   };
 
   const handleDeleteTag = async (id: string) => {
-    setTagError('');
     if (window.confirm('¿Estás seguro de eliminar esta etiqueta? Se desvinculará de todos los gastos.')) {
       try {
         await deleteTag(id);
-      } catch (err: any) {
-        setTagError('Error al eliminar la etiqueta');
-      }
+      } catch { /* El aviso global lo gestiona FinanceContext. */ }
     }
   };
 
@@ -146,12 +128,6 @@ export const CategoryTagManager: React.FC = () => {
               Ingresos
             </button>
           </div>
-
-          {catError && (
-            <div className="p-3.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold border-l-4 border-rose-500">
-              {catError}
-            </div>
-          )}
 
           {/* Create Form */}
           <form onSubmit={handleCreateCategory} className="space-y-4">
@@ -262,12 +238,6 @@ export const CategoryTagManager: React.FC = () => {
             <TagIcon className="text-brand-500" size={18} />
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Gestión de Etiquetas</h3>
           </div>
-
-          {tagError && (
-            <div className="p-3.5 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold border-l-4 border-rose-500">
-              {tagError}
-            </div>
-          )}
 
           {/* Create Form */}
           <form onSubmit={handleCreateTag} className="flex gap-3">

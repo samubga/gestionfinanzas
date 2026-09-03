@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { AlertCircle, Camera, CheckCircle, Eye, EyeOff, KeyRound, Loader2, Mail, Trash2 } from 'lucide-react';
+import { Camera, Eye, EyeOff, KeyRound, Loader2, Mail, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 
 const inputClass = 'w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-500 text-sm text-slate-800 dark:text-white';
 
@@ -10,6 +11,7 @@ const PasswordField: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = ({ 
 };
 
 export const AccountSecurity: React.FC = () => {
+  const notification = useNotification();
   const { user, changeEmail, changePassword } = useAuth();
   const { updateProfile } = useAuth();
   const [name, setName] = useState(user?.name || '');
@@ -20,8 +22,6 @@ export const AccountSecurity: React.FC = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
-  const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState<'profile' | 'email' | 'password' | null>(null);
 
   const resizeAvatar = (file: File): Promise<string> => new Promise((resolve, reject) => {
@@ -47,57 +47,53 @@ export const AccountSecurity: React.FC = () => {
   const selectAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    setError('');
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      setError('Elige una imagen JPG, PNG o WebP.');
+      notification.error('Elige una imagen JPG, PNG o WebP.');
       return;
     }
     try { setAvatarData(await resizeAvatar(file)); }
-    catch (err: any) { setError(err.message || 'No se pudo procesar la imagen.'); }
+    catch (err: any) { notification.error(err.message || 'No se pudo procesar la imagen.'); }
     finally { event.target.value = ''; }
   };
 
   const saveProfile = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError(''); setMessage(''); setLoading('profile');
+    setLoading('profile');
     try {
       await updateProfile(name, avatarData);
-      setMessage('Perfil actualizado.');
+      notification.success('Perfil actualizado correctamente.');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'No se pudo actualizar el perfil.');
+      notification.error(err.response?.data?.error || 'No se pudo actualizar el perfil.');
     } finally { setLoading(null); }
   };
 
   const updateEmail = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError(''); setMessage(''); setLoading('email');
+    setLoading('email');
     try {
       await changeEmail(emailPassword, email);
       setEmailPassword('');
-      setMessage('Correo de la cuenta actualizado. Ya podrás recibir el enlace de recuperación ahí.');
+      notification.success('Correo de la cuenta actualizado. Ya podrás recibir el enlace de recuperación ahí.');
     } catch (err: any) {
-      setError(err.response?.data?.error || 'No se pudo cambiar el correo.');
+      notification.error(err.response?.data?.error || 'No se pudo cambiar el correo.');
     } finally { setLoading(null); }
   };
 
   const updatePassword = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError(''); setMessage('');
-    if (password !== confirmation) return setError('Las nuevas contraseñas no coinciden.');
+    if (password !== confirmation) return notification.error('Las nuevas contraseñas no coinciden.');
     setLoading('password');
     try {
       const response = await changePassword(currentPassword, password);
-      setCurrentPassword(''); setPassword(''); setConfirmation(''); setMessage(response);
+      setCurrentPassword(''); setPassword(''); setConfirmation(''); notification.success(response);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'No se pudo cambiar la contraseña.');
+      notification.error(err.response?.data?.error || 'No se pudo cambiar la contraseña.');
     } finally { setLoading(null); }
   };
 
   return <section className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-6 shadow-sm space-y-5">
     <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-slate-800"><KeyRound className="text-brand-500" size={18} /><h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Seguridad de la cuenta</h3></div>
     <p className="text-xs text-slate-500 dark:text-slate-400">Usa un correo real para poder recuperar el acceso. Los cambios requieren tu contraseña actual.</p>
-    {error && <div className="p-3 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 text-red-700 dark:text-red-400 text-xs font-semibold rounded-xl flex gap-2"><AlertCircle size={16} className="shrink-0" />{error}</div>}
-    {message && <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl flex gap-2"><CheckCircle size={16} className="shrink-0" />{message}</div>}
     <form onSubmit={saveProfile} className="space-y-3 rounded-xl bg-slate-50/70 dark:bg-slate-950/30 p-4">
       <span className="font-bold text-xs text-slate-800 dark:text-white">Perfil</span>
       <div className="flex items-center gap-4">

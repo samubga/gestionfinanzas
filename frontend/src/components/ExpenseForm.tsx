@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useFinance } from '../context/FinanceContext';
+import { useNotification } from '../context/NotificationContext';
 import { X, Plus, Calendar, CreditCard, AlignLeft, Tag as TagIcon, Sparkles } from 'lucide-react';
 
 interface ExpenseFormProps {
@@ -15,6 +16,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   editTransaction,
   type: initialType = 'expense'
 }) => {
+  const notification = useNotification();
   const {
     categories,
     tags: availableTags,
@@ -198,21 +200,21 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      alert('Por favor introduce un importe válido mayor que cero.');
+      notification.error('Por favor introduce un importe válido mayor que cero.');
       return;
     }
     if (!description.trim()) {
-      alert('Por favor introduce una descripción.');
+      notification.error('Por favor introduce una descripción.');
       return;
     }
 
     if (txType === 'transfer') {
       if (!fromAccountId || !toAccountId) {
-        alert('Por favor selecciona la cuenta de origen y de destino.');
+        notification.error('Por favor selecciona la cuenta de origen y de destino.');
         return;
       }
       if (fromAccountId === toAccountId) {
-        alert('La cuenta de origen y de destino deben ser diferentes.');
+        notification.error('La cuenta de origen y de destino deben ser diferentes.');
         return;
       }
 
@@ -232,15 +234,15 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           await addTransfer(payload);
         }
         onClose();
-      } catch (err: any) {
-        alert(err.response?.data?.error || 'Error al guardar el movimiento');
+      } catch {
+        // FinanceContext muestra el error en el aviso global.
       }
       return;
     }
 
     const selectedAcc = accounts.find(a => a.id === bank);
     if (!selectedAcc) {
-      alert('Por favor selecciona una cuenta válida para la transacción.');
+      notification.error('Por favor selecciona una cuenta válida para la transacción.');
       return;
     }
     const payload: any = {
@@ -271,8 +273,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
         }
       }
       onClose();
-    } catch (err: any) {
-      alert(err.response?.data?.error || 'Error al guardar la transacción');
+    } catch {
+      // FinanceContext muestra el error en el aviso global.
     }
   };
 

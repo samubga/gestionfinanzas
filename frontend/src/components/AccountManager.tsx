@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { Account, AccountType } from '../types';
 import { AccountModal } from './AccountModal';
-import { Plus, Edit2, Trash2, Wallet, AlertCircle, Building2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Wallet, Building2 } from 'lucide-react';
 
 const ACCOUNT_TYPE_CONFIG: Record<AccountType, { label: string; bg: string; text: string }> = {
   CHECKING: { label: 'Cuenta Corriente', bg: 'bg-blue-500/10 border-blue-500/30', text: 'text-blue-400' },
@@ -20,7 +20,6 @@ export const AccountManager: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState('');
 
   const handleOpenAddModal = () => {
     setEditingAccount(null);
@@ -35,11 +34,10 @@ export const AccountManager: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('¿Estás seguro de que deseas eliminar esta cuenta?')) return;
     try {
-      setErrorMessage('');
       setDeletingId(id);
       await deleteAccount(id);
-    } catch (err: any) {
-      setErrorMessage(err.response?.data?.error || 'Error al eliminar la cuenta');
+    } catch {
+      // FinanceContext muestra el error en el aviso global.
     } finally {
       setDeletingId(null);
     }
@@ -103,13 +101,6 @@ export const AccountManager: React.FC = () => {
         </div>
 
       </div>
-
-      {errorMessage && (
-        <div className="bg-rose-500/10 border border-rose-500/30 text-rose-400 p-4 rounded-2xl text-sm flex items-center gap-3 animate-fade-in">
-          <AlertCircle size={20} className="flex-shrink-0" />
-          <span>{errorMessage}</span>
-        </div>
-      )}
 
       {/* Grid de Tarjetas de Cuentas */}
       {accountsLoading ? (

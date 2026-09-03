@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useFinance } from '../context/FinanceContext';
-import { Search, Filter, Trash2, Edit3, Edit, Copy, Plus, ArrowUpRight, ArrowDownRight, ChevronUp, ChevronDown, ChevronsUpDown, Upload, AlertCircle, CheckCircle, Loader2, Check, X, AlertTriangle, CircleHelp } from 'lucide-react';
+import { Search, Filter, Trash2, Edit3, Edit, Copy, Plus, ArrowUpRight, ArrowDownRight, ChevronUp, ChevronDown, ChevronsUpDown, Upload, Loader2, Check, X, AlertTriangle, CircleHelp } from 'lucide-react';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 // Returns '#000000' or '#ffffff' depending on which gives better contrast with bgHex
 function getContrastColor(bgHex: string): string {
@@ -23,6 +24,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
   onOpenAddExpense,
   onOpenEditExpense
 }) => {
+  const notification = useNotification();
   const {
     expenses,
     incomes,
@@ -74,8 +76,6 @@ export const Transactions: React.FC<TransactionsProps> = ({
   const [selectedImportAccountId, setSelectedImportAccountId] = useState('');
   const [previewTab, setPreviewTab] = useState<'all' | 'expense' | 'income' | 'transfer'>('all');
   const [importLoading, setImportLoading] = useState(false);
-  const [dataSuccess, setDataSuccess] = useState('');
-  const [dataError, setDataError] = useState('');
   const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
   const [bulkFields, setBulkFields] = useState<{
     updateDate: boolean;
@@ -172,25 +172,8 @@ export const Transactions: React.FC<TransactionsProps> = ({
         }
         setSelectedIds([]);
       }
-    } catch (err: any) {
-      alert('Error al realizar la acción.');
-    }
+    } catch { /* FinanceContext muestra el error en el aviso global. */ }
   };
-
-  // Auto-dismiss alerts after 4 seconds
-  useEffect(() => {
-    if (dataSuccess) {
-      const timer = setTimeout(() => setDataSuccess(''), 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [dataSuccess]);
-
-  useEffect(() => {
-    if (dataError) {
-      const timer = setTimeout(() => setDataError(''), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [dataError]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -331,7 +314,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
   const handleCSVImportClick = () => {
     if (accounts.length === 0) {
-      setDataError('No hay cuentas disponibles. Crea una cuenta primero.');
+      notification.error('No hay cuentas disponibles. Crea una cuenta primero.');
       return;
     }
     setSelectedImportAccountId(accounts[0].id);
@@ -352,7 +335,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
     if (!file) return;
 
     if (!file.name.toLowerCase().endsWith('.csv')) {
-      setDataError('Por seguridad, la importación acepta únicamente archivos CSV. Exporta el Excel como CSV e inténtalo de nuevo.');
+      notification.error('Por seguridad, la importación acepta únicamente archivos CSV. Exporta el Excel como CSV e inténtalo de nuevo.');
       e.target.value = '';
       return;
     }
@@ -360,8 +343,6 @@ export const Transactions: React.FC<TransactionsProps> = ({
     const reader = new FileReader();
     reader.onload = async (event) => {
       setImportLoading(true);
-      setDataSuccess('');
-      setDataError('');
       
       try {
         const csvText = event.target?.result as string;
@@ -382,7 +363,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
         
         setPreviewItems(mappedData);
       } catch (err: any) {
-        setDataError(err.message || err.response?.data?.error || 'Error al procesar el archivo.');
+        notification.error(err.message || err.response?.data?.error || 'Error al procesar el archivo.');
       } finally {
         setImportLoading(false);
       }
@@ -423,17 +404,15 @@ export const Transactions: React.FC<TransactionsProps> = ({
     const transactionsToImport = previewItems.filter(item => !item.alreadyExists);
     if (transactionsToImport.length === 0) return;
     setImportLoading(true);
-    setDataSuccess('');
-    setDataError('');
 
     try {
       const res = await api.post('/backup/import-transactions', { transactions: transactionsToImport });
-      setDataSuccess(`Importación completada con éxito. Se han creado ${res.data.expensesCount} gastos, ${res.data.incomesCount} ingresos y ${res.data.transfersCount || 0} traspasos.`);
+      notification.success(`Importación completada con éxito. Se han creado ${res.data.expensesCount} gastos, ${res.data.incomesCount} ingresos y ${res.data.transfersCount || 0} traspasos.`);
       setPreviewItems([]);
       setSelectedIds([]);
       refreshAll();
     } catch (err: any) {
-      setDataError(err.response?.data?.error || 'Error al guardar los movimientos.');
+      notification.error(err.response?.data?.error || 'Error al guardar los movimientos.');
     } finally {
       setImportLoading(false);
     }
@@ -443,8 +422,6 @@ export const Transactions: React.FC<TransactionsProps> = ({
     e.preventDefault();
     try {
       setImportLoading(true);
-      setDataSuccess('');
-      setDataError('');
 
       const payload: any = { ids: selectedIds };
       if (bulkFields.updateDate) payload.date = bulkFields.date;
@@ -459,12 +436,12 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
       const url = activeTab === 'expenses' ? '/expenses/bulk-update' : '/incomes/bulk-update';
       const res = await api.post(url, payload);
-      setDataSuccess(res.data.message || `Actualizados ${selectedIds.length} movimientos correctamente.`);
+      notification.success(res.data.message || `Actualizados ${selectedIds.length} movimientos correctamente.`);
       setSelectedIds([]);
       setIsBulkModalOpen(false);
       refreshAll();
     } catch (err: any) {
-      setDataError(err.response?.data?.error || 'Error al actualizar movimientos en bloque');
+      notification.error(err.response?.data?.error || 'Error al actualizar movimientos en bloque');
     } finally {
       setImportLoading(false);
     }
@@ -576,8 +553,6 @@ export const Transactions: React.FC<TransactionsProps> = ({
           <button
             onClick={() => {
               setPreviewItems([]);
-              setDataSuccess('');
-              setDataError('');
             }}
             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 transition-colors cursor-pointer"
             title="Volver"
@@ -957,8 +932,6 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 type="button"
                 onClick={async () => {
                   setPreviewItems([]);
-                  setDataSuccess('');
-                  setDataError('');
                 }}
                 className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-all cursor-pointer h-10"
               >
@@ -1692,7 +1665,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                             <button
                               onClick={() => {
                                 if (confirm('¿Estás seguro de que deseas eliminar este movimiento?')) {
-                                  deleteTransfer(t.id);
+                                  void deleteTransfer(t.id).catch(() => undefined);
                                 }
                               }}
                               className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-500 rounded-lg transition-colors cursor-pointer"
@@ -2101,40 +2074,6 @@ export const Transactions: React.FC<TransactionsProps> = ({
         className="hidden"
       />
 
-      {/* FLOATING TOAST NOTIFICATIONS */}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 max-w-md w-full px-4 sm:px-0 sm:w-96 pointer-events-none">
-        {dataError && (
-          <div className="p-4 bg-white dark:bg-slate-900 border-l-4 border-red-500 dark:border-red-500/80 text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xl flex items-start gap-2.5 border border-slate-150 dark:border-slate-800 animate-slide-in-right pointer-events-auto">
-            <AlertCircle size={16} className="text-red-500 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-extrabold text-[10px] text-red-500 uppercase tracking-wider mb-0.5">Error</p>
-              <p className="text-slate-650 dark:text-slate-400">{dataError}</p>
-            </div>
-            <button
-              onClick={() => setDataError('')}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
-
-        {dataSuccess && (
-          <div className="p-4 bg-white dark:bg-slate-900 border-l-4 border-emerald-500 dark:border-emerald-500/80 text-slate-800 dark:text-slate-200 text-xs font-semibold rounded-xl shadow-2xl flex items-start gap-2.5 border border-slate-150 dark:border-slate-800 animate-slide-in-right pointer-events-auto">
-            <CheckCircle size={16} className="text-emerald-500 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-extrabold text-[10px] text-emerald-500 uppercase tracking-wider mb-0.5">Éxito</p>
-              <p className="text-slate-650 dark:text-slate-400">{dataSuccess}</p>
-            </div>
-            <button
-              onClick={() => setDataSuccess('')}
-              className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
-            >
-              <X size={14} />
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   );
 };

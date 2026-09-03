@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
 import { useTheme } from '../context/ThemeContext';
 import { LayoutDashboard, Receipt, BarChart3, Settings2, Database, LogOut, Sun, Moon, TrendingUp, LineChart, Wallet, MoreHorizontal, Palette, X } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
 
 interface NavbarProps {
   activeTab: string;
@@ -20,9 +21,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAddExpense
 }) => {
   const { user, logout } = useAuth();
+  const notification = useNotification();
   const { year, month, setPeriod } = useFinance();
   const { colorTheme, setColorTheme } = useTheme();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    notification.success('Sesión cerrada correctamente.');
+  };
 
   const themes = [
     { id: 'indigo', name: 'Día / Noche Clásico', hex: '#4f46e5' },
@@ -162,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="py-2 px-3 border border-red-100 hover:bg-red-50 dark:border-red-950/10 dark:hover:bg-red-950/20 text-red-500 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
               title="Cerrar Sesión"
             >
@@ -291,7 +298,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
               <button
                 type="button"
-                onClick={logout}
+                onClick={handleLogout}
                 className="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-100 text-xs font-bold text-red-600 hover:bg-red-50 dark:border-red-950/40 dark:text-red-400 dark:hover:bg-red-950/20"
               >
                 <LogOut size={16} /> Cerrar sesión

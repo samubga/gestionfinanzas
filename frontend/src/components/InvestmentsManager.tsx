@@ -4,6 +4,7 @@ import { Investment, InvestmentTransaction, InvestmentTransactionType } from '..
 import api from '../services/api';
 import { TrendingUp, TrendingDown, Landmark, Wallet, Plus, Trash2, Pencil, Coins, ArrowRightLeft, CircleHelp, RefreshCw, CircleAlert } from 'lucide-react';
 import { InvestmentAnalysisPanel } from './InvestmentAnalysisPanel';
+import { useNotification } from '../context/NotificationContext';
 
 interface MarketQuote {
   symbol: string;
@@ -89,6 +90,7 @@ const transactionTypeLabels: Record<InvestmentTransactionType, string> = {
 
 export const InvestmentsManager: React.FC = () => {
   const { investments, investmentsLoading, addInvestment, updateInvestment, deleteInvestment, accounts } = useFinance();
+  const notification = useNotification();
   const [activeSubTab, setActiveSubTab] = useState<'active' | 'withdrawn'>('active');
 
   // Form states
@@ -236,8 +238,8 @@ export const InvestmentsManager: React.FC = () => {
     event.preventDefault();
     if (!selectedInvestment || transactionAmount === '') return;
 
-    setTransactionError('');
     try {
+      const wasEditing = Boolean(editingTransaction);
       const payload = {
         type: transactionType,
         date: new Date(transactionDate).toISOString(),
@@ -250,12 +252,13 @@ export const InvestmentsManager: React.FC = () => {
       };
       if (editingTransaction) await api.put(`/investments/${selectedInvestment.id}/transactions/${editingTransaction.id}`, payload);
       else await api.post(`/investments/${selectedInvestment.id}/transactions`, payload);
+      notification.success(wasEditing ? 'Movimiento de inversión actualizado correctamente.' : 'Movimiento de inversión guardado correctamente.');
       setShowTransactionForm(false);
       resetTransactionForm();
       await loadTransactions(selectedInvestment.id);
       await loadInvestmentListSummaries();
     } catch (error: any) {
-      setTransactionError(error.response?.data?.error || 'No se pudo guardar el movimiento.');
+      notification.error(error.response?.data?.error || 'No se pudo guardar el movimiento.');
     }
   };
 
@@ -263,10 +266,11 @@ export const InvestmentsManager: React.FC = () => {
     if (!selectedInvestment || !window.confirm('¿Eliminar este movimiento?')) return;
     try {
       await api.delete(`/investments/${selectedInvestment.id}/transactions/${transaction.id}`);
+      notification.success('Movimiento de inversión eliminado correctamente.');
       await loadTransactions(selectedInvestment.id);
       await loadInvestmentListSummaries();
     } catch (error: any) {
-      setTransactionError(error.response?.data?.error || 'No se pudo eliminar el movimiento.');
+      notification.error(error.response?.data?.error || 'No se pudo eliminar el movimiento.');
     }
   };
 
@@ -286,11 +290,10 @@ export const InvestmentsManager: React.FC = () => {
   const importTransactionPdf = async (file: File) => {
     if (!selectedInvestment) return;
     if (file.type !== 'application/pdf') {
-      setTransactionError('Selecciona un archivo PDF.');
+      notification.error('Selecciona un archivo PDF.');
       return;
     }
     setPdfImporting(true);
-    setTransactionError('');
     try {
       const documentData = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -310,8 +313,9 @@ export const InvestmentsManager: React.FC = () => {
       setTransactionTax(draft.tax.toString());
       setTransactionNotes(draft.notes);
       setShowTransactionForm(true);
+      notification.success('PDF procesado correctamente. Revisa los datos antes de guardar.');
     } catch (error: any) {
-      setTransactionError(error.response?.data?.error || 'No se pudo importar el PDF.');
+      notification.error(error.response?.data?.error || 'No se pudo importar el PDF.');
     } finally {
       setPdfImporting(false);
       if (pdfInputRef.current) pdfInputRef.current.value = '';
@@ -341,48 +345,59 @@ export const InvestmentsManager: React.FC = () => {
       notes,
     };
 
-    if (editingInv) {
-      if (editingInv.status === 'withdrawn') {
-        payload.status = 'withdrawn';
-        payload.withdrawnAmount = parseFloat(withdrawnAmount) || 0;
-        payload.sellFee = parseFloat(sellFee) || 0;
-        payload.endDate = new Date(endDate).toISOString();
+    try {
+      if (editingInv) {
+        if (editingInv.status === 'withdrawn') {
+          payload.status = 'withdrawn';
+          payload.withdrawnAmount = parseFloat(withdrawnAmount) || 0;
+          payload.sellFee = parseFloat(sellFee) || 0;
+          payload.endDate = new Date(endDate).toISOString();
+        }
+        await updateInvestment(editingInv.id, payload);
+      } else {
+        await addInvestment(payload);
       }
-      await updateInvestment(editingInv.id, payload);
-    } else {
-      await addInvestment(payload);
-    }
 
-    // Reset form
-    setName('');
-    setTicker('');
-    setIsin('');
-    setExchange('');
-    setCurrency('EUR');
-    setNotes('');
-    setEditingInv(null);
-    setShowAddForm(false);
+      setName('');
+      setTicker('');
+      setIsin('');
+      setExchange('');
+      setCurrency('EUR');
+      setNotes('');
+      setEditingInv(null);
+      setShowAddForm(false);
+    } catch {
+      // FinanceContext muestra el error en el aviso global.
+    }
   };
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!withdrawingInv || !withdrawnAmount || !endDate) return;
 
-    await updateInvestment(withdrawingInv.id, {
-      status: 'withdrawn',
-      withdrawnAmount: parseFloat(withdrawnAmount),
-      sellFee: parseFloat(sellFee) || 0,
-      endDate: new Date(endDate).toISOString(),
-    });
+    try {
+      await updateInvestment(withdrawingInv.id, {
+        status: 'withdrawn',
+        withdrawnAmount: parseFloat(withdrawnAmount),
+        sellFee: parseFloat(sellFee) || 0,
+        endDate: new Date(endDate).toISOString(),
+      });
 
-    setWithdrawingInv(null);
-    setWithdrawnAmount('');
-    setSellFee('0');
+      setWithdrawingInv(null);
+      setWithdrawnAmount('');
+      setSellFee('0');
+    } catch {
+      // FinanceContext muestra el error en el aviso global.
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta inversión?')) {
-      await deleteInvestment(id);
+      try {
+        await deleteInvestment(id);
+      } catch {
+        // FinanceContext muestra el error en el aviso global.
+      }
     }
   };
 

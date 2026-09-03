@@ -15,6 +15,7 @@ import InvestmentsManager from './components/InvestmentsManager';
 import AccountManager from './components/AccountManager';
 import ResetPassword from './components/ResetPassword';
 import { Plus } from 'lucide-react';
+import { NotificationProvider } from './context/NotificationContext';
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
@@ -127,13 +128,15 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <FinanceProvider>
-          <AppContent />
-        </FinanceProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <NotificationProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <FinanceProvider>
+            <AppContent />
+          </FinanceProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </NotificationProvider>
   );
 };
 

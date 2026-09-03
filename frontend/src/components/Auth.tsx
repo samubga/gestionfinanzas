@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Lock, Mail, User as UserIcon, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
 
 export const Auth: React.FC = () => {
   const { login, register, requestPasswordReset } = useAuth();
+  const notification = useNotification();
   const [isLogin, setIsLogin] = useState(true);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
@@ -12,27 +14,25 @@ export const Auth: React.FC = () => {
   const [inviteCode, setInviteCode] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showInviteCode, setShowInviteCode] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
     setLoading(true);
 
     try {
       if (isForgotPassword) {
         const message = await requestPasswordReset(email);
-        setSuccess(message);
+        notification.success(message);
       } else if (isLogin) {
         await login(email, password);
+        notification.success('Sesión iniciada correctamente.');
       } else {
         await register(email, password, name, inviteCode);
+        notification.success('Cuenta creada correctamente.');
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Ocurrió un error. Revisa tus credenciales.');
+      notification.error(err.response?.data?.error || 'Ocurrió un error. Revisa tus credenciales.');
     } finally {
       setLoading(false);
     }
@@ -54,19 +54,6 @@ export const Auth: React.FC = () => {
             {isForgotPassword ? 'Te enviaremos un enlace para crear una nueva contraseña' : isLogin ? 'Ingresa para gestionar tus finanzas personales' : 'Comienza a ahorrar y registrar tus gastos hoy'}
           </p>
         </div>
-
-        {/* Error Alert */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-950/30 border-l-4 border-red-500 text-red-300 text-sm rounded-xl">
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div className="mb-6 p-4 bg-emerald-950/30 border-l-4 border-emerald-500 text-emerald-300 text-sm rounded-xl">
-            {success}
-          </div>
-        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -172,8 +159,6 @@ export const Auth: React.FC = () => {
                 } else {
                   setIsLogin(!isLogin);
                 }
-                setError('');
-                setSuccess('');
               }}
               className="ml-1.5 font-bold text-indigo-400 hover:text-indigo-300 focus:outline-none transition-colors"
             >
@@ -182,7 +167,7 @@ export const Auth: React.FC = () => {
           </p>
           {isLogin && !isForgotPassword && (
             <button
-              onClick={() => { setIsForgotPassword(true); setError(''); setSuccess(''); }}
+              onClick={() => setIsForgotPassword(true)}
               className="mt-3 text-xs font-bold text-indigo-400 hover:text-indigo-300 focus:outline-none transition-colors"
             >
               ¿Has olvidado tu contraseña?

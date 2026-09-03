@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
 import { Expense, Income, Category, Tag, DashboardData, Investment, BankAccount, Account, Bank, Transfer, YearlyStatsData, HistoricalStatsData } from '../types';
 import { useAuth } from './AuthContext';
+import { useNotification } from './NotificationContext';
 
 interface FinanceContextType {
   expenses: Expense[];
@@ -94,6 +95,7 @@ const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
+  const notification = useNotification();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -113,6 +115,17 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [banks, setBanks] = useState<Bank[]>([]);
   const [accountsLoading, setAccountsLoading] = useState(false);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
+
+  const runAction = async <T,>(action: () => Promise<T>, successMessage: string, fallbackError: string): Promise<T> => {
+    try {
+      const result = await action();
+      notification.success(successMessage);
+      return result;
+    } catch (error: any) {
+      notification.error(error.response?.data?.error || fallbackError);
+      throw error;
+    }
+  };
 
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -317,25 +330,31 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const addBankAccount = async (data: { name: string; startingBalance: number }) => {
-    await api.post('/bank-accounts', data);
-    await fetchBankAccounts();
-    fetchStats();
+    await runAction(async () => {
+      await api.post('/bank-accounts', data);
+      await fetchBankAccounts();
+      fetchStats();
+    }, 'Cuenta bancaria creada correctamente.', 'No se pudo crear la cuenta bancaria.');
   };
 
   const updateBankAccount = async (id: string, data: { name: string; startingBalance: number }) => {
-    await api.put(`/bank-accounts/${id}`, data);
-    await fetchBankAccounts();
-    fetchStats();
-    fetchExpenses();
-    fetchIncomes();
+    await runAction(async () => {
+      await api.put(`/bank-accounts/${id}`, data);
+      await fetchBankAccounts();
+      fetchStats();
+      fetchExpenses();
+      fetchIncomes();
+    }, 'Cuenta bancaria actualizada correctamente.', 'No se pudo actualizar la cuenta bancaria.');
   };
 
   const deleteBankAccount = async (id: string) => {
-    await api.delete(`/bank-accounts/${id}`);
-    await fetchBankAccounts();
-    fetchStats();
-    fetchExpenses();
-    fetchIncomes();
+    await runAction(async () => {
+      await api.delete(`/bank-accounts/${id}`);
+      await fetchBankAccounts();
+      fetchStats();
+      fetchExpenses();
+      fetchIncomes();
+    }, 'Cuenta bancaria eliminada correctamente.', 'No se pudo eliminar la cuenta bancaria.');
   };
 
   const fetchAccounts = async () => {
@@ -362,31 +381,39 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const addAccount = async (data: Partial<Account>) => {
-    await api.post('/accounts', data);
-    await fetchAccounts();
-    fetchStats();
+    await runAction(async () => {
+      await api.post('/accounts', data);
+      await fetchAccounts();
+      fetchStats();
+    }, 'Cuenta creada correctamente.', 'No se pudo crear la cuenta.');
   };
 
   const updateAccount = async (id: string, data: Partial<Account>) => {
-    await api.put(`/accounts/${id}`, data);
-    await fetchAccounts();
-    fetchStats();
-    fetchExpenses();
-    fetchIncomes();
+    await runAction(async () => {
+      await api.put(`/accounts/${id}`, data);
+      await fetchAccounts();
+      fetchStats();
+      fetchExpenses();
+      fetchIncomes();
+    }, 'Cuenta actualizada correctamente.', 'No se pudo actualizar la cuenta.');
   };
 
   const deleteAccount = async (id: string) => {
-    await api.delete(`/accounts/${id}`);
-    await fetchAccounts();
-    fetchStats();
-    fetchExpenses();
-    fetchIncomes();
+    await runAction(async () => {
+      await api.delete(`/accounts/${id}`);
+      await fetchAccounts();
+      fetchStats();
+      fetchExpenses();
+      fetchIncomes();
+    }, 'Cuenta eliminada correctamente.', 'No se pudo eliminar la cuenta.');
   };
 
   const addCustomBank = async (data: { name: string; color?: string; logoUrl?: string }) => {
-    const res = await api.post('/banks', data);
-    await fetchBanks();
-    return res.data;
+    return runAction(async () => {
+      const res = await api.post('/banks', data);
+      await fetchBanks();
+      return res.data;
+    }, 'Banco personalizado creado correctamente.', 'No se pudo crear el banco personalizado.');
   };
 
   // Carga inicial y por cambio de periodo. Las transacciones se cargan
@@ -447,122 +474,164 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // GASTOS
   const addExpense = async (data: any) => {
-    await api.post('/expenses', data);
-    refreshAll();
+    await runAction(async () => {
+      await api.post('/expenses', data);
+      refreshAll();
+    }, 'Gasto guardado correctamente.', 'No se pudo guardar el gasto.');
   };
 
   const updateExpense = async (id: string, data: any) => {
-    await api.put(`/expenses/${id}`, data);
-    refreshAll();
+    await runAction(async () => {
+      await api.put(`/expenses/${id}`, data);
+      refreshAll();
+    }, 'Gasto actualizado correctamente.', 'No se pudo actualizar el gasto.');
   };
 
   const deleteExpense = async (id: string) => {
-    await api.delete(`/expenses/${id}`);
-    refreshAll();
+    await runAction(async () => {
+      await api.delete(`/expenses/${id}`);
+      refreshAll();
+    }, 'Gasto eliminado correctamente.', 'No se pudo eliminar el gasto.');
   };
 
   const duplicateExpense = async (id: string) => {
-    await api.post(`/expenses/${id}/duplicate`);
-    refreshAll();
+    await runAction(async () => {
+      await api.post(`/expenses/${id}/duplicate`);
+      refreshAll();
+    }, 'Movimiento duplicado correctamente.', 'No se pudo duplicar el movimiento.');
   };
 
   // INGRESOS
   const addIncome = async (data: any) => {
-    await api.post('/incomes', data);
-    refreshAll();
+    await runAction(async () => {
+      await api.post('/incomes', data);
+      refreshAll();
+    }, 'Ingreso guardado correctamente.', 'No se pudo guardar el ingreso.');
   };
 
   const updateIncome = async (id: string, data: any) => {
-    await api.put(`/incomes/${id}`, data);
-    refreshAll();
+    await runAction(async () => {
+      await api.put(`/incomes/${id}`, data);
+      refreshAll();
+    }, 'Ingreso actualizado correctamente.', 'No se pudo actualizar el ingreso.');
   };
 
   const deleteIncome = async (id: string) => {
-    await api.delete(`/incomes/${id}`);
-    refreshAll();
+    await runAction(async () => {
+      await api.delete(`/incomes/${id}`);
+      refreshAll();
+    }, 'Ingreso eliminado correctamente.', 'No se pudo eliminar el ingreso.');
   };
 
   const deleteExpensesBulk = async (ids: string[]) => {
-    await api.post('/expenses/bulk-delete', { ids });
-    refreshAll();
+    await runAction(async () => {
+      await api.post('/expenses/bulk-delete', { ids });
+      refreshAll();
+    }, `${ids.length} gastos eliminados correctamente.`, 'No se pudieron eliminar los gastos.');
   };
 
   const deleteIncomesBulk = async (ids: string[]) => {
-    await api.post('/incomes/bulk-delete', { ids });
-    refreshAll();
+    await runAction(async () => {
+      await api.post('/incomes/bulk-delete', { ids });
+      refreshAll();
+    }, `${ids.length} ingresos eliminados correctamente.`, 'No se pudieron eliminar los ingresos.');
   };
 
   // TRANSFERENCIAS
   const addTransfer = async (data: any) => {
-    await api.post('/transfers', data);
-    refreshAll();
+    await runAction(async () => {
+      await api.post('/transfers', data);
+      refreshAll();
+    }, 'Traspaso guardado correctamente.', 'No se pudo guardar el traspaso.');
   };
 
   const updateTransfer = async (id: string, data: any) => {
-    await api.put(`/transfers/${id}`, data);
-    refreshAll();
+    await runAction(async () => {
+      await api.put(`/transfers/${id}`, data);
+      refreshAll();
+    }, 'Traspaso actualizado correctamente.', 'No se pudo actualizar el traspaso.');
   };
 
   const deleteTransfer = async (id: string) => {
-    await api.delete(`/transfers/${id}`);
-    refreshAll();
+    await runAction(async () => {
+      await api.delete(`/transfers/${id}`);
+      refreshAll();
+    }, 'Traspaso eliminado correctamente.', 'No se pudo eliminar el traspaso.');
   };
 
   // CATEGORÍAS
   const addCategory = async (data: { name: string; color: string; type: 'expense' | 'income' }) => {
-    const res = await api.post('/categories', data);
-    await fetchCategories();
-    return res.data;
+    return runAction(async () => {
+      const res = await api.post('/categories', data);
+      await fetchCategories();
+      return res.data;
+    }, 'Categoría creada correctamente.', 'No se pudo crear la categoría.');
   };
 
   const updateCategory = async (id: string, data: { name: string; color: string }) => {
-    await api.put(`/categories/${id}`, data);
-    await fetchCategories();
-    fetchExpenses();
-    fetchStats();
+    await runAction(async () => {
+      await api.put(`/categories/${id}`, data);
+      await fetchCategories();
+      fetchExpenses();
+      fetchStats();
+    }, 'Categoría actualizada correctamente.', 'No se pudo actualizar la categoría.');
   };
 
   const deleteCategory = async (id: string) => {
-    await api.delete(`/categories/${id}`);
-    await fetchCategories();
-    fetchExpenses();
-    fetchStats();
+    await runAction(async () => {
+      await api.delete(`/categories/${id}`);
+      await fetchCategories();
+      fetchExpenses();
+      fetchStats();
+    }, 'Categoría eliminada correctamente.', 'No se pudo eliminar la categoría.');
   };
 
   // ETIQUETAS
   const addTag = async (data: { name: string }) => {
-    const res = await api.post('/tags', data);
-    await fetchTags();
-    return res.data;
+    return runAction(async () => {
+      const res = await api.post('/tags', data);
+      await fetchTags();
+      return res.data;
+    }, 'Etiqueta creada correctamente.', 'No se pudo crear la etiqueta.');
   };
 
   const deleteTag = async (id: string) => {
-    await api.delete(`/tags/${id}`);
-    await fetchTags();
-    fetchExpenses();
-    fetchStats();
+    await runAction(async () => {
+      await api.delete(`/tags/${id}`);
+      await fetchTags();
+      fetchExpenses();
+      fetchStats();
+    }, 'Etiqueta eliminada correctamente.', 'No se pudo eliminar la etiqueta.');
   };
 
   // OBJETIVO DE AHORRO
   const saveSavingGoal = async (amount: number) => {
-    await api.post('/stats/saving-goal', { year, month, amount });
-    fetchStats();
+    await runAction(async () => {
+      await api.post('/stats/saving-goal', { year, month, amount });
+      fetchStats();
+    }, 'Objetivo de ahorro guardado correctamente.', 'No se pudo guardar el objetivo de ahorro.');
   };
 
   // OPERACIONES DE INVERSIONES
   const addInvestment = async (data: any) => {
-    await api.post('/investments', data);
-    refreshAll();
+    await runAction(async () => {
+      await api.post('/investments', data);
+      refreshAll();
+    }, 'Inversión creada correctamente.', 'No se pudo crear la inversión.');
   };
 
   const updateInvestment = async (id: string, data: any) => {
-    await api.put(`/investments/${id}`, data);
-    refreshAll();
+    await runAction(async () => {
+      await api.put(`/investments/${id}`, data);
+      refreshAll();
+    }, 'Inversión actualizada correctamente.', 'No se pudo actualizar la inversión.');
   };
 
   const deleteInvestment = async (id: string) => {
-    await api.delete(`/investments/${id}`);
-    refreshAll();
+    await runAction(async () => {
+      await api.delete(`/investments/${id}`);
+      refreshAll();
+    }, 'Inversión eliminada correctamente.', 'No se pudo eliminar la inversión.');
   };
 
   return (

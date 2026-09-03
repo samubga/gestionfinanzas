@@ -2,11 +2,13 @@ import React, { useState, useRef } from 'react';
 import api from '../services/api';
 import { useFinance } from '../context/FinanceContext';
 import { useTheme } from '../context/ThemeContext';
-import { Download, Upload, AlertCircle, CheckCircle, Loader2, Database, Palette, Sun, Moon } from 'lucide-react';
+import { Download, Upload, Loader2, Database, Palette, Sun, Moon } from 'lucide-react';
 import AccountSecurity from './AccountSecurity';
+import { useNotification } from '../context/NotificationContext';
 
 export const BackupManager: React.FC = () => {
   const { refreshAll } = useFinance();
+  const notification = useNotification();
   const [loading, setLoading] = useState(false);
   const [settingsTab, setSettingsTab] = useState<'account' | 'data' | 'appearance'>('account');
   const { colorTheme, setColorTheme, dark, toggleTheme } = useTheme();
@@ -22,16 +24,10 @@ export const BackupManager: React.FC = () => {
     { id: 'obsidian', name: 'Modo Obsidiana', description: 'Negro puro OLED y acentos grises/plata minimalistas', hex: '#121212' },
   ] as const;
 
-  // Alert messages
-  const [dataSuccess, setDataSuccess] = useState('');
-  const [dataError, setDataError] = useState('');
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = async () => {
     setLoading(true);
-    setDataSuccess('');
-    setDataError('');
 
     try {
       const res = await api.get('/backup/export');
@@ -42,9 +38,9 @@ export const BackupManager: React.FC = () => {
       document.body.appendChild(downloadAnchor);
       downloadAnchor.click();
       downloadAnchor.remove();
-      setDataSuccess('Copia de seguridad exportada correctamente.');
-    } catch (err: any) {
-      setDataError('Error al exportar los datos.');
+      notification.success('Copia de seguridad exportada correctamente.');
+    } catch {
+      notification.error('Error al exportar los datos.');
     } finally {
       setLoading(false);
     }
@@ -59,8 +55,6 @@ export const BackupManager: React.FC = () => {
     if (!file) return;
 
     setLoading(true);
-    setDataSuccess('');
-    setDataError('');
 
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -71,10 +65,10 @@ export const BackupManager: React.FC = () => {
         }
 
         const res = await api.post('/backup/import', { backup: jsonContent });
-        setDataSuccess(res.data.message || 'Copia de seguridad importada correctamente.');
+        notification.success(res.data.message || 'Copia de seguridad importada correctamente.');
         refreshAll();
       } catch (err: any) {
-        setDataError(err.message || err.response?.data?.error || 'Error al procesar el archivo.');
+        notification.error(err.message || err.response?.data?.error || 'Error al procesar el archivo.');
       } finally {
         setLoading(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -155,20 +149,6 @@ export const BackupManager: React.FC = () => {
             />
           </div>
 
-          {/* JSON Alerts */}
-          {dataError && (
-            <div className="p-4 bg-red-50 dark:bg-red-950/20 border-l-4 border-red-500 text-red-700 dark:text-red-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
-              <AlertCircle size={16} className="shrink-0 mt-0.5" />
-              <span>{dataError}</span>
-            </div>
-          )}
-
-          {dataSuccess && (
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border-l-4 border-emerald-500 text-emerald-700 dark:text-emerald-400 text-xs font-semibold rounded-xl flex items-start gap-2.5">
-              <CheckCircle size={16} className="shrink-0 mt-0.5" />
-              <span>{dataSuccess}</span>
-            </div>
-          )}
         </div>}
 
         {/* Color Theme Selector Card */}

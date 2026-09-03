@@ -3,6 +3,7 @@ import { useFinance } from '../context/FinanceContext';
 import AccountCardStack from './AccountCardStack';
 import SmartInsightsCard from './SmartInsightsCard';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 import {
   AreaChart,
   Area,
@@ -43,6 +44,7 @@ interface PortfolioMarketSummary {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
+  const notification = useNotification();
   const { stats, statsLoading, saveSavingGoal, expenses, categories, accounts, investments, setFilterCategoryId, setSortField, setSortDirection } = useFinance();
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
@@ -172,8 +174,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const handleSaveGoal = async () => {
     const val = parseFloat(goalInput);
     if (!isNaN(val) && val >= 0) {
-      await saveSavingGoal(val);
-      setEditingGoal(false);
+      try {
+        await saveSavingGoal(val);
+        setEditingGoal(false);
+      } catch {
+        // FinanceContext muestra el error en el aviso global.
+      }
+    } else {
+      notification.error('Introduce un objetivo de ahorro válido.');
     }
   };
 

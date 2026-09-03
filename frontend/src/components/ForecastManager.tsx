@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 import { ExpenseForecast, ForecastComparison } from '../types';
 import { 
   TrendingUp, 
@@ -23,6 +24,7 @@ import {
 
 export const ForecastManager: React.FC = () => {
   const { year, month, categories, tags, addTag } = useFinance();
+  const notification = useNotification();
   
   // Tabs
   const [activeSubTab, setActiveSubTab] = useState<'plan' | 'compare'>('plan');
@@ -43,7 +45,6 @@ export const ForecastManager: React.FC = () => {
   const [tagId, setTagId] = useState('');
   const [tagSearch, setTagSearch] = useState('');
   const [date, setDate] = useState('');
-  const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   // Edit Form State
@@ -54,7 +55,6 @@ export const ForecastManager: React.FC = () => {
   const [editCategoryId, setEditCategoryId] = useState('');
   const [editTagId, setEditTagId] = useState('');
   const [editDate, setEditDate] = useState('');
-  const [editError, setEditError] = useState('');
 
   // UI state
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -114,21 +114,20 @@ export const ForecastManager: React.FC = () => {
   // Handle create forecast submission
   const handleCreateForecast = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError('');
     if (!description.trim()) {
-      setFormError('La descripción es requerida');
+      notification.error('La descripción es requerida.');
       return;
     }
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      setFormError('Ingresa un importe válido mayor que 0');
+      notification.error('Ingresa un importe válido mayor que 0.');
       return;
     }
     if (linkType === 'category' && !categoryId) {
-      setFormError('Selecciona una categoría para vincular');
+      notification.error('Selecciona una categoría para vincular.');
       return;
     }
     if (linkType === 'tag' && !tagId) {
-      setFormError('Selecciona o crea una etiqueta para vincular');
+      notification.error('Selecciona o crea una etiqueta para vincular.');
       return;
     }
 
@@ -143,6 +142,7 @@ export const ForecastManager: React.FC = () => {
         month,
         year
       });
+      notification.success('Previsión creada correctamente.');
       
       setDescription('');
       setAmount('');
@@ -153,7 +153,7 @@ export const ForecastManager: React.FC = () => {
       setDate('');
       fetchForecasts();
     } catch (err: any) {
-      setFormError(err.response?.data?.error || 'Error al guardar la previsión');
+      notification.error(err.response?.data?.error || 'Error al guardar la previsión.');
     } finally {
       setSubmitting(false);
     }
@@ -178,26 +178,24 @@ export const ForecastManager: React.FC = () => {
       setEditTagId('');
     }
     setEditDate(item.date ? item.date.split('T')[0] : '');
-    setEditError('');
   };
 
   // Save edits
   const handleUpdateForecast = async (id: string) => {
-    setEditError('');
     if (!editDescription.trim()) {
-      setEditError('La descripción es requerida');
+      notification.error('La descripción es requerida.');
       return;
     }
     if (!editAmount || isNaN(parseFloat(editAmount)) || parseFloat(editAmount) <= 0) {
-      setEditError('Importe inválido');
+      notification.error('Introduce un importe válido.');
       return;
     }
     if (editLinkType === 'category' && !editCategoryId) {
-      setEditError('Selecciona una categoría');
+      notification.error('Selecciona una categoría.');
       return;
     }
     if (editLinkType === 'tag' && !editTagId) {
-      setEditError('Selecciona una etiqueta');
+      notification.error('Selecciona una etiqueta.');
       return;
     }
 
@@ -211,10 +209,11 @@ export const ForecastManager: React.FC = () => {
         month,
         year
       });
+      notification.success('Previsión actualizada correctamente.');
       setEditingId(null);
       fetchForecasts();
     } catch (err: any) {
-      setEditError(err.response?.data?.error || 'Error al actualizar');
+      notification.error(err.response?.data?.error || 'Error al actualizar la previsión.');
     }
   };
 
@@ -222,13 +221,14 @@ export const ForecastManager: React.FC = () => {
   const handleDeleteForecast = async (id: string) => {
     try {
       await api.delete(`/forecasts/${id}`);
+      notification.success('Previsión eliminada correctamente.');
       setDeletingId(null);
       fetchForecasts();
       if (activeSubTab === 'compare') {
         fetchComparison();
       }
     } catch (err: any) {
-      console.error('Error deleting forecast:', err);
+      notification.error(err.response?.data?.error || 'No se pudo eliminar la previsión.');
     }
   };
 
@@ -292,12 +292,6 @@ export const ForecastManager: React.FC = () => {
               <Plus className="text-brand-500" size={18} />
               <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Nueva Estimación</h3>
             </div>
-
-            {formError && (
-              <div className="p-3 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold border-l-4 border-rose-500">
-                {formError}
-              </div>
-            )}
 
             <form onSubmit={handleCreateForecast} className="space-y-4">
               <div>
@@ -453,13 +447,10 @@ export const ForecastManager: React.FC = () => {
                               type="button"
                               onClick={async () => {
                                 try {
-                                  setFormError('');
                                   const newTag = await addTag({ name: tagSearch.trim() });
                                   setTagId(newTag.id);
                                   setTagSearch('');
-                                } catch (err: any) {
-                                  setFormError('Error al crear la nueva etiqueta.');
-                                }
+                                } catch { /* FinanceContext muestra el error en el aviso global. */ }
                               }}
                               className="w-full text-left px-2.5 py-2 text-xs font-black text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg flex items-center gap-2 cursor-pointer transition-colors"
                             >
@@ -551,9 +542,6 @@ export const ForecastManager: React.FC = () => {
                           <tr key={item.id} className="bg-brand-50/20 dark:bg-brand-950/10">
                             <td className="py-3 px-2" colSpan={5}>
                               <div className="space-y-3 p-2">
-                                {editError && (
-                                  <p className="text-rose-500 text-[10px] font-bold">{editError}</p>
-                                )}
                                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                                   <input
                                     type="text"

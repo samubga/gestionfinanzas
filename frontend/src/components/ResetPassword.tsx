@@ -1,26 +1,27 @@
 import React, { useState } from 'react';
 import { ArrowRight, Eye, EyeOff, Lock, Loader2 } from 'lucide-react';
 import api from '../services/api';
+import { useNotification } from '../context/NotificationContext';
 
 export const ResetPassword: React.FC<{ token: string }> = ({ token }) => {
+  const notification = useNotification();
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [visibleField, setVisibleField] = useState<'password' | 'confirmation' | null>(null);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [completed, setCompleted] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError('');
-    if (password !== confirmation) return setError('Las contraseñas no coinciden.');
+    if (password !== confirmation) return notification.error('Las contraseñas no coinciden.');
     setLoading(true);
     try {
       const res = await api.post('/auth/reset-password', { token, password });
-      setSuccess(res.data.message);
+      setCompleted(true);
+      notification.success(res.data.message || 'Contraseña restablecida correctamente.');
       window.history.replaceState({}, '', window.location.pathname);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'No se pudo restablecer la contraseña.');
+      notification.error(err.response?.data?.error || 'No se pudo restablecer la contraseña.');
     } finally {
       setLoading(false);
     }
@@ -33,8 +34,7 @@ export const ResetPassword: React.FC<{ token: string }> = ({ token }) => {
         <h2 className="text-3xl font-extrabold tracking-tight text-white">Nueva contraseña</h2>
         <p className="text-[#94a3b8] mt-2 text-sm">Elige una contraseña segura para tu cuenta.</p>
       </div>
-      {error && <div className="mb-6 p-4 bg-red-950/30 border-l-4 border-red-500 text-red-300 text-sm rounded-xl">{error}</div>}
-      {success ? <div className="p-4 bg-emerald-950/30 border-l-4 border-emerald-500 text-emerald-300 text-sm rounded-xl">{success}<a href="/" className="block mt-3 font-bold underline">Ir a iniciar sesión</a></div> : <form onSubmit={submit} className="space-y-5">
+      {completed ? <a href="/" className="block w-full rounded-xl bg-indigo-600 px-4 py-3.5 text-center text-sm font-bold text-white transition-colors hover:bg-indigo-500">Ir a iniciar sesión</a> : <form onSubmit={submit} className="space-y-5">
         {['Nueva contraseña', 'Repite la contraseña'].map((label, index) => {
           const field = index === 0 ? 'password' : 'confirmation';
           const isVisible = visibleField === field;

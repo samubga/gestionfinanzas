@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { Account, AccountType, Bank } from '../types';
 import { X, Search, Plus, Check, Loader2, Building2, CircleHelp } from 'lucide-react';
+import { useNotification } from '../context/NotificationContext';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ const PRESET_ICONS = ['💳', '💵', '💰', '📈', '🪙', '📦', '🏖️',
 
 export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, accountToEdit }) => {
   const { banks, addAccount, updateAccount, addCustomBank, stats } = useFinance();
+  const notification = useNotification();
 
   const [name, setName] = useState('');
   const [type, setType] = useState<AccountType>('CHECKING');
@@ -43,19 +45,17 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
   const [customBankColor, setCustomBankColor] = useState('#3B82F6');
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
   // Calculator states
   const [showCalculator, setShowCalculator] = useState(false);
   const [showStartingBalanceHelp, setShowStartingBalanceHelp] = useState(false);
   const [actualMoneyInput, setActualMoneyInput] = useState('');
-  const [calcMessage, setCalcMessage] = useState('');
 
   const handleCalculateStartingBalance = () => {
     if (!accountToEdit) return;
     const actualMoney = Number(actualMoneyInput);
     if (isNaN(actualMoney) || actualMoneyInput.trim() === '') {
-      setCalcMessage('Por favor, introduce un número válido.');
+      notification.error('Por favor, introduce un número válido.');
       return;
     }
 
@@ -75,7 +75,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
     const suggestedStarting = actualMoney - netChange;
 
     setStartingBalance(suggestedStarting.toFixed(2));
-    setCalcMessage(`Movimientos: ${netChange >= 0 ? '+' : ''}${netChange.toFixed(2)} €. Saldo Inicial sugerido establecido: ${suggestedStarting.toFixed(2)} €.`);
+    notification.info(`Movimientos: ${netChange >= 0 ? '+' : ''}${netChange.toFixed(2)} €. Saldo inicial sugerido: ${suggestedStarting.toFixed(2)} €.`);
   };
 
   useEffect(() => {
@@ -94,13 +94,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
       setColor('#6366F1');
       setIcon('💳');
     }
-    setError('');
     setShowCustomBankInput(false);
     setBankSearch('');
     setShowCalculator(false);
     setShowStartingBalanceHelp(false);
     setActualMoneyInput('');
-    setCalcMessage('');
   }, [accountToEdit, isOpen]);
 
   if (!isOpen) return null;
@@ -130,8 +128,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
       if (!name) setName(newBank.name);
       setShowCustomBankInput(false);
       setCustomBankName('');
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al crear banco');
+    } catch {
+      // FinanceContext muestra el error en el aviso global.
     } finally {
       setLoading(false);
     }
@@ -140,13 +138,12 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('Introduce un nombre para la cuenta');
+      notification.error('Introduce un nombre para la cuenta.');
       return;
     }
 
     try {
       setLoading(true);
-      setError('');
       const payload = {
         name: name.trim(),
         type,
@@ -163,8 +160,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
         await addAccount(payload);
       }
       onClose();
-    } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al guardar la cuenta');
+    } catch {
+      // FinanceContext muestra el error en el aviso global.
     } finally {
       setLoading(false);
     }
@@ -195,12 +192,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
           
-          {error && (
-            <div className="bg-rose-500/10 border border-rose-500/30 text-rose-400 px-4 py-3 rounded-xl text-sm">
-              {error}
-            </div>
-          )}
-
           {/* 1. Selector de Banco */}
           <div>
             <label className="block text-sm font-semibold text-slate-300 mb-2">
@@ -374,7 +365,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                   type="button"
                   onClick={() => {
                     setShowCalculator(!showCalculator);
-                    setCalcMessage('');
                     setActualMoneyInput('');
                   }}
                   className="text-xs text-brand-400 hover:text-brand-300 font-semibold flex items-center gap-1 transition cursor-pointer"
@@ -411,7 +401,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                     type="button" 
                     onClick={() => {
                       setShowCalculator(false);
-                      setCalcMessage('');
                     }}
                     className="text-slate-400 hover:text-slate-200"
                   >
@@ -438,11 +427,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
                     Calcular
                   </button>
                 </div>
-                {calcMessage && (
-                  <p className="text-[11px] text-emerald-400 font-semibold mt-1">
-                    {calcMessage}
-                  </p>
-                )}
               </div>
             )}
           </div>
