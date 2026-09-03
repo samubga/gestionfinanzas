@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 export type ColorTheme = 'indigo' | 'sapphire' | 'teal' | 'amber' | 'ocean' | 'violet' | 'rose' | 'obsidian';
 export type LayoutMode = 'classic' | 'bento';
@@ -16,6 +17,8 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, updateDisplayPreferences } = useAuth();
+  const [preferencesUserId, setPreferencesUserId] = useState<string | null>(null);
   const [dark, setDark] = useState(() => {
     const saved = localStorage.getItem('theme');
     if (saved) return saved === 'dark';
@@ -32,6 +35,28 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const saved = localStorage.getItem('layoutMode');
     return (saved as LayoutMode) || 'bento';
   });
+
+  // Apply the saved preferences as soon as the authenticated user is known.
+  useEffect(() => {
+    if (!user) {
+      setPreferencesUserId(null);
+      return;
+    }
+    setDark(user.themeDark);
+    setColorThemeState(user.colorTheme);
+    setLayoutModeState(user.layoutMode);
+    setPreferencesUserId(user.id);
+  }, [user?.id]);
+
+  // Persist a user's choices in their profile (and retain a local fallback before login).
+  useEffect(() => {
+    if (!user || preferencesUserId !== user.id) return;
+    if (dark === user.themeDark && colorTheme === user.colorTheme && layoutMode === user.layoutMode) return;
+
+    void updateDisplayPreferences({ themeDark: dark, colorTheme, layoutMode }).catch((error) => {
+      console.error('No se pudieron guardar las preferencias de visualización:', error);
+    });
+  }, [dark, colorTheme, layoutMode, user, preferencesUserId, updateDisplayPreferences]);
 
   // Handle dark mode class
   useEffect(() => {

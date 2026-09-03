@@ -6,6 +6,9 @@ export interface User {
   startingBalance: number;
   startingBalanceCaixa: number;
   startingBalanceTrade: number;
+  themeDark: boolean;
+  colorTheme: 'indigo' | 'sapphire' | 'teal' | 'amber' | 'ocean' | 'violet' | 'rose' | 'obsidian';
+  layoutMode: 'classic' | 'bento';
 }
 
 export interface Category {

@@ -1,0 +1,4 @@
+ALTER TABLE "User"
+  ADD COLUMN "themeDark" BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN "colorTheme" TEXT NOT NULL DEFAULT 'indigo',
+  ADD COLUMN "layoutMode" TEXT NOT NULL DEFAULT 'bento';

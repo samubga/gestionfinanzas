@@ -11,6 +11,7 @@ interface AuthContextType {
   changePassword: (currentPassword: string, password: string) => Promise<string>;
   changeEmail: (currentPassword: string, email: string) => Promise<void>;
   updateProfile: (name: string, avatarData?: string | null) => Promise<void>;
+  updateDisplayPreferences: (preferences: Pick<User, 'themeDark' | 'colorTheme' | 'layoutMode'>) => Promise<void>;
   logout: () => Promise<void>;
   updateStartingBalance: (balances: { manual?: number; caixa?: number; trade?: number }) => Promise<void>;
 }
@@ -64,6 +65,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(res.data);
   };
 
+  const updateDisplayPreferences = async (preferences: Pick<User, 'themeDark' | 'colorTheme' | 'layoutMode'>) => {
+    const res = await api.put('/auth/display-preferences', preferences);
+    setUser(res.data);
+  };
+
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -82,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, requestPasswordReset, changePassword, changeEmail, updateProfile, logout, updateStartingBalance }}>
+    <AuthContext.Provider value={{ user, loading, login, register, requestPasswordReset, changePassword, changeEmail, updateProfile, updateDisplayPreferences, logout, updateStartingBalance }}>
       {children}
     </AuthContext.Provider>
   );

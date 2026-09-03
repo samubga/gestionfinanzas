@@ -45,6 +45,12 @@ const profileSchema = z.object({
   avatarData: z.string().max(200_000).regex(/^data:image\/(jpeg|png|webp);base64,/, 'Formato de imagen no válido.').nullable().optional(),
 });
 
+const displayPreferencesSchema = z.object({
+  themeDark: z.boolean(),
+  colorTheme: z.enum(['indigo', 'sapphire', 'teal', 'amber', 'ocean', 'violet', 'rose', 'obsidian']),
+  layoutMode: z.enum(['classic', 'bento']),
+});
+
 const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
 const RESET_REQUEST_MESSAGE = 'Si el correo corresponde a una cuenta, recibirás un enlace para restablecer la contraseña.';
 
@@ -156,6 +162,9 @@ export async function register(req: Request, res: Response) {
         email: user.email,
         name: user.name,
         avatarData: user.avatarData,
+        themeDark: user.themeDark,
+        colorTheme: user.colorTheme,
+        layoutMode: user.layoutMode,
       },
     });
   } catch (error: any) {
@@ -190,6 +199,9 @@ export async function login(req: Request, res: Response) {
         email: user.email,
         name: user.name,
         avatarData: user.avatarData,
+        themeDark: user.themeDark,
+        colorTheme: user.colorTheme,
+        layoutMode: user.layoutMode,
       },
     });
   } catch (error: any) {
@@ -304,7 +316,7 @@ export async function changeEmail(req: AuthRequest, res: Response) {
     const updated = await prisma.user.update({
       where: { id: user.id },
       data: { email: parsed.data.email },
-      select: { id: true, email: true, name: true, avatarData: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true },
+      select: { id: true, email: true, name: true, avatarData: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true, themeDark: true, colorTheme: true, layoutMode: true },
     });
     return res.json(updated);
   } catch (error) {
@@ -321,7 +333,7 @@ export async function updateProfile(req: AuthRequest, res: Response) {
     const updated = await prisma.user.update({
       where: { id: req.userId! },
       data: { name: parsed.data.name, ...(parsed.data.avatarData !== undefined ? { avatarData: parsed.data.avatarData } : {}) },
-      select: { id: true, email: true, name: true, avatarData: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true },
+      select: { id: true, email: true, name: true, avatarData: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true, themeDark: true, colorTheme: true, layoutMode: true },
     });
     return res.json(updated);
   } catch (error) {
@@ -336,7 +348,7 @@ export async function getMe(req: any, res: Response) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, name: true, avatarData: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true },
+      select: { id: true, email: true, name: true, avatarData: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true, themeDark: true, colorTheme: true, layoutMode: true },
     });
 
     if (!user) {
@@ -347,6 +359,23 @@ export async function getMe(req: any, res: Response) {
   } catch (error: any) {
     console.error('Error en getMe:', error);
     res.status(500).json({ error: error.message || 'Error al obtener los datos del usuario' });
+  }
+}
+
+export async function updateDisplayPreferences(req: AuthRequest, res: Response) {
+  const parsed = displayPreferencesSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Las preferencias de visualización no son válidas.' });
+
+  try {
+    const updated = await prisma.user.update({
+      where: { id: req.userId! },
+      data: parsed.data,
+      select: { id: true, email: true, name: true, avatarData: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true, themeDark: true, colorTheme: true, layoutMode: true },
+    });
+    return res.json(updated);
+  } catch (error) {
+    console.error('No se pudieron actualizar las preferencias de visualización:', error instanceof Error ? error.message : error);
+    return res.status(500).json({ error: 'No se pudieron actualizar las preferencias de visualización.' });
   }
 }
 
@@ -378,7 +407,7 @@ export async function updateStartingBalance(req: any, res: Response) {
     const updated = await prisma.user.update({
       where: { id: userId },
       data: updateData,
-      select: { id: true, email: true, name: true, avatarData: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true },
+      select: { id: true, email: true, name: true, avatarData: true, startingBalance: true, startingBalanceCaixa: true, startingBalanceTrade: true, themeDark: true, colorTheme: true, layoutMode: true },
     });
 
     // Also update dynamic bank account records for backwards compatibility
