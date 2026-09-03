@@ -3,6 +3,7 @@ import api from '../services/api';
 import { Expense, Income, Category, Tag, DashboardData, Investment, BankAccount, Account, Bank, Transfer, YearlyStatsData, HistoricalStatsData } from '../types';
 import { useAuth } from './AuthContext';
 import { useNotification } from './NotificationContext';
+import { useAppNavigation } from './AppNavigationContext';
 
 interface FinanceContextType {
   expenses: Expense[];
@@ -96,6 +97,7 @@ const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const notification = useNotification();
+  const { year, month, setPeriod } = useAppNavigation();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -128,8 +130,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const now = new Date();
-  const [year, setYear] = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth() + 1);
 
   // Helper to format dates in local timezone as YYYY-MM-DD
   const formatLocalDate = (date: Date) => {
@@ -162,11 +162,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setFilterStartDate(formatLocalDate(start));
     setFilterEndDate(formatLocalDate(end));
   }, [year, month]);
-
-  const setPeriod = (newYear: number, newMonth: number) => {
-    setYear(newYear);
-    setMonth(newMonth);
-  };
 
   const resetFilters = () => {
     setFilterStartDate('');

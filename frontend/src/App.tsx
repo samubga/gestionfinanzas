@@ -15,10 +15,11 @@ import InvestmentsManager from './components/InvestmentsManager';
 import AccountManager from './components/AccountManager';
 import ResetPassword from './components/ResetPassword';
 import { NotificationProvider } from './context/NotificationContext';
+import { AppNavigationProvider, useAppNavigation } from './context/AppNavigationContext';
 
 const AppContent: React.FC = () => {
   const { user, loading } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { tab: activeTab, setActiveTab } = useAppNavigation();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editTx, setEditTx] = useState<any>(null);
   const [formInitialType, setFormInitialType] = useState<'expense' | 'income' | 'transfer'>('expense');
@@ -120,9 +121,11 @@ export const App: React.FC = () => {
     <NotificationProvider>
       <AuthProvider>
         <ThemeProvider>
-          <FinanceProvider>
-            <AppContent />
-          </FinanceProvider>
+          <AppNavigationProvider>
+            <FinanceProvider>
+              <AppContent />
+            </FinanceProvider>
+          </AppNavigationProvider>
         </ThemeProvider>
       </AuthProvider>
     </NotificationProvider>
