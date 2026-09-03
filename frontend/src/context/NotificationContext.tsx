@@ -8,7 +8,6 @@ interface Notification {
   id: number;
   message: string;
   type: NotificationType;
-  duration: number;
   closing: boolean;
 }
 
@@ -21,11 +20,13 @@ interface NotificationContextType {
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-const notificationStyles: Record<NotificationType, { icon: typeof Info; iconClass: string; title: string; progressClass: string }> = {
-  success: { icon: CheckCircle2, iconClass: 'text-emerald-500', title: 'Todo listo', progressClass: 'bg-emerald-500' },
-  error: { icon: AlertCircle, iconClass: 'text-rose-500', title: 'No se ha podido completar', progressClass: 'bg-rose-500' },
-  info: { icon: Info, iconClass: 'text-brand-500', title: 'Información', progressClass: 'bg-brand-500' },
+const notificationStyles: Record<NotificationType, { icon: typeof Info; iconClass: string; title: string }> = {
+  success: { icon: CheckCircle2, iconClass: 'text-emerald-500', title: 'Todo listo' },
+  error: { icon: AlertCircle, iconClass: 'text-rose-500', title: 'No se ha podido completar' },
+  info: { icon: Info, iconClass: 'text-brand-500', title: 'Información' },
 };
+
+const FADE_DURATION = 600;
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -41,20 +42,20 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const removalTimer = setTimeout(() => {
       setNotifications((current) => current.filter((item) => item.id !== id));
       timers.current.delete(id);
-    }, 280);
+    }, FADE_DURATION);
     timers.current.set(id, [removalTimer]);
   }, []);
 
   const notify = useCallback((message: string, type: NotificationType = 'info', duration?: number) => {
     if (!message) return;
     const id = ++nextId.current;
-    const visibleFor = duration ?? (type === 'error' ? 5000 : 4000);
+    const visibleFor = duration ?? (type === 'error' ? 4000 : 3000);
 
-    setNotifications((current) => [...current.slice(-2), { id, message, type, duration: visibleFor, closing: false }]);
+    setNotifications((current) => [...current.slice(-2), { id, message, type, closing: false }]);
 
     const closeTimer = setTimeout(() => {
       setNotifications((current) => current.map((item) => item.id === id ? { ...item, closing: true } : item));
-    }, Math.max(0, visibleFor - 280));
+    }, Math.max(0, visibleFor - FADE_DURATION));
     const removalTimer = setTimeout(() => {
       setNotifications((current) => current.filter((item) => item.id !== id));
       timers.current.delete(id);
@@ -110,10 +111,6 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
                   >
                     <X size={17} />
                   </button>
-                  <span
-                    className={`notification-progress absolute inset-x-0 bottom-0 h-1 origin-left ${style.progressClass}`}
-                    style={{ animationDuration: `${notification.duration}ms` }}
-                  />
                 </div>
               );
             })}

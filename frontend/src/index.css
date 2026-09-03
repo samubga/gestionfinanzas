@@ -496,27 +496,17 @@
   to { opacity: 0; transform: translateY(-8px) scale(0.97); }
 }
 
-@keyframes notification-progress {
-  from { transform: scaleX(1); }
-  to { transform: scaleX(0); }
-}
-
 .notification-popup {
   animation: notification-popup-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .notification-popup-exit {
-  animation: notification-popup-out 280ms ease-in both;
-}
-
-.notification-progress {
-  animation: notification-progress linear both;
+  animation: notification-popup-out 600ms ease-in-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .notification-popup,
-  .notification-popup-exit,
-  .notification-progress {
+  .notification-popup-exit {
     animation: none;
   }
 }
