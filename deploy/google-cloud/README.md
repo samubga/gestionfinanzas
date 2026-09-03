@@ -1,5 +1,56 @@
 # Despliegue económico: Firebase Hosting + Cloud Run + Neon
 
+## Producción actual
+
+- Proyecto Google Cloud/Firebase: `gestion-finanzas-b6285`.
+- Web: `https://gestion-finanzas-b6285.web.app`.
+- Hosting: Firebase Hosting, contenido de `frontend/dist`.
+- API: Cloud Run, servicio `gestionfinanzas-api` en `europe-west3`.
+- Enrutamiento: Firebase reenvía `/api/**` al servicio de Cloud Run mediante `firebase.json`.
+
+## Procedimiento habitual: cambios solo de frontend
+
+Ejecutar desde la raíz del repositorio:
+
+```powershell
+npm --prefix frontend run build
+git diff --check
+git status --short
+git add frontend/src
+git commit -m "descripcion breve del cambio"
+git push origin main
+npx --yes firebase-tools deploy --only hosting --project gestion-finanzas-b6285
+```
+
+El despliegue de Firebase vuelve a ejecutar la compilación mediante el `predeploy` de
+`firebase.json`. Al terminar, comprobar la URL de Hosting y una ruta de la API:
+
+```powershell
+Invoke-WebRequest https://gestion-finanzas-b6285.web.app -UseBasicParsing
+Invoke-WebRequest https://gestion-finanzas-b6285.web.app/api/health -UseBasicParsing
+```
+
+No se debe reconstruir ni desplegar Cloud Run cuando el cambio afecta únicamente a
+`frontend/`. Si hay cambios de backend, seguir el apartado **Publicar la API** y
+ejecutar las migraciones solo cuando existan migraciones nuevas revisadas.
+
+## Incidencias conocidas y solución
+
+- `firebase` no está instalado globalmente en algunos equipos. Usar
+  `npx --yes firebase-tools ...`, que ejecuta la CLI sin exigir una instalación global.
+- Si Firebase solicita autenticación, ejecutar `npx --yes firebase-tools login` y
+  repetir el despliegue.
+- Si no existe un alias local o Firebase elige otro proyecto, mantener
+  `--project gestion-finanzas-b6285`; `.firebaserc` también fija este proyecto como
+  predeterminado.
+- Un aviso de Vite por superar 500 kB no bloquea el despliegue. Una compilación con
+  errores de TypeScript o Vite sí debe detenerlo.
+- Si `git push` o la publicación son bloqueados por permisos del entorno de trabajo,
+  solicitar autorización explícita indicando el remoto `origin/main` y el proyecto
+  Firebase `gestion-finanzas-b6285`; no cambiar de destino ni buscar atajos.
+- Registrar aquí cualquier nueva incidencia de despliegue junto con su solución antes
+  de dar la tarea por terminada.
+
 Esta configuración publica la aplicación sin VPS y conserva web y API bajo el mismo dominio:
 
 ```
