@@ -4,6 +4,7 @@ import { Search, Filter, Trash2, Edit3, Edit, Copy, Plus, ArrowUpRight, ArrowDow
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import CategoryIcon from './CategoryIcon';
+import SearchableSingleSelect from './SearchableSingleSelect';
 
 // Returns '#000000' or '#ffffff' depending on which gives better contrast with bgHex
 function getContrastColor(bgHex: string): string {
@@ -203,6 +204,42 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
   const currentItems = activeTab === 'expenses' ? expenses : incomes;
   const filterCategoriesList = categories.filter(c => c.type === (activeTab === 'expenses' ? 'expense' : 'income'));
+  const categoryFilterOptions = [
+    { value: '', label: 'Todas las categorías', keywords: 'todas categoria categorías' },
+    ...filterCategoriesList.map(category => ({
+      value: category.id,
+      label: category.name,
+      leading: <CategoryIcon name={category.name} icon={category.icon} color={category.color} strokeWidth={category.iconStrokeWidth} compact size={13} />,
+    })),
+    ...(activeTab === 'incomes' ? [{
+      value: 'null',
+      label: 'Sin categoría',
+      description: 'Ingresos sin categoría asignada',
+      keywords: 'ninguna vacío vacio',
+      leading: <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-100 text-xs font-bold text-slate-400 dark:border-slate-700 dark:bg-slate-800">—</span>,
+    }] : []),
+  ];
+  const accountFilterOptions = [
+    { value: '', label: 'Todas las cuentas', keywords: 'todas banco origen cuenta' },
+    ...accounts.map(account => ({
+      value: account.id,
+      label: account.name,
+      description: account.bank?.name || 'Cuenta sin banco asociado',
+      keywords: `${account.name} ${account.bank?.name || ''} ${account.type}`,
+      leading: (
+        <span
+          className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-sm"
+          style={{
+            backgroundColor: `${account.color || '#6366F1'}18`,
+            borderColor: `${account.color || '#6366F1'}38`,
+          }}
+          aria-hidden="true"
+        >
+          {account.icon || '🏦'}
+        </span>
+      ),
+    })),
+  ];
 
   const sortedExpenses = [...expenses].sort((a, b) => {
     let valA = sortField === 'category' ? (a.category?.name || '') : (a as any)[sortField];
@@ -1117,36 +1154,29 @@ export const Transactions: React.FC<TransactionsProps> = ({
           {/* Category Filter */}
           <div className="space-y-2">
             <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">Categoría</label>
-            <select
+            <SearchableSingleSelect
               value={filterCategoryId}
-              onChange={(e) => setFilterCategoryId(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-lg text-xs text-slate-800 dark:text-white"
-            >
-              <option value="">Todas las categorías</option>
-              {filterCategoriesList.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-              {activeTab === 'incomes' && (
-                <option value="null">Sin categoría (Ninguna)</option>
-              )}
-            </select>
+              options={categoryFilterOptions}
+              onChange={setFilterCategoryId}
+              ariaLabel="Filtrar por categoría"
+              placeholder="Todas las categorías"
+              searchPlaceholder="Buscar categoría..."
+              emptyMessage="No se ha encontrado ninguna categoría"
+            />
           </div>
 
           {/* Bank Filter */}
           <div className="space-y-2">
             <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-555 uppercase tracking-wider">Banco / Origen</label>
-            <select
+            <SearchableSingleSelect
               value={filterBank}
-              onChange={(e) => setFilterBank(e.target.value)}
-              className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-lg text-xs text-slate-800 dark:text-white"
-            >
-              <option value="">Todas las cuentas</option>
-              {accounts.map((acc) => (
-                <option key={acc.id} value={acc.id}>
-                  {acc.icon} {acc.name} {acc.bank ? `(${acc.bank.name})` : ''}
-                </option>
-              ))}
-            </select>
+              options={accountFilterOptions}
+              onChange={setFilterBank}
+              ariaLabel="Filtrar por banco u origen"
+              placeholder="Todas las cuentas"
+              searchPlaceholder="Buscar cuenta o banco..."
+              emptyMessage="No se ha encontrado ninguna cuenta"
+            />
           </div>
 
           {/* Concept Filter */}
