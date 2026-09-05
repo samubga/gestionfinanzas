@@ -4,7 +4,6 @@ import AccountCardStack from './AccountCardStack';
 import SmartInsightsCard from './SmartInsightsCard';
 import ChartViewport from './ChartViewport';
 import CategoryIcon from './CategoryIcon';
-import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import {
@@ -46,7 +45,6 @@ interface PortfolioMarketSummary {
 
 export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const notification = useNotification();
-  const { user } = useAuth();
   const { stats, statsLoading, saveSavingGoal, expenses, categories, accounts, investments, setFilterCategoryId, setSortField, setSortDirection } = useFinance();
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
@@ -130,12 +128,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   }
 
   const { currentMonth, availableBalance, categoryBreakdown } = stats;
-  const firstName = user?.name?.trim().split(/\s+/)[0] || 'de nuevo';
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
-  const activePeriodLabel = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' })
-    .format(new Date(currentMonth.year, currentMonth.month - 1, 1));
-
   const totalIncome = currentMonth?.income || 0;
   const totalExpense = currentMonth?.expense || 0;
   const netSavings = currentMonth?.savings || (totalIncome - totalExpense);
@@ -213,14 +205,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
   return (
     <div className="editorial-dashboard mx-auto max-w-[94rem] space-y-6 px-4 py-5 pb-12 sm:space-y-9 sm:p-7 lg:px-10 lg:py-9">
-
-      <header className="editorial-page-heading flex flex-col justify-between gap-3 border-b border-slate-200/80 pb-6 sm:flex-row sm:items-end dark:border-slate-800">
-        <div>
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-brand-700 dark:text-brand-300">Resumen · {activePeriodLabel}</p>
-          <h2 className="editorial-title text-4xl leading-none text-slate-900 sm:text-5xl dark:text-white">{greeting}, {firstName}</h2>
-        </div>
-        <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">Tu situación financiera, ordenada para distinguir lo importante de un vistazo.</p>
-      </header>
 
       {/* ROW 1: HERO BENTO GRID (CAPITAL DISPONIBLE, CUENTAS, TOP GASTOS) */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 xl:grid-cols-4">
