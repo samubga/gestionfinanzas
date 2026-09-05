@@ -596,10 +596,10 @@
   --slate-500: 100 116 139;
   --slate-600: 71 85 105;
   --slate-700: 51 65 85;
-  --slate-800: 30 41 59;
-  --slate-900: 15 23 42;
-  --slate-950: 2 6 23;
-  background-color: #0b1120;
+  --slate-800: 30 30 32;
+  --slate-900: 18 18 19;
+  --slate-950: 5 5 5;
+  background-color: #050505;
   color: #e2e8f0;
 }
 
@@ -609,7 +609,7 @@
 }
 
 .dark .app-editorial-canvas {
-  background: radial-gradient(circle at 78% 0%, rgb(var(--brand-500) / 0.06), transparent 26rem), #0b1120;
+  background: radial-gradient(circle at 78% 0%, rgb(var(--brand-500) / 0.025), transparent 26rem), #050505;
 }
 
 .editorial-title,
@@ -636,7 +636,12 @@
 }
 
 .dark .editorial-sidebar {
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 20rem), #0b1120;
+  background:
+    radial-gradient(circle at 0% 0%, rgb(var(--brand-500) / 0.16), transparent 22rem),
+    linear-gradient(180deg, rgb(255 255 255 / 0.035), transparent 20rem),
+    #0c0c0d;
+  border-right-color: rgb(var(--brand-400) / 0.22);
+  box-shadow: 12px 0 32px rgb(0 0 0 / 0.28);
 }
 
 .editorial-brand-mark {
@@ -674,23 +679,68 @@
 }
 .editorial-sidebar-action:hover { background: rgb(255 255 255 / 0.07); color: white; }
 
+.editorial-desktop-menu-trigger {
+  border: 1px solid rgb(218 211 195 / 0.86);
+  background: rgb(255 253 248 / 0.94);
+  box-shadow: 0 8px 24px rgb(60 55 44 / 0.12);
+  color: rgb(51 65 85);
+}
+.dark .editorial-desktop-menu-trigger {
+  border-color: rgb(255 255 255 / 0.16);
+  background: rgb(22 22 23 / 0.94);
+  color: rgb(226 232 240);
+}
+
+/* Smart insight badges retain their semantic colour but need darker text on light surfaces. */
+:root:not(.dark) .smart-insights-card .text-sky-300 { color: #0369a1; }
+:root:not(.dark) .smart-insights-card .text-rose-300 { color: #be123c; }
+:root:not(.dark) .smart-insights-card .text-emerald-300 { color: #047857; }
+:root:not(.dark) .smart-insights-card .text-blue-300 { color: #1d4ed8; }
+:root:not(.dark) .smart-insights-card .text-amber-300 { color: #b45309; }
+:root:not(.dark) .smart-insights-card .text-indigo-300 { color: #4338ca; }
+:root:not(.dark) .smart-insights-card .text-purple-300 { color: #7e22ce; }
+
+/* Insight callouts were originally designed only for a dark card. Keep every
+   generated slide legible when the application is using its light theme. */
+:root:not(.dark) .smart-insights-card .bg-slate-800,
+:root:not(.dark) .smart-insights-card .bg-slate-800\/60,
+:root:not(.dark) .smart-insights-card .bg-slate-800\/80 { background-color: rgb(241 245 249 / 0.94); }
+:root:not(.dark) .smart-insights-card .border-slate-700\/60 { border-color: rgb(203 213 225); }
+:root:not(.dark) .smart-insights-card .bg-rose-950\/30 { background-color: rgb(255 241 242); }
+:root:not(.dark) .smart-insights-card .bg-emerald-950\/20 { background-color: rgb(236 253 245); }
+:root:not(.dark) .smart-insights-card .bg-blue-950\/20 { background-color: rgb(239 246 255); }
+:root:not(.dark) .smart-insights-card .bg-amber-950\/20 { background-color: rgb(255 251 235); }
+:root:not(.dark) .smart-insights-card .bg-indigo-950\/20 { background-color: rgb(238 242 255); }
+:root:not(.dark) .smart-insights-card .bg-purple-950\/20 { background-color: rgb(250 245 255); }
+:root:not(.dark) .smart-insights-card .text-slate-200 { color: rgb(30 41 59); }
+:root:not(.dark) .smart-insights-card .text-slate-300 { color: rgb(51 65 85); }
+:root:not(.dark) .smart-insights-card .text-slate-400 { color: rgb(71 85 105); }
+:root:not(.dark) .smart-insights-card .text-sky-400 { color: #0369a1; }
+:root:not(.dark) .smart-insights-card .text-rose-400 { color: #be123c; }
+:root:not(.dark) .smart-insights-card .text-emerald-400 { color: #047857; }
+:root:not(.dark) .smart-insights-card .text-blue-400 { color: #1d4ed8; }
+:root:not(.dark) .smart-insights-card .text-amber-400 { color: #b45309; }
+:root:not(.dark) .smart-insights-card .text-indigo-400 { color: #4338ca; }
+:root:not(.dark) .smart-insights-card .text-purple-400 { color: #7e22ce; }
+:root:not(.dark) .smart-insights-card .text-teal-400 { color: #0f766e; }
+
 .editorial-mobile-header {
   border-bottom: 1px solid rgb(218 211 195 / 0.82);
   background: rgb(247 244 237 / 0.94);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
-.dark .editorial-mobile-header { border-color: rgb(51 65 85 / 0.8); background: rgb(11 17 32 / 0.92); }
+.dark .editorial-mobile-header { border-color: rgb(255 255 255 / 0.14); background: rgb(12 12 13 / 0.94); }
 
 .editorial-hero {
   border: 1px solid rgb(218 211 195 / 0.9);
   background: rgb(255 253 248 / 0.9);
   box-shadow: 0 18px 55px rgb(60 55 44 / 0.055);
 }
-.dark .editorial-hero { border-color: rgb(51 65 85 / 0.85); background: rgb(17 24 39 / 0.9); box-shadow: none; }
+.dark .editorial-hero { border-color: rgb(255 255 255 / 0.15); background: rgb(18 18 19 / 0.96); box-shadow: 0 14px 34px rgb(0 0 0 / 0.28); }
 
 .app-editorial .bg-white { background-color: rgb(255 253 248 / 0.9); }
-.dark .app-editorial .bg-white { background-color: rgb(17 24 39 / 0.92); }
+.dark .app-editorial .bg-white { background-color: rgb(18 18 19 / 0.96); }
 .app-editorial .rounded-3xl { border-radius: 0.9rem; }
 .app-editorial .rounded-2xl { border-radius: 0.72rem; }
 .app-editorial .rounded-xl { border-radius: 0.55rem; }
@@ -698,7 +748,7 @@
 .app-editorial .font-extrabold { font-weight: 650; }
 .app-editorial .shadow-xl, .app-editorial .shadow-2xl { box-shadow: 0 22px 55px rgb(45 42 35 / 0.12); }
 .app-editorial .shadow-lg, .app-editorial .shadow-md, .app-editorial .shadow-sm { box-shadow: 0 8px 24px rgb(45 42 35 / 0.055); }
-.dark .app-editorial :is(.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) { box-shadow: none; }
+.dark .app-editorial :is(.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) { box-shadow: 0 14px 34px rgb(0 0 0 / 0.22); }
 
 .app-editorial .font-mono,
 .app-editorial [data-private-money-auto="true"],

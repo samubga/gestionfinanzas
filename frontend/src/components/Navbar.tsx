@@ -25,6 +25,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { colorTheme, setColorTheme } = useTheme();
   const { contentVisible, toggleContentVisibility } = usePrivacy();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState(true);
 
   useEffect(() => {
     if (!isMobileMenuOpen) return undefined;
@@ -59,7 +60,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navItems = [
     { id: 'dashboard', label: 'Resumen', icon: LayoutDashboard },
     { id: 'accounts', label: 'Cuentas', icon: Wallet },
-    { id: 'transactions', label: 'Transacciones', icon: Receipt },
+    { id: 'transactions', label: 'Gastos/Ingresos', icon: Receipt },
     { id: 'investments', label: 'Inversiones', icon: LineChart },
     { id: 'stats', label: 'Análisis', icon: BarChart3 },
     { id: 'forecasts', label: 'Previsiones', icon: TrendingUp },
@@ -94,10 +95,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      {/* DESKTOP SIDEBAR */}
-      <aside className="editorial-sidebar hidden lg:flex flex-col w-[15rem] shrink-0 h-screen sticky top-0 overflow-y-auto p-5">
+      {/* DESKTOP SIDEBAR: fixed independently from the page scroll. */}
+      <aside
+        aria-label="Navegación principal"
+        className={`editorial-sidebar fixed inset-y-0 left-0 z-40 hidden w-[15rem] flex-col overflow-y-auto p-5 shadow-xl transition-transform duration-200 lg:flex ${
+          isDesktopSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
         {/* Brand */}
-        <div className="flex items-center gap-3 mb-9 px-1">
+        <div className="flex items-center justify-between gap-3 mb-9 px-1">
+          <div className="flex items-center gap-3 min-w-0">
           <div className="editorial-brand-mark flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden">
             <img src="/brand/finanzas-logo.png" alt="Logo de Finanzas" className="w-full h-full object-contain p-0.5" />
           </div>
@@ -105,6 +112,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <h1 className="editorial-wordmark text-xl text-white leading-none">Finanzas</h1>
             <span className="mt-1 block text-[11px] text-white/[0.45] tracking-[0.16em] uppercase font-semibold">Personal</span>
           </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsDesktopSidebarOpen(false)}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-white/[0.58] transition-colors hover:bg-white/[0.08] hover:text-white"
+            title="Ocultar menú"
+            aria-label="Ocultar menú"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         {/* Global Period Selector */}
@@ -216,6 +233,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
       </aside>
+      <div
+        className={`hidden shrink-0 transition-[width] duration-200 lg:block ${isDesktopSidebarOpen ? 'w-[15rem]' : 'w-0'}`}
+        aria-hidden="true"
+      />
+      {!isDesktopSidebarOpen && (
+        <button
+          type="button"
+          onClick={() => setIsDesktopSidebarOpen(true)}
+          className="editorial-desktop-menu-trigger fixed left-4 top-4 z-30 hidden h-11 w-11 items-center justify-center rounded-lg lg:inline-flex"
+          title="Mostrar menú"
+          aria-label="Mostrar menú"
+          aria-expanded={false}
+        >
+          <Menu size={22} />
+        </button>
+      )}
 
       {/* MOBILE FIXED HEADER */}
       <header className="editorial-mobile-header fixed inset-x-0 top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between gap-3 px-3 pt-[env(safe-area-inset-top)] lg:hidden sm:px-5">

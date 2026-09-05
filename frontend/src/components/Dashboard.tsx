@@ -257,7 +257,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                         return (
                           <div className="rounded-md border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-xs text-white shadow-lg">
                             <span className="block font-medium text-white/60">{data.label}</span>
-                            <span className="font-mono font-bold text-emerald-300">
+                            <span className={`font-mono font-bold ${data.val >= 0 ? 'text-emerald-300' : 'text-red-300'}`}>
                               {data.val >= 0 ? '+' : ''}{data.val.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
                             </span>
                           </div>
@@ -355,14 +355,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
         <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 border border-slate-100 dark:border-slate-800 shadow-sm flex items-center justify-between">
           <div className="space-y-1">
             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Ahorro del Mes</span>
-            <h3 className="text-3xl font-black font-mono text-slate-800 dark:text-white">
+            <h3 className={`text-3xl font-black font-mono ${netSavings >= 0 ? 'text-slate-800 dark:text-white' : 'text-red-600 dark:text-red-400'}`}>
               {netSavings.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
             </h3>
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
-              Tasa de ahorro: <strong className="text-brand-500">{savingsRate}%</strong>
+              Tasa de ahorro: <strong className={netSavings >= 0 ? 'text-brand-500' : 'text-red-500 dark:text-red-400'}>{savingsRate}%</strong>
             </span>
           </div>
-          <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/30 text-amber-500 border border-amber-200/50 dark:border-amber-800/40 flex items-center justify-center shrink-0">
+          <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shrink-0 ${netSavings >= 0 ? 'bg-amber-50 dark:bg-amber-950/30 text-amber-500 border-amber-200/50 dark:border-amber-800/40' : 'bg-red-50 dark:bg-red-950/30 text-red-500 border-red-200/60 dark:border-red-800/40'}`}>
             <PiggyBank size={28} />
           </div>
         </div>

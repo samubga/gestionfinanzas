@@ -386,16 +386,16 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
         title: `Balance Definitivo de ${monthName}`,
         description: `El mes de ${monthName} finalizó. Registraste un total de ${formatCurrency(totalExpense)} en gastos e ingresos de ${formatCurrency(totalIncome)}.`,
         calloutComponent: (
-          <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 space-y-2 text-xs">
-            <div className="flex justify-between text-slate-300">
+          <div className="bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl p-3 space-y-2 text-xs">
+            <div className="flex justify-between text-slate-600 dark:text-slate-300">
               <span>Ingresos Totales</span>
               <span className="font-extrabold text-emerald-400 font-mono">+{formatCurrency(totalIncome)}</span>
             </div>
-            <div className="flex justify-between text-slate-300">
+            <div className="flex justify-between text-slate-600 dark:text-slate-300">
               <span>Gastos Totales</span>
               <span className="font-extrabold text-rose-400 font-mono">-{formatCurrency(totalExpense)}</span>
             </div>
-            <div className="flex justify-between text-white font-bold pt-1.5 border-t border-slate-700/60">
+            <div className="flex justify-between text-slate-900 dark:text-white font-bold pt-1.5 border-t border-slate-200 dark:border-slate-700/60">
               <span>Resultado Final</span>
               <span className={`font-extrabold font-mono ${netSavings >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                 {netSavings >= 0 ? '+' : ''}{formatCurrency(netSavings)}
@@ -444,13 +444,13 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
     <div
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
-      className={`lg:col-span-1 bg-slate-900 text-white border border-slate-800 ${currentInsight.borderTopClass} border-t-4 rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col justify-between relative overflow-hidden transition-all duration-300`}
+      className={`smart-insights-card lg:col-span-1 bg-white text-slate-800 border border-slate-200 dark:bg-slate-900 dark:text-white dark:border-slate-800 ${currentInsight.borderTopClass} border-t-4 rounded-3xl p-4 sm:p-6 shadow-xl flex flex-col justify-between relative overflow-hidden transition-all duration-300`}
     >
       {/* Background ambient glow effect */}
       <div className={`absolute -top-12 -right-12 w-44 h-44 rounded-full blur-3xl ${currentInsight.ambientGlowClass} pointer-events-none transition-colors duration-500`} />
       
       <div className="absolute top-3 right-3 opacity-5 pointer-events-none">
-        <Zap size={90} className="text-white" />
+        <Zap size={90} className="text-slate-900 dark:text-white" />
       </div>
 
       <div className="relative z-10 space-y-4">
@@ -465,12 +465,12 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
 
           {/* Carousel controls (Arrows + Pause/Play toggle) */}
           {insights.length > 1 && (
-            <div className="flex items-center gap-1 bg-slate-800/90 border border-slate-700/80 px-2 py-0.5 rounded-full shadow-inner">
+            <div className="flex items-center gap-1 bg-slate-100/90 border border-slate-200 dark:bg-slate-800/90 dark:border-slate-700/80 px-2 py-0.5 rounded-full shadow-inner">
               <button
                 onClick={() => setIsAutoPlayEnabled(!isAutoPlayEnabled)}
                 className={`p-1 rounded-full transition-colors cursor-pointer ${
                   isAutoPlayEnabled
-                    ? 'text-slate-400 hover:text-white hover:bg-slate-700'
+                    ? 'text-slate-500 hover:text-slate-900 hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700'
                     : 'text-amber-400 bg-amber-500/15 hover:bg-amber-500/25'
                 }`}
                 title={isAutoPlayEnabled ? 'Pausar rotación automática' : 'Reanudar rotación automática'}
@@ -478,21 +478,21 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
                 {isAutoPlayEnabled ? <Pause size={11} /> : <Play size={11} />}
               </button>
 
-              <div className="w-px h-3 bg-slate-700 mx-0.5" />
+              <div className="w-px h-3 bg-slate-300 dark:bg-slate-700 mx-0.5" />
 
               <button
                 onClick={handlePrev}
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5 rounded-full hover:bg-slate-700"
+                className="text-slate-500 hover:text-slate-900 transition-colors cursor-pointer p-0.5 rounded-full hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700"
                 title="Insight anterior"
               >
                 <ChevronLeft size={13} />
               </button>
-              <span className="text-[10px] font-mono font-bold text-slate-300 px-0.5">
+              <span className="text-[10px] font-mono font-bold text-slate-600 dark:text-slate-300 px-0.5">
                 {currentIndex + 1}/{insights.length}
               </span>
               <button
                 onClick={handleNext}
-                className="text-slate-400 hover:text-white transition-colors cursor-pointer p-0.5 rounded-full hover:bg-slate-700"
+                className="text-slate-500 hover:text-slate-900 transition-colors cursor-pointer p-0.5 rounded-full hover:bg-slate-200 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-700"
                 title="Siguiente insight"
               >
                 <ChevronRight size={13} />
@@ -503,10 +503,10 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
 
         {/* Content Section */}
         <div className="space-y-1.5">
-          <h4 className="font-extrabold text-base text-white tracking-tight">
+          <h4 className="font-extrabold text-base text-slate-900 dark:text-white tracking-tight">
             {currentInsight.title}
           </h4>
-          <p className="text-xs text-slate-300 leading-relaxed font-normal">
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed font-normal">
             {currentInsight.description}
           </p>
         </div>
@@ -520,7 +520,7 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
       </div>
 
       {/* Footer / Pagination & CTA Button */}
-      <div className="pt-4 border-t border-slate-800/90 flex items-center justify-between text-xs relative z-10 mt-5">
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800/90 flex items-center justify-between text-xs relative z-10 mt-5">
         {/* Pagination Dots */}
         <div className="flex items-center gap-1.5">
           {insights.map((ins, idx) => (
@@ -528,7 +528,7 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
               key={ins.id}
               onClick={() => setCurrentIndex(idx)}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                idx === currentIndex ? 'w-5 bg-brand-400' : 'w-1.5 bg-slate-700 hover:bg-slate-500'
+                idx === currentIndex ? 'w-5 bg-brand-400' : 'w-1.5 bg-slate-300 hover:bg-slate-500 dark:bg-slate-700'
               }`}
               title={ins.badgeLabel}
             />
@@ -539,7 +539,7 @@ export const SmartInsightsCard: React.FC<SmartInsightsCardProps> = ({ stats, onN
         {currentInsight.actionText && (
           <button
             onClick={() => onNavigate && currentInsight.actionTab && onNavigate(currentInsight.actionTab, { categoryId: currentInsight.actionCategoryId })}
-            className="text-[11px] font-bold text-brand-300 hover:text-white bg-brand-500/20 hover:bg-brand-500/30 border border-brand-500/30 px-3 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-all group"
+            className="text-[11px] font-bold text-brand-700 hover:text-brand-900 bg-brand-500/10 hover:bg-brand-500/20 border border-brand-500/30 px-3 py-1 rounded-full flex items-center gap-1 cursor-pointer transition-all group dark:text-brand-300 dark:hover:text-white dark:bg-brand-500/20 dark:hover:bg-brand-500/30"
           >
             <span>{currentInsight.actionText}</span>
             <ChevronRight size={12} className="group-hover:translate-x-0.5 transition-transform" />

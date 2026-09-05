@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, 
@@ -8,13 +8,102 @@ import {
   Calendar, CalendarDays, Award, Tag, Folder,
   TrendingUp, TrendingDown, DollarSign, PieChart as PieIcon, 
   BarChart2, RefreshCw, AlertCircle, ArrowUpRight, ArrowDownRight,
-  TrendingUp as NetWorthIcon, Layers, X
+  TrendingUp as NetWorthIcon, Layers, X, ZoomIn, ZoomOut
 } from 'lucide-react';
 import api from '../services/api';
 import ChartViewport from './ChartViewport';
 import CategoryIcon from './CategoryIcon';
+import { useTheme } from '../context/ThemeContext';
+import SearchableSingleSelect, { SearchableSingleSelectOption } from './SearchableSingleSelect';
+
+type CategoryViewMode = 'days' | 'weeks' | 'months' | 'years';
+
+const CATEGORY_ZOOM_ORDER: CategoryViewMode[] = ['years', 'months', 'weeks', 'days'];
+const CATEGORY_VIEW_OPTIONS: Array<{ id: CategoryViewMode; label: string; shortLabel: string; periodLabel: string; chartTitle: string }> = [
+  { id: 'days', label: 'Días · último mes', shortLabel: 'Días', periodLabel: 'diario', chartTitle: 'Gasto diario del último mes' },
+  { id: 'weeks', label: 'Semanas · 3 meses', shortLabel: 'Semanas', periodLabel: 'semanal', chartTitle: 'Gasto semanal de los últimos 3 meses' },
+  { id: 'months', label: 'Meses · 12 meses', shortLabel: '12 meses', periodLabel: 'mensual', chartTitle: 'Gasto mensual de los últimos 12 meses' },
+  { id: 'years', label: 'Años · histórico', shortLabel: 'Histórico', periodLabel: 'anual', chartTitle: 'Gasto anual de todo el histórico' },
+];
+
+const startOfLocalDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
+const dateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+const startOfWeek = (date: Date) => {
+  const result = startOfLocalDay(date);
+  const day = result.getDay() || 7;
+  result.setDate(result.getDate() - day + 1);
+  return result;
+};
+
+const buildCategorySeries = (categoryExpenses: any[], mode: CategoryViewMode) => {
+  const now = startOfLocalDay(new Date());
+  const buckets = new Map<string, { label: string; amount: number; sortDate: number }>();
+  let rangeStart: Date;
+
+  if (mode === 'days') {
+    rangeStart = new Date(now);
+    rangeStart.setDate(rangeStart.getDate() - 29);
+    for (let date = new Date(rangeStart); date <= now; date.setDate(date.getDate() + 1)) {
+      buckets.set(dateKey(date), {
+        label: date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+        amount: 0,
+        sortDate: date.getTime(),
+      });
+    }
+  } else if (mode === 'weeks') {
+    const currentWeek = startOfWeek(now);
+    rangeStart = new Date(currentWeek);
+    rangeStart.setDate(rangeStart.getDate() - (12 * 7));
+    for (let date = new Date(rangeStart); date <= currentWeek; date.setDate(date.getDate() + 7)) {
+      buckets.set(dateKey(date), {
+        label: `Sem. ${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}`,
+        amount: 0,
+        sortDate: date.getTime(),
+      });
+    }
+  } else if (mode === 'months') {
+    rangeStart = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    for (let date = new Date(rangeStart); date <= now; date.setMonth(date.getMonth() + 1)) {
+      const key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+      buckets.set(key, {
+        label: date.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' }),
+        amount: 0,
+        sortDate: date.getTime(),
+      });
+    }
+  } else {
+    const validDates = categoryExpenses
+      .map(expense => new Date(expense.date))
+      .filter(date => !Number.isNaN(date.getTime()));
+    const firstYear = validDates.length > 0 ? Math.min(...validDates.map(date => date.getFullYear())) : now.getFullYear();
+    rangeStart = new Date(firstYear, 0, 1);
+    for (let year = firstYear; year <= now.getFullYear(); year += 1) {
+      buckets.set(String(year), { label: String(year), amount: 0, sortDate: new Date(year, 0, 1).getTime() });
+    }
+  }
+
+  categoryExpenses.forEach(expense => {
+    const expenseDate = new Date(expense.date);
+    if (Number.isNaN(expenseDate.getTime()) || expenseDate < rangeStart || expenseDate > new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)) return;
+    const bucketDate = mode === 'weeks' ? startOfWeek(expenseDate) : expenseDate;
+    const key = mode === 'days'
+      ? dateKey(bucketDate)
+      : mode === 'weeks'
+        ? dateKey(bucketDate)
+        : mode === 'months'
+          ? `${bucketDate.getFullYear()}-${bucketDate.getMonth() + 1}`
+          : String(bucketDate.getFullYear());
+    const bucket = buckets.get(key);
+    if (bucket) bucket.amount += Number(expense.amount) || 0;
+  });
+
+  return Array.from(buckets.values())
+    .sort((a, b) => a.sortDate - b.sortDate)
+    .map(bucket => ({ ...bucket, amount: Number(bucket.amount.toFixed(2)) }));
+};
 
 export const StatsPage: React.FC = () => {
+  const { dark } = useTheme();
   const { 
     stats, 
     statsLoading, 
@@ -45,13 +134,23 @@ export const StatsPage: React.FC = () => {
   );
   
   // Category history states
-  const [catData, setCatData] = useState<any[]>([]);
+  const [categoryHistoryExpenses, setCategoryHistoryExpenses] = useState<any[]>([]);
   const [catLoading, setCatLoading] = useState(false);
+  const [categoryViewMode, setCategoryViewMode] = useState<CategoryViewMode>('months');
+  const expenseCategoryOptions: Array<SearchableSingleSelectOption<string>> = categories
+    .filter(category => category.type === 'expense')
+    .map(category => ({
+      value: category.id,
+      label: category.name,
+      keywords: category.name,
+      leading: <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: category.color }} aria-hidden="true" />,
+    }));
 
   // Load category history when selected category changes
   useEffect(() => {
     const expenseCategories = categories.filter(c => c.type === 'expense');
-    if (expenseCategories.length > 0 && !selectedCategoryId) {
+    const selectedCategoryStillExists = expenseCategories.some(category => category.id === selectedCategoryId);
+    if (expenseCategories.length > 0 && !selectedCategoryStillExists) {
       setSelectedCategoryId(expenseCategories[0].id);
     }
   }, [categories, selectedCategoryId]);
@@ -61,54 +160,41 @@ export const StatsPage: React.FC = () => {
     
     const fetchCategoryHistory = async () => {
       setCatLoading(true);
+      setCategoryHistoryExpenses([]);
       try {
-        const now = new Date();
-        const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
-        const startDateStr = twelveMonthsAgo.toISOString().split('T')[0];
-        
         const res = await api.get('/expenses', {
           params: {
-            startDate: startDateStr,
             categoryId: selectedCategoryId
           }
         });
-        
-        const categoryExpenses = res.data;
-        const history = [];
-        let tempDate = new Date(twelveMonthsAgo);
-        
-        while (tempDate <= now) {
-          const y = tempDate.getFullYear();
-          const m = tempDate.getMonth();
-          const label = tempDate.toLocaleDateString('es-ES', { month: 'short', year: '2-digit' });
-          
-          const monthExpenses = categoryExpenses.filter((exp: any) => {
-            const expDate = new Date(exp.date);
-            return expDate.getFullYear() === y && expDate.getMonth() === m;
-          });
-          
-          const amount = monthExpenses.reduce((sum: number, exp: any) => sum + exp.amount, 0);
-          
-          history.push({
-            year: y,
-            month: m + 1,
-            label,
-            amount: parseFloat(amount.toFixed(2))
-          });
-          
-          tempDate.setMonth(tempDate.getMonth() + 1);
-        }
-        
-        setCatData(history);
+
+        setCategoryHistoryExpenses(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error('Error al obtener historial de categoría:', err);
+        // Aun si la consulta histórica falla, conservamos el mes cargado en
+        // memoria para no mostrar una selección válida como si no existiera.
+        const fallbackExpenses = expenses.filter(expense => expense.categoryId === selectedCategoryId);
+        setCategoryHistoryExpenses(fallbackExpenses);
       } finally {
         setCatLoading(false);
       }
     };
     
     fetchCategoryHistory();
-  }, [selectedCategoryId]);
+  }, [selectedCategoryId, expenses]);
+
+  const catData = useMemo(
+    () => buildCategorySeries(categoryHistoryExpenses, categoryViewMode),
+    [categoryHistoryExpenses, categoryViewMode]
+  );
+  const selectedCategoryView = CATEGORY_VIEW_OPTIONS.find(option => option.id === categoryViewMode) || CATEGORY_VIEW_OPTIONS[2];
+  const categoryZoomIndex = CATEGORY_ZOOM_ORDER.indexOf(categoryViewMode);
+  const changeCategoryZoom = (direction: 'in' | 'out') => {
+    const nextIndex = direction === 'in'
+      ? Math.min(CATEGORY_ZOOM_ORDER.length - 1, categoryZoomIndex + 1)
+      : Math.max(0, categoryZoomIndex - 1);
+    setCategoryViewMode(CATEGORY_ZOOM_ORDER[nextIndex]);
+  };
 
   // Load yearly data if Anual tab is selected
   useEffect(() => {
@@ -984,15 +1070,17 @@ export const StatsPage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 bg-slate-50 dark:bg-slate-900/40 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/50">
             <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1 font-sans">Selecciona la Categoría:</span>
             
-            <select
-              value={selectedCategoryId}
-              onChange={(e) => setSelectedCategoryId(e.target.value)}
-              className="bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:ring-2 focus:ring-brand-500 focus:outline-none"
-            >
-              {categories.filter(c => c.type === 'expense').map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
+            <div className="w-full sm:w-72">
+              <SearchableSingleSelect
+                value={selectedCategoryId}
+                options={expenseCategoryOptions}
+                onChange={setSelectedCategoryId}
+                placeholder="Selecciona una categoría"
+                searchPlaceholder="Buscar categoría..."
+                emptyMessage="No se encontraron categorías"
+                ariaLabel="Seleccionar categoría para el análisis"
+              />
+            </div>
           </div>
 
           {catLoading ? (
@@ -1007,20 +1095,20 @@ export const StatsPage: React.FC = () => {
                 
                 {/* Max Spent Month */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Gasto Máximo Mensual</span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Gasto máximo {selectedCategoryView.periodLabel}</span>
                   <h3 className="text-xl font-black text-rose-500 mt-2">
                     {Math.max(...catData.map(c => c.amount)).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
                   </h3>
-                  <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Mes récord de consumo en últimos 12 meses</p>
+                  <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Periodo con mayor consumo en la vista actual</p>
                 </div>
 
                 {/* Avg Monthly Spent */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 rounded-2xl p-5 shadow-sm">
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Promedio Mensual</span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Promedio {selectedCategoryView.periodLabel}</span>
                   <h3 className="text-xl font-black text-brand-500 mt-2">
                     {(catData.reduce((sum, c) => sum + c.amount, 0) / catData.length).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
                   </h3>
-                  <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Consumo regular estimado</p>
+                  <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Promedio de los periodos mostrados</p>
                 </div>
 
                 {/* Total Cumulative */}
@@ -1029,24 +1117,79 @@ export const StatsPage: React.FC = () => {
                   <h3 className="text-xl font-black text-slate-800 dark:text-white mt-2">
                     {catData.reduce((sum, c) => sum + c.amount, 0).toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
                   </h3>
-                  <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Suma consumida en los últimos 12 meses</p>
+                  <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Suma consumida en el rango mostrado</p>
                 </div>
 
               </div>
 
               {/* 12-MONTH CATEGORY TREND CHART */}
               <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm">
-                <div className="mb-4">
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-white">Evolución de Gasto Mensual (Últimos 12 meses)</h4>
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500">Tendencia mensual de consumo para la categoría seleccionada</p>
+                <div className="mb-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-white">{selectedCategoryView.chartTitle}</h4>
+                    <p className="text-[10px] text-slate-400 dark:text-slate-500">Acerca para aumentar el detalle o aleja para agrupar periodos</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => changeCategoryZoom('out')}
+                      disabled={categoryZoomIndex === 0}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      title="Alejar y agrupar más"
+                      aria-label="Alejar gráfico y agrupar periodos"
+                    >
+                      <ZoomOut size={16} />
+                    </button>
+                    {CATEGORY_VIEW_OPTIONS.map(option => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setCategoryViewMode(option.id)}
+                        className={`min-h-9 rounded-lg border px-2.5 text-[10px] font-bold transition ${
+                          categoryViewMode === option.id
+                            ? 'border-brand-500 bg-brand-500 text-white shadow-sm'
+                            : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-brand-300 hover:text-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-brand-600 dark:hover:text-brand-300'
+                        }`}
+                        title={option.label}
+                      >
+                        {option.shortLabel}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => changeCategoryZoom('in')}
+                      disabled={categoryZoomIndex === CATEGORY_ZOOM_ORDER.length - 1}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                      title="Acercar y mostrar más detalle"
+                      aria-label="Acercar gráfico y mostrar más detalle"
+                    >
+                      <ZoomIn size={16} />
+                    </button>
+                  </div>
                 </div>
-                <ChartViewport label="Evolución de gasto mensual de la categoría" heightClassName="h-[22rem] sm:h-72" minContentWidth={560}>
+                <ChartViewport
+                  label={selectedCategoryView.chartTitle}
+                  heightClassName="h-[22rem] sm:h-72"
+                  minContentWidth={categoryViewMode === 'days' ? 900 : categoryViewMode === 'weeks' ? 680 : 560}
+                  showZoomControls={false}
+                >
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={catData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" className="dark:stroke-slate-800/60" />
                       <XAxis dataKey="label" stroke="#94a3b8" fontSize={9} tickLine={false} />
                       <YAxis stroke="#94a3b8" fontSize={9} tickLine={false} />
-                      <Tooltip formatter={(value: number) => [`${value.toFixed(2)} €`, 'Consumo']} />
+                      <Tooltip
+                        formatter={(value: number) => [`${value.toFixed(2)} €`, 'Consumo']}
+                        contentStyle={{
+                          backgroundColor: dark ? '#121213' : '#ffffff',
+                          border: dark ? '1px solid rgba(255, 255, 255, 0.16)' : '1px solid #e2e8f0',
+                          borderRadius: '0.5rem',
+                          boxShadow: dark ? '0 12px 28px rgba(0, 0, 0, 0.45)' : '0 8px 20px rgba(15, 23, 42, 0.12)',
+                        }}
+                        labelStyle={{ color: dark ? '#d4d4d8' : '#64748b' }}
+                        itemStyle={{ color: dark ? '#f8fafc' : '#0f172a' }}
+                        cursor={{ fill: dark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.06)' }}
+                      />
                       <Bar 
                         dataKey="amount" 
                         name="Gasto" 

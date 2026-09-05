@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
-import { Wallet, CreditCard, Building2, TrendingUp, CheckCircle2, Layers } from 'lucide-react';
+import { CheckCircle2, Layers } from 'lucide-react';
 import { Account } from '../types';
 
 interface AccountCardStackProps {
@@ -23,14 +23,14 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
     }
   };
 
-  const getAccountIcon = (type: string) => {
-    switch (type) {
-      case 'CHECKING': return Building2;
-      case 'SAVINGS': return Wallet;
-      case 'INVESTMENT': return TrendingUp;
-      case 'CREDIT_CARD': return CreditCard;
-      default: return Wallet;
-    }
+  const accountTypeLabels: Record<Account['type'], string> = {
+    CHECKING: 'Cuenta corriente',
+    SAVINGS: 'Cuenta de ahorro',
+    CASH: 'Efectivo',
+    INVESTMENT: 'Inversión',
+    CREDIT_CARD: 'Tarjeta de crédito',
+    CRYPTO: 'Criptomonedas',
+    OTHER: 'Otra cuenta',
   };
 
   const getAccountCurrentBalance = (acc: Account): number => {
@@ -55,7 +55,7 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
     : accounts.reduce((sum, a) => sum + getAccountCurrentBalance(a), 0);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-brand-100 dark:border-brand-900/60 rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
+    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
       {/* Background ambient glow */}
       <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -99,9 +99,10 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
           </div>
         ) : (
           accounts.slice(0, 4).map((acc) => {
-            const Icon = getAccountIcon(acc.type);
             const isSelected = selectedAccountId === acc.id;
             const balance = getAccountCurrentBalance(acc);
+            const accountType = accountTypeLabels[acc.type] || 'Cuenta';
+            const bankName = acc.bank?.name || 'Sin banco asociado';
 
             return (
               <div
@@ -110,31 +111,34 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
                 className={`p-3.5 rounded-2xl border transition-all duration-300 cursor-pointer flex items-center justify-between gap-3 ${
                   isSelected
                     ? 'bg-brand-50/80 dark:bg-brand-950/35 text-slate-800 dark:text-white border-brand-400 shadow-md shadow-brand-500/10 scale-[1.01]'
-                    : 'bg-brand-50/25 dark:bg-slate-950/50 border-brand-100 dark:border-brand-900/50 text-slate-800 dark:text-white hover:border-brand-400 hover:bg-brand-50/60 dark:hover:bg-brand-950/25'
+                    : 'bg-slate-100/80 dark:bg-slate-950/60 border-slate-200 dark:border-slate-700/80 text-slate-800 dark:text-white hover:border-brand-400 hover:bg-brand-50/60 dark:hover:bg-brand-950/25'
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-sm ${
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 shadow-sm ${
                       isSelected
                         ? 'bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-200 border border-brand-200 dark:border-brand-800'
-                        : 'bg-white dark:bg-slate-800 text-brand-500 border border-brand-100 dark:border-brand-900/60'
+                        : 'bg-white dark:bg-slate-800 text-brand-500 border border-slate-200 dark:border-slate-700'
                     }`}
                   >
-                    <Icon size={18} />
+                    <span role="img" aria-label={`Icono de ${acc.name}`}>{acc.icon || '💳'}</span>
                   </div>
                   <div className="min-w-0">
-                    <p className="text-xs font-extrabold truncate text-slate-800 dark:text-white">
+                    <p className="text-sm font-extrabold truncate text-slate-800 dark:text-white">
                       {acc.name}
                     </p>
-                    <p className="text-[10px] font-semibold truncate text-slate-400 dark:text-slate-500">
-                      {acc.type}
+                    <p className="text-[10px] font-bold uppercase tracking-wide truncate text-slate-500 dark:text-slate-400">
+                      {accountType}
+                    </p>
+                    <p className="text-[10px] font-medium truncate text-slate-400 dark:text-slate-500">
+                      {bankName}
                     </p>
                   </div>
                 </div>
 
                 <div className="text-right shrink-0">
-                  <p className="text-xs font-black font-mono text-slate-800 dark:text-white">
+                  <p className={`editorial-amount text-sm font-bold ${balance >= 0 ? 'text-slate-900 dark:text-white' : 'text-red-600 dark:text-red-400'}`}>
                     {balance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
                   </p>
                   {isSelected && (
@@ -152,7 +156,7 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
       {/* Footer Total */}
       <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs relative z-10">
         <span className="font-bold text-slate-400 dark:text-slate-500">Saldo Total Disponible</span>
-        <span className="font-black text-slate-800 dark:text-white font-mono text-sm">
+        <span className="editorial-amount text-sm font-bold text-slate-900 dark:text-white">
           {totalBalance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
         </span>
       </div>

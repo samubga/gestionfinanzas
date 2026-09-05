@@ -8,6 +8,7 @@ interface ChartViewportProps {
   className?: string;
   maxZoom?: number;
   minContentWidth?: number;
+  showZoomControls?: boolean;
 }
 
 const ZOOM_STEP = 0.25;
@@ -24,6 +25,7 @@ const ChartViewport: React.FC<ChartViewportProps> = ({
   className = '',
   maxZoom = 3,
   minContentWidth,
+  showZoomControls = true,
 }) => {
   const [zoom, setZoom] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -79,7 +81,7 @@ const ChartViewport: React.FC<ChartViewportProps> = ({
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'touch') return;
+    if (!showZoomControls || event.pointerType !== 'touch') return;
     pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     event.currentTarget.setPointerCapture(event.pointerId);
     const distance = pointerDistance();
@@ -103,42 +105,46 @@ const ChartViewport: React.FC<ChartViewportProps> = ({
     <div className="flex min-h-10 items-center justify-between gap-2">
       <div className="flex min-w-0 items-center gap-1.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500">
         <MoveHorizontal size={13} className="shrink-0" />
-        <span className="truncate">{zoom > 1 ? 'Desliza para explorar' : 'Pellizca o amplía'}</span>
+        <span className="truncate">{showZoomControls ? (zoom > 1 ? 'Desliza para explorar' : 'Pellizca o amplía') : 'Desliza para explorar'}</span>
       </div>
       <div className="flex shrink-0 items-center gap-1 rounded-xl border border-slate-200/80 bg-white/90 p-1 shadow-sm dark:border-slate-700 dark:bg-slate-900/90">
-        <button
-          type="button"
-          onClick={() => applyZoom(zoom - ZOOM_STEP)}
-          disabled={zoom <= 1}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-300 dark:hover:bg-slate-800"
-          aria-label={`Alejar ${label}`}
-          title="Alejar"
-        >
-          <Minus size={15} />
-        </button>
-        <span className="min-w-11 text-center text-[10px] font-black tabular-nums text-slate-600 dark:text-slate-300" aria-live="polite">
-          {Math.round(zoom * 100)}%
-        </span>
-        <button
-          type="button"
-          onClick={() => applyZoom(zoom + ZOOM_STEP)}
-          disabled={zoom >= maxZoom}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-300 dark:hover:bg-slate-800"
-          aria-label={`Ampliar ${label}`}
-          title="Ampliar"
-        >
-          <Plus size={15} />
-        </button>
-        <button
-          type="button"
-          onClick={() => applyZoom(1)}
-          disabled={zoom === 1}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-300 dark:hover:bg-slate-800"
-          aria-label={`Restablecer zoom de ${label}`}
-          title="Restablecer zoom"
-        >
-          <RotateCcw size={14} />
-        </button>
+        {showZoomControls && (
+          <>
+            <button
+              type="button"
+              onClick={() => applyZoom(zoom - ZOOM_STEP)}
+              disabled={zoom <= 1}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label={`Alejar ${label}`}
+              title="Alejar"
+            >
+              <Minus size={15} />
+            </button>
+            <span className="min-w-11 text-center text-[10px] font-black tabular-nums text-slate-600 dark:text-slate-300" aria-live="polite">
+              {Math.round(zoom * 100)}%
+            </span>
+            <button
+              type="button"
+              onClick={() => applyZoom(zoom + ZOOM_STEP)}
+              disabled={zoom >= maxZoom}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label={`Ampliar ${label}`}
+              title="Ampliar"
+            >
+              <Plus size={15} />
+            </button>
+            <button
+              type="button"
+              onClick={() => applyZoom(1)}
+              disabled={zoom === 1}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-35 dark:text-slate-300 dark:hover:bg-slate-800"
+              aria-label={`Restablecer zoom de ${label}`}
+              title="Restablecer zoom"
+            >
+              <RotateCcw size={14} />
+            </button>
+          </>
+        )}
         <button
           type="button"
           onClick={() => setIsFullscreen(value => !value)}
@@ -176,7 +182,7 @@ const ChartViewport: React.FC<ChartViewportProps> = ({
         onPointerUp={releasePointer}
         onPointerCancel={releasePointer}
         onWheel={(event) => {
-          if (!event.ctrlKey && !event.metaKey) return;
+          if (!showZoomControls || (!event.ctrlKey && !event.metaKey)) return;
           event.preventDefault();
           applyZoom(zoom + (event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP));
         }}
