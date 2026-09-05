@@ -55,7 +55,7 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
     : accounts.reduce((sum, a) => sum + getAccountCurrentBalance(a), 0);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
+    <div className="bg-white dark:bg-slate-900 border border-brand-100 dark:border-brand-900/60 rounded-3xl p-4 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between h-full">
       {/* Background ambient glow */}
       <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -109,36 +109,36 @@ export const AccountCardStack: React.FC<AccountCardStackProps> = ({
                 onClick={() => handleCardClick(acc.id)}
                 className={`p-3.5 rounded-2xl border transition-all duration-300 cursor-pointer flex items-center justify-between gap-3 ${
                   isSelected
-                    ? 'bg-brand-500 text-white border-brand-400 shadow-lg shadow-brand-500/25 scale-[1.02]'
-                    : 'bg-slate-50/70 dark:bg-slate-950/50 border-slate-100/80 dark:border-slate-800/80 text-slate-800 dark:text-white hover:border-brand-500/40 hover:bg-slate-100/50 dark:hover:bg-slate-800/40'
+                    ? 'bg-brand-50/80 dark:bg-brand-950/35 text-slate-800 dark:text-white border-brand-400 shadow-md shadow-brand-500/10 scale-[1.01]'
+                    : 'bg-brand-50/25 dark:bg-slate-950/50 border-brand-100 dark:border-brand-900/50 text-slate-800 dark:text-white hover:border-brand-400 hover:bg-brand-50/60 dark:hover:bg-brand-950/25'
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
                     className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 shadow-sm ${
                       isSelected
-                        ? 'bg-white/20 text-white'
-                        : 'bg-white dark:bg-slate-800 text-brand-500 border border-slate-100 dark:border-slate-700'
+                        ? 'bg-brand-100 dark:bg-brand-900/60 text-brand-700 dark:text-brand-200 border border-brand-200 dark:border-brand-800'
+                        : 'bg-white dark:bg-slate-800 text-brand-500 border border-brand-100 dark:border-brand-900/60'
                     }`}
                   >
                     <Icon size={18} />
                   </div>
                   <div className="min-w-0">
-                    <p className={`text-xs font-extrabold truncate ${isSelected ? 'text-white' : 'text-slate-800 dark:text-white'}`}>
+                    <p className="text-xs font-extrabold truncate text-slate-800 dark:text-white">
                       {acc.name}
                     </p>
-                    <p className={`text-[10px] font-semibold truncate ${isSelected ? 'text-white/80' : 'text-slate-400 dark:text-slate-500'}`}>
+                    <p className="text-[10px] font-semibold truncate text-slate-400 dark:text-slate-500">
                       {acc.type}
                     </p>
                   </div>
                 </div>
 
                 <div className="text-right shrink-0">
-                  <p className={`text-xs font-black font-mono ${isSelected ? 'text-white' : 'text-slate-800 dark:text-white'}`}>
+                  <p className="text-xs font-black font-mono text-slate-800 dark:text-white">
                     {balance.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
                   </p>
                   {isSelected && (
-                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-white/90">
+                    <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-brand-700 dark:text-brand-300">
                       <CheckCircle2 size={10} /> Seleccionada
                     </span>
                   )}
