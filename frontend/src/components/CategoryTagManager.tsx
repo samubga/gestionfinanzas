@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { Plus, Trash2, Edit2, Check, X, Tag as TagIcon, Settings2 } from 'lucide-react';
+import CategoryIcon from './CategoryIcon';
 
 export const CategoryTagManager: React.FC = () => {
   const {
@@ -87,7 +88,7 @@ export const CategoryTagManager: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
+    <div className="mx-auto max-w-[94rem] space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:px-6 lg:pb-6 xl:px-8">
       
       {/* Title */}
       <div>
@@ -207,7 +208,7 @@ export const CategoryTagManager: React.FC = () => {
                 ) : (
                   <>
                     <div className="flex items-center gap-3">
-                      <span className="w-3.5 h-3.5 rounded-full shrink-0 shadow-sm" style={{ backgroundColor: cat.color }} />
+                      <CategoryIcon name={cat.name} color={cat.color} compact size={14} />
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{cat.name}</span>
                     </div>
 

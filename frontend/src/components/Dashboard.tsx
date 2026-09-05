@@ -3,6 +3,7 @@ import { useFinance } from '../context/FinanceContext';
 import AccountCardStack from './AccountCardStack';
 import SmartInsightsCard from './SmartInsightsCard';
 import ChartViewport from './ChartViewport';
+import CategoryIcon from './CategoryIcon';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import {
@@ -114,7 +115,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
   if (statsLoading || !stats) {
     return (
-      <div className="mx-auto max-w-7xl animate-pulse space-y-5 p-3 sm:p-6">
+      <div className="mx-auto max-w-[94rem] animate-pulse space-y-5 p-3 sm:p-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[1, 2, 3, 4].map(n => (
             <div key={n} className="h-32 bg-slate-100 dark:bg-slate-800/60 rounded-3xl" />
@@ -206,13 +207,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-8 sm:p-6 md:p-8 lg:pb-8">
+    <div className="mx-auto max-w-[94rem] space-y-5 px-3 py-4 pb-28 sm:space-y-8 sm:p-6 lg:px-6 lg:pb-8 xl:px-8">
 
       {/* ROW 1: HERO BENTO GRID (CAPITAL DISPONIBLE, CUENTAS, TOP GASTOS) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         
         {/* HERO CARD: Capital Total Disponible */}
-        <div className="lg:col-span-2 bg-gradient-to-br from-brand-600 via-brand-700 to-slate-900 text-white rounded-3xl p-5 sm:p-6 md:p-8 shadow-xl shadow-brand-500/15 relative overflow-hidden flex flex-col justify-between group">
+        <div className="lg:col-span-2 bg-brand-700 dark:bg-slate-900 text-white rounded-3xl p-5 sm:p-6 md:p-8 shadow-lg shadow-brand-900/10 relative overflow-hidden flex flex-col justify-between group border border-brand-600/30 dark:border-slate-800">
           <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
 
           <div className="relative z-10 flex items-center justify-between mb-6">
@@ -325,7 +326,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                     <div key={cat.id} className="space-y-1">
                       <div className="flex items-center justify-between text-xs font-semibold">
                         <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
+                          <CategoryIcon name={cat.name} color={cat.color} compact size={14} />
                           <span className="text-slate-700 dark:text-slate-200">{cat.name}</span>
                         </div>
                         <span className="font-mono font-bold text-slate-800 dark:text-white">{cat.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
@@ -560,12 +561,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                     className="flex items-center justify-between p-3.5 bg-slate-50/70 dark:bg-slate-950/40 border border-slate-100/80 dark:border-slate-800/60 rounded-2xl hover:border-brand-500/30 transition cursor-pointer group"
                   >
                     <div className="flex items-center gap-3">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-xs shadow-sm shrink-0"
-                        style={{ backgroundColor: catObj?.color ? `${catObj.color}20` : '#6366F120', color: catObj?.color || '#6366F1' }}
-                      >
-                        <Receipt size={18} />
-                      </div>
+                      <CategoryIcon name={catObj?.name} color={catObj?.color} size={18} />
                       <div>
                         <p className="text-xs font-extrabold text-slate-800 dark:text-white group-hover:text-brand-500 transition-colors">
                           {exp.description || catObj?.name || 'Gasto'}
@@ -609,7 +605,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
             {activeInvestments.length > 0 ? (
               <>
-                <div className="rounded-2xl bg-gradient-to-br from-violet-600 to-brand-700 p-4 text-white shadow-lg shadow-violet-500/15">
+                <div className="rounded-2xl bg-violet-700 p-4 text-white shadow-md shadow-violet-900/10 border border-violet-600/40">
                   <p className="text-[10px] font-bold uppercase tracking-wider text-white/70">Capital activo invertido</p>
                   <p className="mt-1 text-2xl font-black font-mono tracking-tight">
                     {totalInvested.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €

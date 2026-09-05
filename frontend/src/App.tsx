@@ -96,7 +96,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex flex-col lg:flex-row transition-colors duration-200">
+    <div className="app-official-refresh min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex flex-col lg:flex-row transition-colors duration-200">
       {/* Navigation Layout (Original Left Sidebar) */}
       <Navbar
         activeTab={activeTab}

@@ -3,6 +3,7 @@ import { useFinance } from '../context/FinanceContext';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import { ExpenseForecast, ForecastComparison } from '../types';
+import CategoryIcon from './CategoryIcon';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -244,7 +245,7 @@ export const ForecastManager: React.FC = () => {
   const totalPlanned = forecasts.reduce((sum, item) => sum + item.amount, 0);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
+    <div className="mx-auto max-w-[94rem] space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:px-6 lg:pb-6 xl:px-8">
       
       {/* Title */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -648,7 +649,7 @@ export const ForecastManager: React.FC = () => {
                                   color: item.category.color 
                                 }}
                               >
-                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: item.category.color }} />
+                                <CategoryIcon name={item.category.name} color={item.category.color} compact size={11} />
                                 {item.category.name}
                               </span>
                             ) : (
@@ -858,7 +859,7 @@ export const ForecastManager: React.FC = () => {
                                         color: item.category.color 
                                       }}
                                     >
-                                      <span className="w-1 h-1 rounded-full" style={{ backgroundColor: item.category.color }} />
+                                      <CategoryIcon name={item.category.name} color={item.category.color} compact size={10} />
                                       {item.category.name}
                                     </span>
                                   ) : (

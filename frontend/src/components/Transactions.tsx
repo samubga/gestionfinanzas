@@ -3,6 +3,7 @@ import { useFinance } from '../context/FinanceContext';
 import { Search, Filter, Trash2, Edit3, Edit, Copy, Plus, ArrowUpRight, ArrowDownRight, ChevronUp, ChevronDown, ChevronsUpDown, Upload, Loader2, Check, X, AlertTriangle, CircleHelp } from 'lucide-react';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
+import CategoryIcon from './CategoryIcon';
 
 // Returns '#000000' or '#ffffff' depending on which gives better contrast with bgHex
 function getContrastColor(bgHex: string): string {
@@ -541,7 +542,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
     const netTotal = totalIncomes - totalExpenses;
 
     return (
-      <div className="mx-auto flex min-h-screen max-w-6xl flex-col space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
+      <div className="mx-auto flex min-h-screen max-w-[94rem] flex-col space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
         {/* Title */}
         <div className="flex items-center justify-between">
           <div>
@@ -954,7 +955,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
   }
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-60px)] max-w-7xl flex-col space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:min-h-screen lg:pb-6">
+    <div className="mx-auto flex min-h-[calc(100vh-60px)] max-w-[94rem] flex-col space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:min-h-screen lg:px-6 lg:pb-6 xl:px-8">
       
       {/* Title & Add Button */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -1320,7 +1321,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                         {/* Category */}
                         <td className="py-3 px-2 sm:py-4 sm:px-4 max-w-[80px]">
                           <span className="inline-flex max-w-full items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: exp.category?.color || '#94A3B8' }} />
+                            <CategoryIcon name={exp.category?.name} color={exp.category?.color || '#94A3B8'} compact size={13} />
                             <span className="truncate font-medium text-slate-600 dark:text-slate-400">{exp.category?.name || 'Sin categoría'}</span>
                           </span>
                         </td>
@@ -1493,7 +1494,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                         <td className="py-3 px-2 sm:py-4 sm:px-4 max-w-[80px]">
                           {inc.category ? (
                             <span className="inline-flex max-w-full items-center gap-1.5">
-                              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: inc.category.color }} />
+                              <CategoryIcon name={inc.category.name} color={inc.category.color} compact size={13} />
                               <span className="truncate font-medium text-slate-600 dark:text-slate-400">{inc.category.name}</span>
                             </span>
                           ) : (

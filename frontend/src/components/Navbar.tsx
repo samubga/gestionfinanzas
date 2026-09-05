@@ -95,26 +95,26 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       {/* DESKTOP SIDEBAR */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-slate-900 border-r border-slate-100 dark:border-slate-800 shrink-0 h-screen sticky top-0 overflow-y-auto p-6">
+      <aside className="official-sidebar hidden lg:flex flex-col w-64 border-r shrink-0 h-screen sticky top-0 overflow-y-auto p-6">
         {/* Brand */}
         <div className="flex items-center gap-3 mb-8">
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50/70 dark:bg-slate-800 shadow-md shadow-brand-500/20 overflow-hidden">
             <img src="/brand/finanzas-logo.png" alt="Logo de Finanzas" className="w-full h-full object-contain p-0.5" />
           </div>
           <div>
-            <h1 className="font-extrabold text-slate-800 dark:text-white leading-none">Finanzas</h1>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 tracking-wider uppercase font-semibold">Personal App</span>
+            <h1 className="font-extrabold text-white leading-none">Finanzas</h1>
+            <span className="text-[10px] text-slate-400 tracking-wider uppercase font-semibold">Personal App</span>
           </div>
         </div>
 
         {/* Global Period Selector */}
-        <div className="mb-6 p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100/50 dark:border-slate-800/20">
-          <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Periodo activo</label>
+        <div className="mb-6 p-3.5 bg-white/[0.06] rounded-2xl border border-white/10">
+          <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Periodo activo</label>
           <div className="flex gap-2">
             <select
               value={month}
               onChange={handleMonthChange}
-              className="flex-1 py-1.5 px-2.5 bg-white dark:bg-slate-800 border-0 rounded-xl text-xs font-semibold shadow-sm focus:ring-1 focus:ring-brand-500 text-slate-700 dark:text-slate-300"
+              className="flex-1 py-1.5 px-2.5 bg-white/10 border-0 rounded-xl text-xs font-semibold shadow-sm focus:ring-1 focus:ring-brand-400 text-slate-100"
             >
               {months.map(m => (
                 <option key={m.val} value={m.val}>{m.name}</option>
@@ -123,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <select
               value={year}
               onChange={handleYearChange}
-              className="py-1.5 px-2.5 bg-white dark:bg-slate-800 border-0 rounded-xl text-xs font-semibold shadow-sm focus:ring-1 focus:ring-brand-500 text-slate-700 dark:text-slate-300"
+              className="py-1.5 px-2.5 bg-white/10 border-0 rounded-xl text-xs font-semibold shadow-sm focus:ring-1 focus:ring-brand-400 text-slate-100"
             >
               {years.map(y => (
                 <option key={y} value={y}>{y}</option>
@@ -143,11 +143,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 onClick={() => setActiveTab(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-brand-50/50 dark:bg-brand-950/20 text-brand-600 dark:text-brand-400 border-l-4 border-brand-600'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/30'
+                    ? 'bg-white/10 text-white border-l-4 border-brand-400'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
                 }`}
               >
-                <Icon size={18} className={isActive ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400 dark:text-slate-500'} />
+                <Icon size={18} className={isActive ? 'text-brand-300' : 'text-slate-500'} />
                 {item.label}
               </button>
             );
@@ -155,14 +155,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* User profile & Actions */}
-        <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-4">
+        <div className="pt-6 border-t border-white/10 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm overflow-hidden">
               {user?.avatarData ? <img src={user.avatarData} alt="Foto de perfil" className="w-full h-full object-cover" /> : (user?.name?.slice(0, 1).toUpperCase() || user?.email?.slice(0, 1).toUpperCase())}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{user?.name || 'Usuario'}</p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{user?.email}</p>
+              <p className="text-xs font-bold text-slate-200 truncate">{user?.name || 'Usuario'}</p>
+              <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
             </div>
           </div>
 
@@ -170,7 +170,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={toggleContentVisibility}
-              className="flex-1 py-2 px-3 border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+              className="flex-1 py-2 px-3 border border-white/10 hover:bg-white/10 text-slate-300 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
               title={contentVisible ? 'Ocultar información financiera' : 'Mostrar información financiera'}
               aria-label={contentVisible ? 'Ocultar información financiera' : 'Mostrar información financiera'}
               aria-pressed={!contentVisible}
@@ -179,7 +179,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={toggleTheme}
-              className="flex-1 py-2 px-3 border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+              className="flex-1 py-2 px-3 border border-white/10 hover:bg-white/10 text-slate-300 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
               title={dark ? 'Modo claro' : 'Modo oscuro'}
             >
               {dark ? <Sun size={16} /> : <Moon size={16} />}
@@ -195,8 +195,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Color theme selectors */}
           <div className="space-y-1.5 pt-1">
-            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Diseño de color</span>
-            <div className="flex items-center justify-between gap-1 p-1 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100/50 dark:border-slate-800/20">
+            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">Diseño de color</span>
+            <div className="flex items-center justify-between gap-1 p-1 bg-white/[0.06] rounded-xl border border-white/10">
               {themes.map((t) => (
                 <button
                   key={t.id}
@@ -266,19 +266,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           <aside
             id="mobile-navigation"
             aria-label="Navegación principal"
-            className="mobile-drawer-enter absolute inset-y-0 left-0 flex w-[min(20rem,88vw)] flex-col overflow-y-auto border-r border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl dark:border-slate-800 dark:bg-slate-900"
+            className="official-sidebar mobile-drawer-enter absolute inset-y-0 left-0 flex w-[min(20rem,88vw)] flex-col overflow-y-auto border-r pb-[env(safe-area-inset-bottom)] shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-slate-100 px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] dark:border-slate-800">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-50 shadow-sm dark:bg-slate-800">
                   <img src="/brand/finanzas-logo.png" alt="" className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-extrabold text-slate-800 dark:text-white">{user?.name || 'Usuario'}</p>
-                  <p className="truncate text-[10px] text-slate-400 dark:text-slate-500">{user?.email}</p>
+                  <p className="truncate text-sm font-extrabold text-white">{user?.name || 'Usuario'}</p>
+                  <p className="truncate text-[10px] text-slate-400">{user?.email}</p>
                 </div>
               </div>
-              <button type="button" onClick={() => setIsMobileMenuOpen(false)} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800" aria-label="Cerrar menú">
+              <button type="button" onClick={() => setIsMobileMenuOpen(false)} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-white/10" aria-label="Cerrar menú">
                 <X size={21} />
               </button>
             </div>
@@ -294,22 +294,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                     onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }}
                     className={`flex min-h-12 w-full items-center gap-3 rounded-xl px-3.5 text-left text-sm font-bold transition-colors ${
                       isActive
-                        ? 'bg-brand-50 text-brand-700 dark:bg-brand-950/35 dark:text-brand-300'
-                        : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800/60'
+                        ? 'bg-white/10 text-white border-l-4 border-brand-400'
+                        : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
                     }`}
                   >
-                    <Icon size={19} className={isActive ? 'text-brand-600 dark:text-brand-400' : 'text-slate-400'} />
+                    <Icon size={19} className={isActive ? 'text-brand-300' : 'text-slate-500'} />
                     {item.label}
                   </button>
                 );
               })}
             </nav>
 
-            <div className="space-y-4 border-t border-slate-100 p-4 dark:border-slate-800">
+            <div className="space-y-4 border-t border-white/10 p-4">
               <button
                 type="button"
                 onClick={toggleContentVisibility}
-                className="flex min-h-12 w-full items-center justify-between rounded-xl bg-brand-50 px-3.5 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-100 dark:bg-brand-950/35 dark:text-brand-300 dark:hover:bg-brand-950/55"
+                className="flex min-h-12 w-full items-center justify-between rounded-xl bg-white/10 px-3.5 text-sm font-bold text-slate-100 transition-colors hover:bg-white/15"
                 aria-pressed={!contentVisible}
               >
                 <span className="flex items-center gap-3">
@@ -320,7 +320,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="flex min-h-12 w-full items-center justify-between rounded-xl bg-slate-50 px-3.5 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-100 dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800"
+                className="flex min-h-12 w-full items-center justify-between rounded-xl bg-white/[0.06] px-3.5 text-sm font-bold text-slate-200 transition-colors hover:bg-white/10"
               >
                 <span className="flex items-center gap-3">{dark ? <Sun size={19} /> : <Moon size={19} />}{dark ? 'Usar modo claro' : 'Usar modo oscuro'}</span>
                 <span className={`h-5 w-9 rounded-full p-0.5 transition-colors ${dark ? 'bg-brand-600' : 'bg-slate-300'}`} aria-hidden="true">
@@ -329,7 +329,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
 
               <div>
-                <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <div className="mb-2 flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                   <Palette size={13} /> Diseño de color
                 </div>
                 <div className="grid grid-cols-4 gap-2">
@@ -350,7 +350,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-100 text-xs font-bold text-red-600 hover:bg-red-50 dark:border-red-950/40 dark:text-red-400 dark:hover:bg-red-950/20"
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-red-400/20 text-xs font-bold text-red-300 hover:bg-red-400/10"
               >
                 <LogOut size={16} /> Cerrar sesión
               </button>

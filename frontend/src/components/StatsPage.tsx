@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import api from '../services/api';
 import ChartViewport from './ChartViewport';
+import CategoryIcon from './CategoryIcon';
 
 export const StatsPage: React.FC = () => {
   const { 
@@ -211,10 +212,7 @@ export const StatsPage: React.FC = () => {
     return (
       <div className="min-w-[160px] overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 shadow-2xl shadow-slate-900/15 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/30">
         <div className="flex items-center gap-2 border-b border-slate-100 px-3.5 py-2.5 dark:border-slate-800">
-          <span
-            className="h-2.5 w-2.5 shrink-0 rounded-full ring-4 ring-slate-100 dark:ring-slate-800"
-            style={{ backgroundColor: category.color || '#6366F1' }}
-          />
+          <CategoryIcon name={category.name} color={category.color || '#6366F1'} compact size={13} />
           <span className="truncate text-xs font-bold text-slate-600 dark:text-slate-300">{category.name}</span>
         </div>
         <div className="px-3.5 py-3">
@@ -230,7 +228,7 @@ export const StatsPage: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:pb-6">
+    <div className="mx-auto max-w-[94rem] space-y-5 px-3 py-4 pb-28 sm:space-y-6 sm:p-6 lg:px-6 lg:pb-6 xl:px-8">
       
       {/* HEADER SECTION */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -628,7 +626,7 @@ export const StatsPage: React.FC = () => {
                     <div key={exp.id} className="flex items-center justify-between py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/30 px-2 rounded-xl transition-colors">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-[10px] font-black text-slate-400 w-5 text-center">{idx + 1}</span>
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: exp.category.color }} />
+                        <CategoryIcon name={exp.category.name} color={exp.category.color} compact size={13} />
                         <div className="min-w-0">
                           <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">{exp.description}</p>
                           <p className="text-[8px] text-slate-400 dark:text-slate-500">

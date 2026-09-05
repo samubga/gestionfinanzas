@@ -60,7 +60,7 @@ export const AccountManager: React.FC = () => {
   const totalCalculatedBalance = accounts.reduce((sum, acc) => sum + getAccountCurrentBalance(acc), 0);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-5 px-3 py-4 pb-28 sm:space-y-8 sm:p-6 md:p-8 lg:pb-8">
+    <div className="mx-auto max-w-[94rem] space-y-5 px-3 py-4 pb-28 sm:space-y-8 sm:p-6 lg:px-6 lg:pb-8 xl:px-8">
       
       {/* Header Banner */}
       <div className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm">

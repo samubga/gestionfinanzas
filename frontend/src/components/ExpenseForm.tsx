@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useFinance } from '../context/FinanceContext';
 import { useNotification } from '../context/NotificationContext';
 import { X, Plus, Calendar, CreditCard, AlignLeft, Tag as TagIcon, Sparkles } from 'lucide-react';
+import CategoryIcon from './CategoryIcon';
 
 interface ExpenseFormProps {
   isOpen: boolean;
@@ -429,10 +430,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                         : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
                     }`}
                   >
-                    <span
-                      className="w-3 h-3 rounded-full mr-2 shrink-0"
-                      style={{ backgroundColor: cat.color }}
-                    />
+                    <CategoryIcon name={cat.name} color={cat.color} compact size={13} className="mr-2" />
                     <span className="truncate">{cat.name}</span>
                   </button>
                 ))}
