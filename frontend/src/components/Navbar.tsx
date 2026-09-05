@@ -46,7 +46,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   const themes = [
-    { id: 'indigo', name: 'Día / Noche Clásico', hex: '#4f46e5' },
+    { id: 'indigo', name: 'Editorial petróleo', hex: '#155e63' },
     { id: 'sapphire', name: 'Modo Zafiro', hex: '#2563eb' },
     { id: 'teal', name: 'Modo Turquesa', hex: '#139488' },
     { id: 'amber', name: 'Modo Ámbar', hex: '#766246' },
@@ -57,7 +57,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   ] as const;
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'dashboard', label: 'Resumen', icon: LayoutDashboard },
     { id: 'accounts', label: 'Cuentas', icon: Wallet },
     { id: 'transactions', label: 'Transacciones', icon: Receipt },
     { id: 'investments', label: 'Inversiones', icon: LineChart },
@@ -95,26 +95,26 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <>
       {/* DESKTOP SIDEBAR */}
-      <aside className="official-sidebar hidden lg:flex flex-col w-64 border-r shrink-0 h-screen sticky top-0 overflow-y-auto p-6">
+      <aside className="editorial-sidebar hidden lg:flex flex-col w-[15rem] shrink-0 h-screen sticky top-0 overflow-y-auto p-5">
         {/* Brand */}
-        <div className="flex items-center gap-3 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-50/70 dark:bg-slate-800 shadow-md shadow-brand-500/20 overflow-hidden">
+        <div className="flex items-center gap-3 mb-9 px-1">
+          <div className="editorial-brand-mark flex items-center justify-center w-10 h-10 rounded-lg overflow-hidden">
             <img src="/brand/finanzas-logo.png" alt="Logo de Finanzas" className="w-full h-full object-contain p-0.5" />
           </div>
           <div>
-            <h1 className="font-extrabold text-white leading-none">Finanzas</h1>
-            <span className="text-[10px] text-slate-400 tracking-wider uppercase font-semibold">Personal App</span>
+            <h1 className="editorial-wordmark text-xl text-white leading-none">Finanzas</h1>
+            <span className="mt-1 block text-[11px] text-white/[0.45] tracking-[0.16em] uppercase font-semibold">Personal</span>
           </div>
         </div>
 
         {/* Global Period Selector */}
-        <div className="mb-6 p-3.5 bg-white/[0.06] rounded-2xl border border-white/10">
-          <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Periodo activo</label>
+        <div className="editorial-period mb-7 p-3.5 rounded-lg">
+          <label className="block text-[11px] font-semibold text-white/[0.45] uppercase tracking-[0.13em] mb-2">Periodo activo</label>
           <div className="flex gap-2">
             <select
               value={month}
               onChange={handleMonthChange}
-              className="flex-1 py-1.5 px-2.5 bg-white/10 border-0 rounded-xl text-xs font-semibold shadow-sm focus:ring-1 focus:ring-brand-400 text-slate-100"
+              className="flex-1 py-2 px-2.5 bg-white/5 border border-white/10 rounded-md text-xs font-semibold focus:ring-1 focus:ring-brand-400 text-white"
             >
               {months.map(m => (
                 <option key={m.val} value={m.val}>{m.name}</option>
@@ -123,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <select
               value={year}
               onChange={handleYearChange}
-              className="py-1.5 px-2.5 bg-white/10 border-0 rounded-xl text-xs font-semibold shadow-sm focus:ring-1 focus:ring-brand-400 text-slate-100"
+              className="py-2 px-2.5 bg-white/5 border border-white/10 rounded-md text-xs font-semibold focus:ring-1 focus:ring-brand-400 text-white"
             >
               {years.map(y => (
                 <option key={y} value={y}>{y}</option>
@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1.5">
+        <nav className="flex-1 space-y-1" aria-label="Navegación principal">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -141,13 +141,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
+                className={`editorial-nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm font-semibold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-white/10 text-white border-l-4 border-brand-400'
-                    : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
+                    ? 'editorial-nav-item-active text-white'
+                    : 'text-white/[0.58] hover:text-white hover:bg-white/[0.045]'
                 }`}
               >
-                <Icon size={18} className={isActive ? 'text-brand-300' : 'text-slate-500'} />
+                <Icon size={18} className={isActive ? 'text-brand-300' : 'text-white/[0.38]'} strokeWidth={1.8} />
                 {item.label}
               </button>
             );
@@ -155,14 +155,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         {/* User profile & Actions */}
-        <div className="pt-6 border-t border-white/10 space-y-4">
+        <div className="pt-5 border-t border-white/10 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm overflow-hidden">
+            <div className="w-9 h-9 rounded-full bg-brand-700 text-white flex items-center justify-center font-bold text-sm overflow-hidden border border-white/10">
               {user?.avatarData ? <img src={user.avatarData} alt="Foto de perfil" className="w-full h-full object-cover" /> : (user?.name?.slice(0, 1).toUpperCase() || user?.email?.slice(0, 1).toUpperCase())}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-slate-200 truncate">{user?.name || 'Usuario'}</p>
-              <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+              <p className="text-xs font-bold text-white/[0.85] truncate">{user?.name || 'Usuario'}</p>
+              <p className="text-[11px] text-white/[0.38] truncate">{user?.email}</p>
             </div>
           </div>
 
@@ -170,7 +170,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={toggleContentVisibility}
-              className="flex-1 py-2 px-3 border border-white/10 hover:bg-white/10 text-slate-300 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+              className="editorial-sidebar-action flex-1 py-2 px-3 rounded-md flex items-center justify-center transition-colors cursor-pointer"
               title={contentVisible ? 'Ocultar información financiera' : 'Mostrar información financiera'}
               aria-label={contentVisible ? 'Ocultar información financiera' : 'Mostrar información financiera'}
               aria-pressed={!contentVisible}
@@ -179,14 +179,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
             <button
               onClick={toggleTheme}
-              className="flex-1 py-2 px-3 border border-white/10 hover:bg-white/10 text-slate-300 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+              className="editorial-sidebar-action flex-1 py-2 px-3 rounded-md flex items-center justify-center transition-colors cursor-pointer"
               title={dark ? 'Modo claro' : 'Modo oscuro'}
             >
               {dark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
             <button
               onClick={handleLogout}
-              className="py-2 px-3 border border-red-100 hover:bg-red-50 dark:border-red-950/10 dark:hover:bg-red-950/20 text-red-500 rounded-xl flex items-center justify-center transition-colors cursor-pointer"
+              className="editorial-sidebar-action py-2 px-3 text-red-300 rounded-md flex items-center justify-center transition-colors cursor-pointer"
               title="Cerrar Sesión"
             >
               <LogOut size={16} />
@@ -195,16 +195,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Color theme selectors */}
           <div className="space-y-1.5 pt-1">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider block">Diseño de color</span>
-            <div className="flex items-center justify-between gap-1 p-1 bg-white/[0.06] rounded-xl border border-white/10">
+            <span className="text-[10px] font-bold text-white/[0.35] uppercase tracking-[0.13em] block">Color de acento</span>
+            <div className="flex items-center justify-between gap-1 p-1.5 bg-white/[0.035] rounded-lg border border-white/[0.06]">
               {themes.map((t) => (
                 <button
                   key={t.id}
                   onClick={() => setColorTheme(t.id)}
                   style={{ backgroundColor: t.hex }}
-                  className={`w-6 h-6 rounded-full border transition-all cursor-pointer hover:scale-110 active:scale-95 flex items-center justify-center ${
+                  className={`w-5 h-5 rounded-full border transition-all cursor-pointer hover:scale-110 active:scale-95 flex items-center justify-center ${
                     colorTheme === t.id
-                      ? 'border-slate-850 dark:border-white scale-110 ring-2 ring-brand-500/25 shadow-sm'
+                      ? 'border-white scale-110 ring-2 ring-white/20'
                       : 'border-transparent opacity-85 hover:opacity-100'
                   }`}
                   title={t.name}
@@ -218,7 +218,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </aside>
 
       {/* MOBILE FIXED HEADER */}
-      <header className="fixed inset-x-0 top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between gap-3 border-b border-slate-100 bg-white/95 px-3 pt-[env(safe-area-inset-top)] backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/95 lg:hidden sm:px-5">
+      <header className="editorial-mobile-header fixed inset-x-0 top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between gap-3 px-3 pt-[env(safe-area-inset-top)] lg:hidden sm:px-5">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -226,19 +226,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             aria-label="Abrir menú principal"
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-navigation"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-slate-100 active:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200/70 text-slate-700 transition-colors hover:bg-white/70 active:bg-slate-200 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             <Menu size={23} />
           </button>
-          <img src="/brand/finanzas-logo.png" alt="Logo de Finanzas" className="h-9 w-9 object-contain" />
+          <span className="editorial-wordmark text-xl text-slate-900 dark:text-white">Finanzas</span>
         </div>
 
-        <div className="flex shrink-0 gap-1 rounded-xl bg-slate-100 p-1 text-[10px] font-bold dark:bg-slate-800">
+        <div className="flex shrink-0 gap-1 rounded-lg border border-slate-200/70 bg-white/[0.45] p-1 text-xs font-bold dark:border-slate-700 dark:bg-slate-900/60">
           <select
             aria-label="Mes activo"
             value={month}
             onChange={handleMonthChange}
-            className="min-h-9 rounded-lg border-0 bg-transparent px-1.5 pr-5 font-semibold text-slate-700 focus:ring-1 focus:ring-brand-500 dark:text-slate-300"
+            className="min-h-9 rounded-md border-0 bg-transparent px-1.5 pr-5 font-semibold text-slate-700 focus:ring-1 focus:ring-brand-500 dark:text-slate-300"
           >
             {months.map(m => <option key={m.val} value={m.val}>{m.name}</option>)}
           </select>
@@ -246,7 +246,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             aria-label="Año activo"
             value={year}
             onChange={handleYearChange}
-            className="min-h-9 rounded-lg border-0 bg-transparent px-1.5 pr-5 font-semibold text-slate-700 focus:ring-1 focus:ring-brand-500 dark:text-slate-300"
+            className="min-h-9 rounded-md border-0 bg-transparent px-1.5 pr-5 font-semibold text-slate-700 focus:ring-1 focus:ring-brand-500 dark:text-slate-300"
           >
             {years.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
@@ -266,19 +266,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           <aside
             id="mobile-navigation"
             aria-label="Navegación principal"
-            className="official-sidebar mobile-drawer-enter absolute inset-y-0 left-0 flex w-[min(20rem,88vw)] flex-col overflow-y-auto border-r pb-[env(safe-area-inset-bottom)] shadow-2xl"
+            className="editorial-sidebar mobile-drawer-enter absolute inset-y-0 left-0 flex w-[min(20rem,88vw)] flex-col overflow-y-auto pb-[env(safe-area-inset-bottom)] shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-white/10 px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)]">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-brand-50 shadow-sm dark:bg-slate-800">
+                <div className="editorial-brand-mark flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg">
                   <img src="/brand/finanzas-logo.png" alt="" className="h-full w-full object-contain" />
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-extrabold text-white">{user?.name || 'Usuario'}</p>
-                  <p className="truncate text-[10px] text-slate-400">{user?.email}</p>
+                  <p className="truncate text-[11px] text-white/40">{user?.email}</p>
                 </div>
               </div>
-              <button type="button" onClick={() => setIsMobileMenuOpen(false)} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-slate-400 hover:bg-white/10" aria-label="Cerrar menú">
+              <button type="button" onClick={() => setIsMobileMenuOpen(false)} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white/[0.55] hover:bg-white/[0.06] hover:text-white" aria-label="Cerrar menú">
                 <X size={21} />
               </button>
             </div>
@@ -292,13 +292,13 @@ export const Navbar: React.FC<NavbarProps> = ({
                     key={item.id}
                     type="button"
                     onClick={() => { setActiveTab(item.id); setIsMobileMenuOpen(false); }}
-                    className={`flex min-h-12 w-full items-center gap-3 rounded-xl px-3.5 text-left text-sm font-bold transition-colors ${
+                    className={`editorial-nav-item flex min-h-12 w-full items-center gap-3 rounded-md px-3.5 text-left text-sm font-semibold transition-colors ${
                       isActive
-                        ? 'bg-white/10 text-white border-l-4 border-brand-400'
-                        : 'text-slate-300 hover:bg-white/[0.06] hover:text-white'
+                        ? 'editorial-nav-item-active text-white'
+                        : 'text-white/60 hover:bg-white/[0.045] hover:text-white'
                     }`}
                   >
-                    <Icon size={19} className={isActive ? 'text-brand-300' : 'text-slate-500'} />
+                    <Icon size={19} className={isActive ? 'text-brand-300' : 'text-white/[0.38]'} strokeWidth={1.8} />
                     {item.label}
                   </button>
                 );

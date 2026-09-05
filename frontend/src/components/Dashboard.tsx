@@ -4,6 +4,7 @@ import AccountCardStack from './AccountCardStack';
 import SmartInsightsCard from './SmartInsightsCard';
 import ChartViewport from './ChartViewport';
 import CategoryIcon from './CategoryIcon';
+import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { useNotification } from '../context/NotificationContext';
 import {
@@ -22,10 +23,8 @@ import {
   Edit2,
   Check,
   X,
-  Sparkles,
   PieChart as PieChartIcon,
   Receipt,
-  Activity,
   ArrowRight,
   Target,
   Landmark
@@ -47,6 +46,7 @@ interface PortfolioMarketSummary {
 
 export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   const notification = useNotification();
+  const { user } = useAuth();
   const { stats, statsLoading, saveSavingGoal, expenses, categories, accounts, investments, setFilterCategoryId, setSortField, setSortDirection } = useFinance();
   const [editingGoal, setEditingGoal] = useState(false);
   const [goalInput, setGoalInput] = useState('');
@@ -130,6 +130,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   }
 
   const { currentMonth, availableBalance, categoryBreakdown } = stats;
+  const firstName = user?.name?.trim().split(/\s+/)[0] || 'de nuevo';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Buenos días' : hour < 20 ? 'Buenas tardes' : 'Buenas noches';
+  const activePeriodLabel = new Intl.DateTimeFormat('es-ES', { month: 'long', year: 'numeric' })
+    .format(new Date(currentMonth.year, currentMonth.month - 1, 1));
 
   const totalIncome = currentMonth?.income || 0;
   const totalExpense = currentMonth?.expense || 0;
@@ -207,34 +212,39 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
   };
 
   return (
-    <div className="mx-auto max-w-[94rem] space-y-5 px-3 py-4 pb-28 sm:space-y-8 sm:p-6 lg:px-6 lg:pb-8 xl:px-8">
+    <div className="editorial-dashboard mx-auto max-w-[94rem] space-y-6 px-4 py-5 pb-12 sm:space-y-9 sm:p-7 lg:px-10 lg:py-9">
+
+      <header className="editorial-page-heading flex flex-col justify-between gap-3 border-b border-slate-200/80 pb-6 sm:flex-row sm:items-end dark:border-slate-800">
+        <div>
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-brand-700 dark:text-brand-300">Resumen · {activePeriodLabel}</p>
+          <h2 className="editorial-title text-4xl leading-none text-slate-900 sm:text-5xl dark:text-white">{greeting}, {firstName}</h2>
+        </div>
+        <p className="max-w-sm text-sm leading-relaxed text-slate-500 dark:text-slate-400">Tu situación financiera, ordenada para distinguir lo importante de un vistazo.</p>
+      </header>
 
       {/* ROW 1: HERO BENTO GRID (CAPITAL DISPONIBLE, CUENTAS, TOP GASTOS) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-3 xl:grid-cols-4">
         
         {/* HERO CARD: Capital Total Disponible */}
-        <div className="lg:col-span-2 bg-brand-700 dark:bg-slate-900 text-white rounded-3xl p-5 sm:p-6 md:p-8 shadow-lg shadow-brand-900/10 relative overflow-hidden flex flex-col justify-between group border border-brand-600/30 dark:border-slate-800">
-          <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-700" />
+        <section className="editorial-hero lg:col-span-2 rounded-xl p-5 sm:p-7 md:p-9 relative overflow-hidden flex flex-col justify-between">
 
           <div className="relative z-10 flex items-center justify-between mb-6">
-            <span className="px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-[10px] font-extrabold uppercase tracking-widest text-white border border-white/20 flex items-center gap-1.5">
-              <Sparkles size={12} className="text-brand-200" /> Capital Total Disponible
-            </span>
+            <span className="text-xs font-extrabold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Capital disponible</span>
 
-            <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-              <Activity size={13} className="text-emerald-300 animate-pulse" />
-              <span className="text-[10px] font-bold text-white/90">Salud: {healthScore}/100</span>
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              Salud financiera {healthScore}/100
             </div>
           </div>
 
           <div className="relative z-10 my-2">
-            <span className="text-xs text-white/70 font-bold uppercase tracking-wider block mb-1">Disponible Acumulado</span>
+            <span className="mb-2 block text-sm text-slate-500 dark:text-slate-400">Saldo acumulado en tus cuentas</span>
             <div className="flex items-baseline gap-3 flex-wrap">
-              <h2 className="text-3xl md:text-5xl font-black font-mono tracking-tight text-white">
+              <h3 className="editorial-amount text-4xl tracking-tight text-slate-950 sm:text-5xl md:text-6xl dark:text-white">
                 {totalAvailable.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
-              </h2>
-              <span className={`inline-flex items-center text-xs font-bold px-2 py-0.5 rounded-full ${
-                netSavings >= 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/30' : 'bg-red-500/20 text-red-300 border border-red-400/30'
+              </h3>
+              <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-bold ${
+                netSavings >= 0 ? 'border-emerald-600/20 bg-emerald-600/10 text-emerald-700 dark:text-emerald-300' : 'border-red-600/20 bg-red-600/10 text-red-700 dark:text-red-300'
               }`}>
                 {netSavings >= 0 ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                 {savingsRate}% ahorro
@@ -244,16 +254,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
 
           {/* Sparkline chart */}
           <div className="mt-4 relative z-10">
-            <div className="flex items-center justify-between text-[10px] text-white/70 font-bold uppercase tracking-wider mb-1">
-              <span>Histórico del Ahorro Neto Mensual</span>
+            <div className="mb-2 flex items-center justify-between text-xs font-bold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+              <span>Evolución del ahorro neto</span>
             </div>
             <div className="h-16">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={sparkData}>
                   <defs>
                     <linearGradient id="heroGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ffffff" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#ffffff" stopOpacity={0.0} />
+                      <stop offset="5%" stopColor="rgb(var(--brand-600))" stopOpacity={0.22} />
+                      <stop offset="95%" stopColor="rgb(var(--brand-600))" stopOpacity={0.0} />
                     </linearGradient>
                   </defs>
                   <Tooltip
@@ -261,9 +271,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                       if (active && payload && payload.length) {
                         const data = payload[0].payload;
                         return (
-                          <div className="bg-slate-900/90 text-white text-[11px] px-2.5 py-1 rounded-lg border border-white/20 backdrop-blur-md shadow-lg">
-                            <span className="text-white/70 font-medium block">{data.label}</span>
-                            <span className="font-bold font-mono text-emerald-300">
+                          <div className="rounded-md border border-slate-700 bg-slate-900 px-2.5 py-1.5 text-xs text-white shadow-lg">
+                            <span className="block font-medium text-white/60">{data.label}</span>
+                            <span className="font-mono font-bold text-emerald-300">
                               {data.val >= 0 ? '+' : ''}{data.val.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €
                             </span>
                           </div>
@@ -272,28 +282,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                       return null;
                     }}
                   />
-                  <Area type="monotone" dataKey="val" stroke="#ffffff" strokeWidth={2.5} fillOpacity={1} fill="url(#heroGradient)" />
+                  <Area type="monotone" dataKey="val" stroke="rgb(var(--brand-600))" strokeWidth={2.5} fillOpacity={1} fill="url(#heroGradient)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* Hero Footer Stats */}
-          <div className="pt-4 mt-2 border-t border-white/10 grid grid-cols-3 gap-2 md:gap-4 relative z-10 text-xs">
+          <div className="relative z-10 mt-3 grid grid-cols-3 gap-3 border-t border-slate-200/80 pt-5 text-xs dark:border-slate-800 md:gap-5">
             <div>
-              <span className="text-white/60 font-bold text-[10px] uppercase block">Ingresos Mes</span>
-              <span className="text-emerald-300 font-black font-mono text-xs md:text-base">+{totalIncome.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Ingresos</span>
+              <span className="font-mono text-sm font-semibold text-emerald-700 dark:text-emerald-300 md:text-base">+{totalIncome.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
             </div>
             <div>
-              <span className="text-white/60 font-bold text-[10px] uppercase block">Gastos Mes</span>
-              <span className="text-red-300 font-black font-mono text-xs md:text-base">-{totalExpense.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Gastos</span>
+              <span className="font-mono text-sm font-semibold text-red-700 dark:text-red-300 md:text-base">-{totalExpense.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
             </div>
             <div>
-              <span className="text-white/60 font-bold text-[10px] uppercase block">Inversiones</span>
-              <span className="text-indigo-200 font-black font-mono text-xs md:text-base">{totalInvested.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
+              <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Inversiones</span>
+              <span className="font-mono text-sm font-semibold text-brand-700 dark:text-brand-300 md:text-base">{totalInvested.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* ACCOUNTS STACK CARD */}
         <div className="hidden lg:col-span-1 lg:block">

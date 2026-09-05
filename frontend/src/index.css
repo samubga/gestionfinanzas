@@ -553,28 +553,142 @@
   transition: filter 180ms ease, opacity 180ms ease;
 }
 
-/* Official visual refresh: denser layout, calmer cards and finance-first numerals. */
-.official-sidebar {
-  background: #17201d;
-  border-color: rgb(255 255 255 / 0.09);
+/* A compact editorial layer shared by every main-app screen. */
+.theme-indigo .app-editorial {
+  --brand-50: 238 247 245;
+  --brand-100: 211 233 229;
+  --brand-200: 166 210 203;
+  --brand-300: 111 179 171;
+  --brand-400: 61 143 139;
+  --brand-500: 27 112 111;
+  --brand-600: 21 94 99;
+  --brand-700: 19 78 82;
+  --brand-800: 20 63 66;
+  --brand-900: 20 52 55;
+  --brand-950: 8 31 34;
+}
+
+.app-editorial {
+  --gray-50: 247 244 237;
+  --slate-50: 247 244 237;
+  --slate-100: 237 232 220;
+  --slate-200: 218 211 195;
+  --slate-300: 191 182 163;
+  --slate-400: 137 132 120;
+  --slate-500: 102 101 94;
+  --slate-600: 75 78 73;
+  --slate-700: 55 61 56;
+  --slate-800: 38 45 40;
+  --slate-900: 27 33 29;
+  --slate-950: 15 19 16;
+  background-color: rgb(247 244 237);
+  color: rgb(38 45 40);
+  font-family: "Aptos", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+}
+
+.dark .app-editorial {
+  background-color: #0f1310;
+  color: #e7e4db;
+}
+
+.app-editorial-canvas {
+  min-width: 0;
+  background: radial-gradient(circle at 78% 0%, rgb(var(--brand-500) / 0.055), transparent 25rem), rgb(247 244 237);
+}
+
+.dark .app-editorial-canvas {
+  background: radial-gradient(circle at 78% 0%, rgb(var(--brand-500) / 0.08), transparent 26rem), #0f1310;
+}
+
+.editorial-title,
+.editorial-wordmark,
+.editorial-amount {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+.editorial-wordmark { letter-spacing: -0.025em; }
+
+.editorial-amount {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "lnum" 1, "tnum" 1;
+}
+
+/* The sidebar derives its dark tone from the active palette, including rose. */
+.editorial-sidebar {
   color-scheme: dark;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.025), transparent 20rem), rgb(var(--brand-950));
+  color: white;
+  border-right: 1px solid rgb(255 255 255 / 0.08);
 }
 
-.app-official-refresh .rounded-3xl {
-  border-radius: 1rem;
+.editorial-brand-mark {
+  background: rgb(255 255 255 / 0.92);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12);
 }
 
-.app-official-refresh .rounded-2xl {
-  border-radius: 0.875rem;
+.editorial-period {
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.08);
 }
 
-.app-official-refresh .font-mono,
-.app-official-refresh [data-private-money-auto="true"],
-.app-official-refresh [data-private-money="true"] {
-  font-family: Georgia, Cambria, "Times New Roman", serif;
+.editorial-period select option { background: rgb(var(--brand-950)); color: white; }
+
+.editorial-nav-item { position: relative; }
+.editorial-nav-item::before {
+  position: absolute;
+  inset-block: 0.55rem;
+  left: -1.25rem;
+  width: 2px;
+  border-radius: 999px;
+  background: rgb(var(--brand-300));
+  content: "";
+  opacity: 0;
+  transform: scaleY(0.35);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+.editorial-nav-item-active { background: rgb(255 255 255 / 0.065); }
+.editorial-nav-item-active::before { opacity: 1; transform: scaleY(1); }
+
+.editorial-sidebar-action {
+  border: 1px solid rgb(255 255 255 / 0.08);
+  background: rgb(255 255 255 / 0.03);
+  color: rgb(255 255 255 / 0.62);
+}
+.editorial-sidebar-action:hover { background: rgb(255 255 255 / 0.07); color: white; }
+
+.editorial-mobile-header {
+  border-bottom: 1px solid rgb(218 211 195 / 0.82);
+  background: rgb(247 244 237 / 0.94);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.dark .editorial-mobile-header { border-color: rgb(50 58 52 / 0.8); background: rgb(15 19 16 / 0.92); }
+
+.editorial-hero {
+  border: 1px solid rgb(218 211 195 / 0.9);
+  background: rgb(255 253 248 / 0.9);
+  box-shadow: 0 18px 55px rgb(60 55 44 / 0.055);
+}
+.dark .editorial-hero { border-color: rgb(50 58 52 / 0.85); background: rgb(24 29 25 / 0.9); box-shadow: none; }
+
+.app-editorial .bg-white { background-color: rgb(255 253 248 / 0.9); }
+.dark .app-editorial .bg-white { background-color: rgb(24 29 25 / 0.92); }
+.app-editorial .rounded-3xl { border-radius: 0.9rem; }
+.app-editorial .rounded-2xl { border-radius: 0.72rem; }
+.app-editorial .rounded-xl { border-radius: 0.55rem; }
+.app-editorial .font-black { font-weight: 650; }
+.app-editorial .font-extrabold { font-weight: 650; }
+.app-editorial .shadow-xl, .app-editorial .shadow-2xl { box-shadow: 0 22px 55px rgb(45 42 35 / 0.12); }
+.app-editorial .shadow-lg, .app-editorial .shadow-md, .app-editorial .shadow-sm { box-shadow: 0 8px 24px rgb(45 42 35 / 0.055); }
+.dark .app-editorial :is(.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) { box-shadow: none; }
+
+.app-editorial .font-mono,
+.app-editorial [data-private-money-auto="true"],
+.app-editorial [data-private-money="true"] {
   font-variant-numeric: lining-nums tabular-nums;
   font-feature-settings: "lnum" 1, "tnum" 1;
-  letter-spacing: -0.015em;
 }
 
 .notification-popup {
