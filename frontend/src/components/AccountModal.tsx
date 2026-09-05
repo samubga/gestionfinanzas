@@ -5,6 +5,7 @@ import { Account, AccountType, Bank } from '../types';
 import { X, Plus, Loader2, Building2, CircleHelp } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
 import SearchableSingleSelect, { SearchableSingleSelectOption } from './SearchableSingleSelect';
+import AccountAppearancePreview from './AccountAppearancePreview';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -182,6 +183,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
     label: accountType.label,
     leading: <span className="text-base" aria-hidden="true">{accountType.icon}</span>,
   }));
+  const selectedBank = banks.find(bank => bank.id === selectedBankId);
+  const selectedTypeLabel = ACCOUNT_TYPES.find(accountType => accountType.type === type)?.label || 'Cuenta';
+  const previewBalance = Number(startingBalance) || 0;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
@@ -454,6 +458,15 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
               </div>
             </div>
           </div>
+
+          <AccountAppearancePreview
+            name={name}
+            bankName={selectedBank?.name}
+            typeLabel={selectedTypeLabel}
+            icon={icon}
+            color={color}
+            balance={previewBalance}
+          />
 
           {/* Footer actions */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
