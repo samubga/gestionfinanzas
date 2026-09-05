@@ -29,7 +29,14 @@ export async function exportBackup(req: AuthRequest, res: Response) {
     const backupData = {
       version: '1.0.0',
       exportedAt: new Date().toISOString(),
-      categories: categories.map(c => ({ name: c.name, color: c.color, id: c.id })),
+      categories: categories.map(c => ({
+        name: c.name,
+        color: c.color,
+        icon: c.icon,
+        iconStrokeWidth: c.iconStrokeWidth,
+        type: c.type,
+        id: c.id,
+      })),
       tags: tags.map(t => ({ name: t.name, id: t.id })),
       bankAccounts: bankAccounts.map(b => ({ name: b.name, startingBalance: b.startingBalance })),
       customBanks: customBanks.map(b => ({ id: b.id, name: b.name, code: b.code, color: b.color, logoUrl: b.logoUrl })),
@@ -109,11 +116,18 @@ export async function importBackup(req: AuthRequest, res: Response) {
     // 1. Process Categories
     for (const cat of backup.categories) {
       let existing = await prisma.category.findFirst({
-        where: { name: cat.name, userId }
+        where: { name: cat.name, type: cat.type || 'expense', userId }
       });
       if (!existing) {
         existing = await prisma.category.create({
-          data: { name: cat.name, color: cat.color || '#3B82F6', userId }
+          data: {
+            name: cat.name,
+            color: cat.color || '#3B82F6',
+            icon: cat.icon || 'tag',
+            iconStrokeWidth: typeof cat.iconStrokeWidth === 'number' ? cat.iconStrokeWidth : 1.8,
+            type: cat.type || 'expense',
+            userId,
+          }
         });
       }
       categoryMap[cat.id] = existing.id;

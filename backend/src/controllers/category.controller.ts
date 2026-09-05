@@ -2,6 +2,14 @@ import { Response } from 'express';
 import prisma from '../utils/prisma';
 import { AuthRequest } from '../middleware/auth.middleware';
 
+const normalizedIcon = (value: unknown, fallback: string) => (
+  typeof value === 'string' && /^[a-z0-9-]{1,40}$/.test(value) ? value : fallback
+);
+
+const normalizedStrokeWidth = (value: unknown, fallback: number) => (
+  typeof value === 'number' && Number.isFinite(value) && value >= 1 && value <= 3 ? value : fallback
+);
+
 export async function getCategories(req: AuthRequest, res: Response) {
   const userId = req.userId!;
   try {
@@ -17,7 +25,7 @@ export async function getCategories(req: AuthRequest, res: Response) {
 
 export async function createCategory(req: AuthRequest, res: Response) {
   const userId = req.userId!;
-  const { name, color, type } = req.body;
+  const { name, color, icon, iconStrokeWidth, type } = req.body;
 
   if (!name) {
     return res.status(400).json({ error: 'El nombre de la categoría es requerido' });
@@ -40,6 +48,8 @@ export async function createCategory(req: AuthRequest, res: Response) {
       data: {
         name,
         color: color || '#3B82F6',
+        icon: normalizedIcon(icon, 'tag'),
+        iconStrokeWidth: normalizedStrokeWidth(iconStrokeWidth, 1.8),
         type: categoryType,
         userId,
       },
@@ -53,7 +63,7 @@ export async function createCategory(req: AuthRequest, res: Response) {
 export async function updateCategory(req: AuthRequest, res: Response) {
   const userId = req.userId!;
   const { id } = req.params;
-  const { name, color } = req.body;
+  const { name, color, icon, iconStrokeWidth } = req.body;
 
   try {
     const category = await prisma.category.findFirst({
@@ -77,6 +87,8 @@ export async function updateCategory(req: AuthRequest, res: Response) {
       data: {
         name: name || category.name,
         color: color || category.color,
+        icon: normalizedIcon(icon, category.icon),
+        iconStrokeWidth: normalizedStrokeWidth(iconStrokeWidth, category.iconStrokeWidth),
       },
     });
 

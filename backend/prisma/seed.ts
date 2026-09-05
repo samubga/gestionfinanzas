@@ -24,21 +24,21 @@ async function main() {
   console.log('Seeding categories...');
   const categories = [
     // Gastos
-    { name: 'Alimentación', color: '#EF4444', type: 'expense' },
-    { name: 'Transporte', color: '#F59E0B', type: 'expense' },
-    { name: 'Vivienda', color: '#10B981', type: 'expense' },
-    { name: 'Ocio', color: '#3B82F6', type: 'expense' },
-    { name: 'Viajes', color: '#8B5CF6', type: 'expense' },
-    { name: 'Salud', color: '#EC4899', type: 'expense' },
-    { name: 'Gimnasio', color: '#06B6D4', type: 'expense' },
-    { name: 'Tecnología', color: '#6366F1', type: 'expense' },
-    { name: 'Suscripciones', color: '#14B8A6', type: 'expense' },
-    { name: 'Otros gastos', color: '#6B7280', type: 'expense' },
+    { name: 'Alimentación', color: '#EF4444', type: 'expense', icon: 'shopping-basket' },
+    { name: 'Transporte', color: '#F59E0B', type: 'expense', icon: 'car' },
+    { name: 'Vivienda', color: '#10B981', type: 'expense', icon: 'home' },
+    { name: 'Ocio', color: '#3B82F6', type: 'expense', icon: 'clapperboard' },
+    { name: 'Viajes', color: '#8B5CF6', type: 'expense', icon: 'plane' },
+    { name: 'Salud', color: '#EC4899', type: 'expense', icon: 'heart-pulse' },
+    { name: 'Gimnasio', color: '#06B6D4', type: 'expense', icon: 'dumbbell' },
+    { name: 'Tecnología', color: '#6366F1', type: 'expense', icon: 'laptop' },
+    { name: 'Suscripciones', color: '#14B8A6', type: 'expense', icon: 'repeat' },
+    { name: 'Otros gastos', color: '#6B7280', type: 'expense', icon: 'tag' },
     // Ingresos
-    { name: 'Nómina', color: '#10B981', type: 'income' },
-    { name: 'Bizum', color: '#3B82F6', type: 'income' },
-    { name: 'Inversiones', color: '#8B5CF6', type: 'income' },
-    { name: 'Otros ingresos', color: '#6B7280', type: 'income' },
+    { name: 'Nómina', color: '#10B981', type: 'income', icon: 'badge-dollar' },
+    { name: 'Bizum', color: '#3B82F6', type: 'income', icon: 'smartphone' },
+    { name: 'Inversiones', color: '#8B5CF6', type: 'income', icon: 'trending-up' },
+    { name: 'Otros ingresos', color: '#6B7280', type: 'income', icon: 'banknote' },
   ];
 
   const createdCategories: Category[] = [];
@@ -47,6 +47,7 @@ async function main() {
       data: {
         name: cat.name,
         color: cat.color,
+        icon: cat.icon,
         type: cat.type,
         userId: user.id,
       },

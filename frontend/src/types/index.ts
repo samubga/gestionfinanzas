@@ -15,6 +15,8 @@ export interface Category {
   id: string;
   name: string;
   color: string;
+  icon: string;
+  iconStrokeWidth: number;
   type: 'expense' | 'income';
   userId: string;
   createdAt: string;
@@ -142,6 +144,8 @@ export interface DashboardData {
     id: string;
     name: string;
     color: string;
+    icon: string;
+    iconStrokeWidth: number;
     amount: number;
   }>;
   tagBreakdown: Array<{
@@ -289,6 +293,8 @@ export interface YearlyStatsData {
     id: string;
     name: string;
     color: string;
+    icon: string;
+    iconStrokeWidth: number;
     amount: number;
   }>;
   tagBreakdown: Array<{

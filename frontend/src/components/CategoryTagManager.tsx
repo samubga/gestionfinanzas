@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useFinance } from '../context/FinanceContext';
-import { Plus, Trash2, Edit2, Check, X, Tag as TagIcon, Settings2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, Tag as TagIcon, Settings2 } from 'lucide-react';
 import CategoryIcon from './CategoryIcon';
+import CategoryModal from './CategoryModal';
+import { Category } from '../types';
 
 export const CategoryTagManager: React.FC = () => {
   const {
     categories,
     tags,
-    addCategory,
-    updateCategory,
     deleteCategory,
     addTag,
     deleteTag
@@ -16,48 +16,23 @@ export const CategoryTagManager: React.FC = () => {
 
   // Category State
   const [catTab, setCatTab] = useState<'expense' | 'income'>('expense');
-  const [newCatName, setNewCatName] = useState('');
-  const [newCatColor, setNewCatColor] = useState('#6366F1');
-  const [editingCatId, setEditingCatId] = useState<string | null>(null);
-  const [editCatName, setEditCatName] = useState('');
-  const [editCatColor, setEditCatColor] = useState('');
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
 
   const filteredCats = categories.filter(c => c.type === catTab);
 
   // Tag State
   const [newTagName, setNewTagName] = useState('');
 
-  // Predefined beautiful color presets
-  const COLOR_PRESETS = [
-    '#EF4444', '#F97316', '#F59E0B', '#10B981', 
-    '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6', 
-    '#D946EF', '#EC4899', '#6B7280', '#0F172A'
-  ];
-
   // CATEGORY ACTIONS
-  const handleCreateCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCatName.trim()) return;
-
-    try {
-      await addCategory({ name: newCatName.trim(), color: newCatColor, type: catTab });
-      setNewCatName('');
-    } catch { /* El aviso global lo gestiona FinanceContext. */ }
+  const handleOpenCreate = () => {
+    setCategoryToEdit(null);
+    setIsCategoryModalOpen(true);
   };
 
-  const handleStartEdit = (cat: any) => {
-    setEditingCatId(cat.id);
-    setEditCatName(cat.name);
-    setEditCatColor(cat.color);
-  };
-
-  const handleUpdateCategory = async () => {
-    if (!editCatName.trim() || !editingCatId) return;
-
-    try {
-      await updateCategory(editingCatId, { name: editCatName.trim(), color: editCatColor });
-      setEditingCatId(null);
-    } catch { /* El aviso global lo gestiona FinanceContext. */ }
+  const handleStartEdit = (cat: Category) => {
+    setCategoryToEdit(cat);
+    setIsCategoryModalOpen(true);
   };
 
   const handleDeleteCategory = async (id: string) => {
@@ -100,9 +75,19 @@ export const CategoryTagManager: React.FC = () => {
         
         {/* CATEGORIES SECTION */}
         <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm space-y-6">
-          <div className="flex items-center gap-2 pb-4 border-b border-slate-50 dark:border-slate-800">
-            <Settings2 className="text-brand-500" size={18} />
-            <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Gestión de Categorías</h3>
+          <div className="flex items-center justify-between gap-3 pb-4 border-b border-slate-50 dark:border-slate-800">
+            <div className="flex items-center gap-2">
+              <Settings2 className="text-brand-500" size={18} />
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-white uppercase tracking-wider">Gestión de Categorías</h3>
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenCreate}
+              className="flex shrink-0 items-center gap-1.5 rounded-xl bg-brand-600 px-3 py-2 text-xs font-bold text-white shadow-md shadow-brand-500/15 transition hover:bg-brand-700"
+            >
+              <Plus size={14} />
+              <span className="hidden sm:inline">Nueva</span>
+            </button>
           </div>
 
           <div className="flex bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl w-full">
@@ -130,106 +115,41 @@ export const CategoryTagManager: React.FC = () => {
             </button>
           </div>
 
-          {/* Create Form */}
-          <form onSubmit={handleCreateCategory} className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="text"
-                placeholder="Nombre de la nueva categoría..."
-                value={newCatName}
-                onChange={(e) => setNewCatName(e.target.value)}
-                className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/40 border-0 rounded-xl focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-600 text-slate-800 dark:text-white text-xs transition-all"
-              />
-              <div className="flex gap-2">
-                <input
-                  type="color"
-                  value={newCatColor}
-                  onChange={(e) => setNewCatColor(e.target.value)}
-                  className="w-12 h-10 p-0.5 rounded-xl border-0 bg-transparent shrink-0 cursor-pointer"
-                  title="Color personalizado"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-semibold text-xs transition-all shadow-md shadow-brand-500/10 cursor-pointer"
-                >
-                  Crear
-                </button>
-              </div>
-            </div>
-
-            {/* Color Presets */}
-            <div className="space-y-1.5">
-              <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Paleta de colores rápidos</label>
-              <div className="flex flex-wrap gap-2">
-                {COLOR_PRESETS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setNewCatColor(color)}
-                    className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer hover:scale-110 ${
-                      newCatColor === color ? 'border-brand-600 scale-110' : 'border-transparent'
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-            </div>
-          </form>
-
           {/* Categories List */}
-          <div className="space-y-2.5 overflow-y-auto max-h-[350px] pr-1.5">
+          <div className="space-y-2.5 overflow-y-auto max-h-[430px] pr-1.5">
             {filteredCats.map((cat) => (
               <div
                 key={cat.id}
                 className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-800/20 border border-slate-100/40 dark:border-slate-800/30 rounded-xl transition-all"
               >
-                {editingCatId === cat.id ? (
-                  <div className="flex-1 flex gap-2 items-center">
-                    <input
-                      type="text"
-                      value={editCatName}
-                      onChange={(e) => setEditCatName(e.target.value)}
-                      className="flex-1 px-3 py-1 bg-white dark:bg-slate-800 border rounded-lg text-xs"
-                      autoFocus
-                    />
-                    <input
-                      type="color"
-                      value={editCatColor}
-                      onChange={(e) => setEditCatColor(e.target.value)}
-                      className="w-8 h-8 rounded cursor-pointer"
-                    />
-                    <button onClick={handleUpdateCategory} className="p-1.5 text-emerald-500 hover:bg-emerald-50 rounded-lg">
-                      <Check size={16} />
-                    </button>
-                    <button onClick={() => setEditingCatId(null)} className="p-1.5 text-red-400 hover:bg-red-50 rounded-lg">
-                      <X size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div className="flex items-center gap-3">
-                      <CategoryIcon name={cat.name} color={cat.color} compact size={14} />
-                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">{cat.name}</span>
-                    </div>
+                <div className="flex min-w-0 items-center gap-3">
+                  <CategoryIcon name={cat.name} icon={cat.icon} color={cat.color} strokeWidth={cat.iconStrokeWidth} compact size={14} />
+                  <span className="truncate text-xs font-bold text-slate-800 dark:text-slate-200">{cat.name}</span>
+                </div>
 
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleStartEdit(cat)}
-                        className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg transition-colors cursor-pointer"
-                      >
-                        <Edit2 size={13} />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCategory(cat.id)}
-                        className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </>
-                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleStartEdit(cat)}
+                    className="p-1.5 text-slate-400 hover:text-brand-600 hover:bg-brand-50 dark:hover:bg-brand-950/20 rounded-lg transition-colors cursor-pointer"
+                    aria-label={`Editar ${cat.name}`}
+                  >
+                    <Edit2 size={13} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCategory(cat.id)}
+                    className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-colors cursor-pointer"
+                    aria-label={`Eliminar ${cat.name}`}
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
             ))}
+            {filteredCats.length === 0 && (
+              <div className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center dark:border-slate-700">
+                <p className="text-xs text-slate-400">Todavía no tienes categorías de {catTab === 'expense' ? 'gasto' : 'ingreso'}.</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -286,6 +206,13 @@ export const CategoryTagManager: React.FC = () => {
         </div>
 
       </div>
+
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        category={categoryToEdit}
+        type={categoryToEdit?.type || catTab}
+      />
 
     </div>
   );

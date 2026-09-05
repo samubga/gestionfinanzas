@@ -51,8 +51,8 @@ interface FinanceContextType {
   addIncome: (data: any) => Promise<void>;
   updateIncome: (id: string, data: any) => Promise<void>;
   deleteIncome: (id: string) => Promise<void>;
-  addCategory: (data: { name: string; color: string; type: 'expense' | 'income' }) => Promise<Category>;
-  updateCategory: (id: string, data: { name: string; color: string }) => Promise<void>;
+  addCategory: (data: { name: string; color: string; icon: string; iconStrokeWidth: number; type: 'expense' | 'income' }) => Promise<Category>;
+  updateCategory: (id: string, data: { name: string; color: string; icon: string; iconStrokeWidth: number }) => Promise<void>;
   deleteCategory: (id: string) => Promise<void>;
   addTag: (data: { name: string }) => Promise<Tag>;
   deleteTag: (id: string) => Promise<void>;
@@ -555,7 +555,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   // CATEGORÍAS
-  const addCategory = async (data: { name: string; color: string; type: 'expense' | 'income' }) => {
+  const addCategory = async (data: { name: string; color: string; icon: string; iconStrokeWidth: number; type: 'expense' | 'income' }) => {
     return runAction(async () => {
       const res = await api.post('/categories', data);
       await fetchCategories();
@@ -563,7 +563,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, 'Categoría creada correctamente.', 'No se pudo crear la categoría.');
   };
 
-  const updateCategory = async (id: string, data: { name: string; color: string }) => {
+  const updateCategory = async (id: string, data: { name: string; color: string; icon: string; iconStrokeWidth: number }) => {
     await runAction(async () => {
       await api.put(`/categories/${id}`, data);
       await fetchCategories();

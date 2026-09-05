@@ -1321,7 +1321,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                         {/* Category */}
                         <td className="py-3 px-2 sm:py-4 sm:px-4 max-w-[80px]">
                           <span className="inline-flex max-w-full items-center gap-1.5">
-                            <CategoryIcon name={exp.category?.name} color={exp.category?.color || '#94A3B8'} compact size={13} />
+                            <CategoryIcon name={exp.category?.name} icon={exp.category?.icon} color={exp.category?.color || '#94A3B8'} strokeWidth={exp.category?.iconStrokeWidth} compact size={13} />
                             <span className="truncate font-medium text-slate-600 dark:text-slate-400">{exp.category?.name || 'Sin categoría'}</span>
                           </span>
                         </td>
@@ -1494,7 +1494,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                         <td className="py-3 px-2 sm:py-4 sm:px-4 max-w-[80px]">
                           {inc.category ? (
                             <span className="inline-flex max-w-full items-center gap-1.5">
-                              <CategoryIcon name={inc.category.name} color={inc.category.color} compact size={13} />
+                              <CategoryIcon name={inc.category.name} icon={inc.category.icon} color={inc.category.color} strokeWidth={inc.category.iconStrokeWidth} compact size={13} />
                               <span className="truncate font-medium text-slate-600 dark:text-slate-400">{inc.category.name}</span>
                             </span>
                           ) : (

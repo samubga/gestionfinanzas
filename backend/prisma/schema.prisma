@@ -90,6 +90,8 @@ model Category {
   id        String    @id @default(uuid())
   name      String
   color     String    @default("#3B82F6") // Hex color code for customized UI
+  icon            String   @default("tag")
+  iconStrokeWidth Float    @default(1.8)
   type      String    @default("expense") // "expense" or "income"
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)

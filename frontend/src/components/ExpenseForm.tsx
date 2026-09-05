@@ -430,7 +430,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                         : 'border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
                     }`}
                   >
-                    <CategoryIcon name={cat.name} color={cat.color} compact size={13} className="mr-2" />
+                    <CategoryIcon name={cat.name} icon={cat.icon} color={cat.color} strokeWidth={cat.iconStrokeWidth} compact size={13} className="mr-2" />
                     <span className="truncate">{cat.name}</span>
                   </button>
                 ))}

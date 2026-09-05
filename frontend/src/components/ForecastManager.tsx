@@ -649,7 +649,7 @@ export const ForecastManager: React.FC = () => {
                                   color: item.category.color 
                                 }}
                               >
-                                <CategoryIcon name={item.category.name} color={item.category.color} compact size={11} />
+                                <CategoryIcon name={item.category.name} icon={item.category.icon} color={item.category.color} strokeWidth={item.category.iconStrokeWidth} compact size={11} />
                                 {item.category.name}
                               </span>
                             ) : (
@@ -859,7 +859,7 @@ export const ForecastManager: React.FC = () => {
                                         color: item.category.color 
                                       }}
                                     >
-                                      <CategoryIcon name={item.category.name} color={item.category.color} compact size={10} />
+                                      <CategoryIcon name={item.category.name} icon={item.category.icon} color={item.category.color} strokeWidth={item.category.iconStrokeWidth} compact size={10} />
                                       {item.category.name}
                                     </span>
                                   ) : (

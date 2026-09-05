@@ -320,7 +320,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                     <div key={cat.id} className="space-y-1">
                       <div className="flex items-center justify-between text-xs font-semibold">
                         <div className="flex items-center gap-2">
-                          <CategoryIcon name={cat.name} color={cat.color} compact size={14} />
+                          <CategoryIcon name={cat.name} icon={cat.icon} color={cat.color} strokeWidth={cat.iconStrokeWidth} compact size={14} />
                           <span className="text-slate-700 dark:text-slate-200">{cat.name}</span>
                         </div>
                         <span className="font-mono font-bold text-slate-800 dark:text-white">{cat.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })} €</span>
@@ -555,7 +555,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setActiveTab }) => {
                     className="flex items-center justify-between p-3.5 bg-slate-50/70 dark:bg-slate-950/40 border border-slate-100/80 dark:border-slate-800/60 rounded-2xl hover:border-brand-500/30 transition cursor-pointer group"
                   >
                     <div className="flex items-center gap-3">
-                      <CategoryIcon name={catObj?.name} color={catObj?.color} size={18} />
+                      <CategoryIcon name={catObj?.name} icon={catObj?.icon} color={catObj?.color} strokeWidth={catObj?.iconStrokeWidth} size={18} />
                       <div>
                         <p className="text-xs font-extrabold text-slate-800 dark:text-white group-hover:text-brand-500 transition-colors">
                           {exp.description || catObj?.name || 'Gasto'}

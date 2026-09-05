@@ -235,7 +235,7 @@ export async function getDashboardStats(req: AuthRequest, res: Response) {
     });
 
     // 4. Category breakdown
-    const categoryTotalsMap: Record<string, { id: string, name: string, color: string, amount: number }> = {};
+    const categoryTotalsMap: Record<string, { id: string, name: string, color: string, icon: string, iconStrokeWidth: number, amount: number }> = {};
     currentExpenses.forEach(exp => {
       const cat = exp.category;
       if (!categoryTotalsMap[cat.id]) {
@@ -243,6 +243,8 @@ export async function getDashboardStats(req: AuthRequest, res: Response) {
           id: cat.id,
           name: cat.name,
           color: cat.color,
+          icon: cat.icon,
+          iconStrokeWidth: cat.iconStrokeWidth,
           amount: 0
         };
       }
@@ -396,7 +398,7 @@ export async function getYearlyStats(req: AuthRequest, res: Response) {
       include: { category: true }
     });
 
-    const categoryTotalsMap: Record<string, { id: string, name: string, color: string, amount: number }> = {};
+    const categoryTotalsMap: Record<string, { id: string, name: string, color: string, icon: string, iconStrokeWidth: number, amount: number }> = {};
     yearlyExpenses.forEach(exp => {
       const cat = exp.category;
       if (!categoryTotalsMap[cat.id]) {
@@ -404,6 +406,8 @@ export async function getYearlyStats(req: AuthRequest, res: Response) {
           id: cat.id,
           name: cat.name,
           color: cat.color,
+          icon: cat.icon,
+          iconStrokeWidth: cat.iconStrokeWidth,
           amount: 0
         };
       }

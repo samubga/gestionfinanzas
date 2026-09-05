@@ -125,22 +125,23 @@ export async function register(req: Request, res: Response) {
 
     // Seed default categories
     const defaultCategories = [
-      { name: 'Alimentación', color: '#EF4444' },
-      { name: 'Transporte', color: '#F59E0B' },
-      { name: 'Vivienda', color: '#10B981' },
-      { name: 'Ocio', color: '#3B82F6' },
-      { name: 'Viajes', color: '#8B5CF6' },
-      { name: 'Salud', color: '#EC4899' },
-      { name: 'Gimnasio', color: '#06B6D4' },
-      { name: 'Tecnología', color: '#6366F1' },
-      { name: 'Suscripciones', color: '#14B8A6' },
-      { name: 'Otros', color: '#6B7280' },
+      { name: 'Alimentación', color: '#EF4444', icon: 'shopping-basket' },
+      { name: 'Transporte', color: '#F59E0B', icon: 'car' },
+      { name: 'Vivienda', color: '#10B981', icon: 'home' },
+      { name: 'Ocio', color: '#3B82F6', icon: 'clapperboard' },
+      { name: 'Viajes', color: '#8B5CF6', icon: 'plane' },
+      { name: 'Salud', color: '#EC4899', icon: 'heart-pulse' },
+      { name: 'Gimnasio', color: '#06B6D4', icon: 'dumbbell' },
+      { name: 'Tecnología', color: '#6366F1', icon: 'laptop' },
+      { name: 'Suscripciones', color: '#14B8A6', icon: 'repeat' },
+      { name: 'Otros', color: '#6B7280', icon: 'tag' },
     ];
 
     await prisma.category.createMany({
       data: defaultCategories.map(cat => ({
         name: cat.name,
         color: cat.color,
+        icon: cat.icon,
         userId: user.id,
       })),
     });
