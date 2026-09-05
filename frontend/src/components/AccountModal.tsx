@@ -169,10 +169,10 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="my-0 max-h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-2xl overflow-hidden rounded-t-3xl border border-slate-800 bg-slate-900 pb-[env(safe-area-inset-bottom)] text-slate-100 shadow-2xl sm:my-8 sm:max-h-none sm:rounded-2xl sm:pb-0">
+      <div className="account-modal-surface my-0 max-h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-2xl overflow-hidden rounded-t-3xl border pb-[env(safe-area-inset-bottom)] shadow-2xl sm:my-8 sm:max-h-none sm:rounded-2xl sm:pb-0">
         
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 bg-slate-900/50 px-4 py-4 sm:px-6">
+        <div className="account-modal-header flex items-center justify-between border-b px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold text-xl">
               {icon}

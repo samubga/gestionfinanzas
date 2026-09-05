@@ -707,6 +707,57 @@
   font-feature-settings: "lnum" 1, "tnum" 1;
 }
 
+/* Account editing follows the active theme instead of forcing a dark modal. */
+.account-modal-surface {
+  background: rgb(255 253 248);
+  border-color: rgb(var(--brand-200));
+  color: rgb(var(--slate-800));
+}
+
+.account-modal-header {
+  border-color: rgb(var(--brand-100));
+  background: rgb(var(--brand-50) / 0.45);
+}
+
+.account-modal-surface label { color: rgb(var(--slate-700)) !important; }
+
+.account-modal-surface :is(input:not([type="color"]), select, textarea) {
+  background-color: rgb(var(--brand-50) / 0.55) !important;
+  border-color: rgb(var(--brand-200)) !important;
+  color: rgb(var(--slate-800)) !important;
+}
+
+.account-modal-surface [class*="bg-slate-800"] { background-color: rgb(var(--brand-50) / 0.5) !important; }
+.account-modal-surface [class*="bg-slate-950"] { background-color: rgb(var(--brand-50) / 0.3) !important; }
+.account-modal-surface [class*="border-slate-800"],
+.account-modal-surface [class*="border-slate-700"] { border-color: rgb(var(--brand-200)) !important; }
+.account-modal-surface [class*="text-slate-100"] { color: rgb(var(--slate-800)) !important; }
+.account-modal-surface [class*="text-slate-300"] { color: rgb(var(--slate-600)) !important; }
+.account-modal-surface [class*="text-slate-400"] { color: rgb(var(--slate-500)) !important; }
+.account-modal-surface [class*="hover:bg-slate-800"]:hover { background-color: rgb(var(--brand-100) / 0.7) !important; }
+.account-modal-surface [class*="hover:text-slate-200"]:hover { color: rgb(var(--slate-900)) !important; }
+
+.dark .account-modal-surface {
+  background: #111827;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.dark .account-modal-header { border-color: #334155; background: rgb(15 23 42 / 0.7); }
+.dark .account-modal-surface label { color: #cbd5e1 !important; }
+.dark .account-modal-surface :is(input:not([type="color"]), select, textarea) {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+.dark .account-modal-surface [class*="bg-slate-800"] { background-color: #1e293b !important; }
+.dark .account-modal-surface [class*="bg-slate-950"] { background-color: rgb(2 6 23 / 0.5) !important; }
+.dark .account-modal-surface [class*="border-slate-800"],
+.dark .account-modal-surface [class*="border-slate-700"] { border-color: #334155 !important; }
+.dark .account-modal-surface [class*="text-slate-100"] { color: #e2e8f0 !important; }
+.dark .account-modal-surface [class*="text-slate-300"] { color: #cbd5e1 !important; }
+.dark .account-modal-surface [class*="text-slate-400"] { color: #94a3b8 !important; }
+
 .notification-popup {
   animation: notification-popup-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }

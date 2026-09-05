@@ -132,9 +132,6 @@ export const AccountManager: React.FC = () => {
                 key={acc.id}
                 className="bg-brand-50/40 dark:bg-slate-900 border border-brand-200 dark:border-brand-900/70 hover:border-brand-400 rounded-3xl p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-brand-500/10 flex flex-col justify-between group relative overflow-hidden"
               >
-                {/* Accent bar top */}
-                <div className="absolute top-0 left-0 right-0 h-1.5 bg-brand-500" />
-
                 <div>
                   {/* Header row */}
                   <div className="flex items-start justify-between gap-3 mb-4">
