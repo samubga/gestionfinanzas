@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useFinance } from '../context/FinanceContext';
 import { Account, AccountType, Bank } from '../types';
-import { X, Search, Plus, Check, Loader2, Building2, CircleHelp } from 'lucide-react';
+import { X, Plus, Loader2, Building2, CircleHelp } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
+import SearchableSingleSelect, { SearchableSingleSelectOption } from './SearchableSingleSelect';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -39,7 +41,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
   const [color, setColor] = useState('#6366F1');
   const [icon, setIcon] = useState('💳');
 
-  const [bankSearch, setBankSearch] = useState('');
   const [showCustomBankInput, setShowCustomBankInput] = useState(false);
   const [customBankName, setCustomBankName] = useState('');
   const [customBankColor, setCustomBankColor] = useState('#3B82F6');
@@ -95,17 +96,12 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
       setIcon('💳');
     }
     setShowCustomBankInput(false);
-    setBankSearch('');
     setShowCalculator(false);
     setShowStartingBalanceHelp(false);
     setActualMoneyInput('');
   }, [accountToEdit, isOpen]);
 
   if (!isOpen) return null;
-
-  const filteredBanks = banks.filter(b => 
-    b.name.toLowerCase().includes(bankSearch.toLowerCase())
-  );
 
   const handleSelectBank = (b: Bank | null) => {
     if (b) {
@@ -167,7 +163,27 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
     }
   };
 
-  return (
+  const bankOptions: Array<SearchableSingleSelectOption<string>> = [
+    {
+      value: '',
+      label: 'Sin banco / Efectivo',
+      keywords: 'ninguno efectivo',
+      leading: <Building2 size={16} className="shrink-0 text-slate-500" />,
+    },
+    ...banks.map(bank => ({
+      value: bank.id,
+      label: bank.name,
+      leading: <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: bank.color }} />,
+    })),
+  ];
+
+  const typeOptions: Array<SearchableSingleSelectOption<AccountType>> = ACCOUNT_TYPES.map(accountType => ({
+    value: accountType.type,
+    label: accountType.label,
+    leading: <span className="text-base" aria-hidden="true">{accountType.icon}</span>,
+  }));
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4">
       <div className="account-modal-surface my-0 max-h-[calc(100dvh-env(safe-area-inset-top))] w-full max-w-2xl overflow-hidden rounded-t-3xl border pb-[env(safe-area-inset-bottom)] shadow-2xl sm:my-8 sm:max-h-none sm:rounded-2xl sm:pb-0">
         
@@ -200,56 +216,15 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
             
             {!showCustomBankInput ? (
               <div className="space-y-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                  <input
-                    type="text"
-                    placeholder="Buscar banco (CaixaBank, Revolut, BBVA...)"
-                    value={bankSearch}
-                    onChange={(e) => setBankSearch(e.target.value)}
-                    className="w-full bg-slate-800/80 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand-500 transition"
-                  />
-                </div>
-
-                {/* Grid de Bancos */}
-                <div className="grid grid-cols-2 gap-2 max-h-36 overflow-y-auto p-1 border border-slate-800 rounded-xl bg-slate-950/40">
-                  <button
-                    type="button"
-                    onClick={() => handleSelectBank(null)}
-                    className={`flex items-center gap-2 p-2 rounded-lg text-xs font-medium text-left transition ${
-                      !selectedBankId 
-                        ? 'bg-brand-600/30 border border-brand-500/50 text-brand-200' 
-                        : 'hover:bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    <Building2 size={16} />
-                    <span>Sin banco / Efectivo</span>
-                    {!selectedBankId && <Check size={14} className="ml-auto text-brand-400" />}
-                  </button>
-
-                  {filteredBanks.map((b) => {
-                    const isSelected = selectedBankId === b.id;
-                    return (
-                      <button
-                        key={b.id}
-                        type="button"
-                        onClick={() => handleSelectBank(b)}
-                        className={`flex items-center gap-2 p-2 rounded-lg text-xs font-medium text-left transition ${
-                          isSelected 
-                            ? 'bg-brand-600/30 border border-brand-500/50 text-brand-200' 
-                            : 'hover:bg-slate-800 text-slate-300'
-                        }`}
-                      >
-                        <span 
-                          className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: b.color }}
-                        />
-                        <span className="truncate">{b.name}</span>
-                        {isSelected && <Check size={14} className="ml-auto text-brand-400 flex-shrink-0" />}
-                      </button>
-                    );
-                  })}
-                </div>
+                <SearchableSingleSelect
+                  value={selectedBankId}
+                  options={bankOptions}
+                  onChange={(bankId) => handleSelectBank(banks.find(bank => bank.id === bankId) || null)}
+                  ariaLabel="Seleccionar entidad o banco"
+                  placeholder="Selecciona una entidad"
+                  searchPlaceholder="Buscar banco (CaixaBank, Revolut, BBVA...)"
+                  emptyMessage="No se encontró ningún banco"
+                />
 
                 <button
                   type="button"
@@ -302,29 +277,18 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
             <label className="block text-sm font-semibold text-slate-300 mb-2">
               Tipo de Cuenta
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              {ACCOUNT_TYPES.map((t) => {
-                const isSelected = type === t.type;
-                return (
-                  <button
-                    key={t.type}
-                    type="button"
-                    onClick={() => {
-                      setType(t.type);
-                      setIcon(t.icon);
-                    }}
-                    className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-medium border transition ${
-                      isSelected
-                        ? 'bg-brand-600/20 border-brand-500 text-brand-300'
-                        : 'bg-slate-800/40 border-slate-800 hover:border-slate-700 text-slate-400'
-                    }`}
-                  >
-                    <span className="text-base">{t.icon}</span>
-                    <span>{t.label}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <SearchableSingleSelect
+              value={type}
+              options={typeOptions}
+              onChange={(nextType) => {
+                setType(nextType);
+                setIcon(ACCOUNT_TYPES.find(accountType => accountType.type === nextType)?.icon || '💳');
+              }}
+              ariaLabel="Seleccionar tipo de cuenta"
+              placeholder="Selecciona un tipo de cuenta"
+              searchPlaceholder="Buscar tipo de cuenta..."
+              emptyMessage="No se encontró ningún tipo de cuenta"
+            />
           </div>
 
           {/* 3. Nombre Personalizado */}
@@ -512,6 +476,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose, acc
 
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
